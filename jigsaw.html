@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Arcade! Hooray! — Emoji Jigsaw</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; background:#000; overflow:hidden; font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif; color:#fff; }
+  body{ background: radial-gradient(circle at 25% 20%, #222 0%, #000 70%); touch-action: none; overscroll-behavior:none; }
+  :root{
+    --ui-bg: rgba(255,255,255,0.07);
+    --ui-bg2: rgba(0,0,0,0.32);
+    --ui-border: rgba(255,255,255,0.16);
+    --ui-border-strong: rgba(255,255,255,0.28);
+    --ui-accent: #00e5ff;
+    --ui-gold: #ffd700;
+    --ui-radius: 14px;
+    --danger:#ff5252;
+    --ok:#7CFF6B;
+    --purple:#E040FB;
+  }
+  .ui-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding: 8px 12px; border-radius: var(--ui-radius);
+    border: 1px solid var(--ui-border); background: var(--ui-bg); color:#fff;
+    font-weight: 900; letter-spacing: 0.2px; user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ui-btn:active{ transform: scale(0.98); border-color: var(--ui-border-strong); background: rgba(255,255,255,0.10); }
+
+  .topbar{
+    position:absolute; top:10px; left:10px; right:10px; z-index:20;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    pointer-events:none;
+  }
+  .topbar .left, .topbar .right{ display:flex; gap:8px; align-items:center; pointer-events:auto; }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 7px 10px; border-radius: 999px;
+    border: 1px solid var(--ui-border); background: var(--ui-bg2);
+    font-weight: 900; letter-spacing:0.2px;
+    user-select:none;
+  }
+  .overlay{
+    position:absolute; inset:0; z-index:50;
+    background: rgba(0,0,0,0.95);
+    display:flex; align-items:center; justify-content:center;
+    padding: 16px;
+  }
+  .panel{
+    width:min(560px, 96vw);
+    border: 1px solid var(--ui-border);
+    background: rgba(255,255,255,0.06);
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    padding: 18px 16px 16px;
+  }
+  .panel h1{
+    margin: 4px 0 6px;
+    font-size: 30px;
+    color: var(--ui-gold);
+    text-shadow: 0 0 18px rgba(255,215,0,0.35);
+    letter-spacing: 1px;
+    text-align:center;
+  }
+  .panel .sub{ text-align:center; color: rgba(255,255,255,0.75); font-size: 13px; margin-bottom: 12px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .opt{
+    flex: 1 1 220px;
+    border: 1px solid var(--ui-border);
+    background: rgba(0,0,0,0.20);
+    border-radius: 14px;
+    padding: 10px 10px 12px;
+    min-width: 210px;
+  }
+  .opt label{ display:block; font-weight: 900; margin-bottom: 6px; }
+  select, input[type="range"]{
+    width:100%;
+    border-radius: 12px;
+    border: 1px solid var(--ui-border);
+    background: rgba(255,255,255,0.08);
+    color:#fff;
+    padding: 10px 12px;
+    font-weight: 900;
+    outline:none;
+  }
+  select option{ background:#111; color:#fff; }
+  .btn-large{
+    display:block; width:100%;
+    border-radius: 16px;
+    border: 2px solid #555;
+    background:#333;
+    color:#fff;
+    padding: 18px 16px;
+    font-size: 20px;
+    font-weight: 1000;
+    letter-spacing: 0.4px;
+    text-align:center;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-large:active{ transform: scale(0.985); background:#3d3d3d; }
+  .small-note{ color: rgba(255,255,255,0.70); font-size: 12px; text-align:center; margin-top:8px; }
+  .hr{ height:1px; background: rgba(255,255,255,0.10); margin: 10px 0; }
+  .hidden{ display:none !important; }
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding: 10px 12px;
+    border: 1px solid var(--ui-border);
+    border-radius: 14px;
+    background: rgba(0,0,0,0.20);
+    margin-top: 10px;
+  }
+  .toggle-row .t-left{ display:flex; flex-direction:column; gap:2px; }
+  .toggle-row .t-name{ font-weight: 900; }
+  .toggle-row .t-desc{ font-size: 12px; color: rgba(255,255,255,0.68); }
+  .toggle-row input[type="checkbox"]{ width: 20px; height: 20px; accent-color: var(--ui-accent); }
+
+  #stage {
+    position:absolute; inset:0;
+    padding: 58px 10px 14px;
+    box-sizing:border-box;
+    display:flex; align-items:center; justify-content:center;
+  }
+  
+  
+  #wrap {
+    width:min(980px, 96vw);
+    height:min(860px, calc(100vh - 92px));
+    display:grid;
+    grid-template-rows: 1fr auto;
+    gap: 12px;
+  }
+  #tray{
+    border-radius: 18px;
+    border: 1px solid var(--ui-border);
+    background: rgba(255,255,255,0.92);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  #trayHead{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.10);
+    background: rgba(0,0,0,0.06);
+  }
+  #trayTitle{ font-weight: 1000; letter-spacing: 0.6px; font-size: 13px; color: rgba(0,0,0,0.78); }
+  #trayTip{ font-size: 12px; color: rgba(0,0,0,0.58); }
+  #trayInner{
+    position:relative;
+    display:flex;
+    gap: 10px;
+    padding: 10px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #trayInner::-webkit-scrollbar{ display:none; }
+  .tray-slot{
+    position:relative;
+    flex: 0 0 auto;
+    width: 92px;
+    height: 92px;
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.70);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  }
+  .tray-slot::after{
+    content:"";
+    position:absolute; inset: 10px;
+    border-radius: 14px;
+    border: 1px dashed rgba(0,0,0,0.18);
+    opacity: 0.45;
+    pointer-events:none;
+  }
+  .piece.in-tray{
+    position:absolute !important;
+    left:50% !important;
+    top:50% !important;
+    transform: translate(-50%,-50%) scale(var(--trayScale, 0.46)) rotate(var(--rot, 0deg)) !important;
+    box-shadow: none;
+  }
+  .piece.in-tray:active{
+    transform: translate(-50%,-50%) scale(calc(var(--trayScale, 0.46) * 1.03)) rotate(var(--rot, 0deg)) !important;
+  }
+  .piece.in-tray canvas{ pointer-events:none; }
+
+
+  #board {
+    position:relative;
+    border-radius: 18px;
+    border: 1px solid var(--ui-border);
+    background: rgba(255,255,255,0.05);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    overflow:hidden;
+  }
+  #boardInner { position:absolute; inset:0; }
+  #target {
+    position:absolute;
+    border-radius: 18px;
+    border: 2px dashed rgba(255,255,255,0.22);
+    background: rgba(0,0,0,0.22);
+  }
+
+  .piece {
+    position:absolute;
+    border: none;
+    background: transparent;
+    border-radius: 0px;
+    touch-action: none;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    will-change: transform, left, top;
+    box-shadow: none; 
+  }
+  .piece:active { transform: scale(1.02) rotate(var(--rot, 0deg)); }
+  .piece.locked{
+    
+    filter: drop-shadow(0 0 10px rgba(124,255,107,0.25)) drop-shadow(0 0 2px rgba(124,255,107,0.20));
+  }
+  .piece.glow{
+    filter: drop-shadow(0 0 12px rgba(0,229,255,0.30)) drop-shadow(0 0 2px rgba(0,229,255,0.25));
+  }
+  .piece canvas { width:100%; height:100%; display:block;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.35)) drop-shadow(0 0 1px rgba(255,255,255,0.30));
+}
+
+  #hint { text-align:center; color: rgba(255,255,255,0.75); font-size: 12px; }
+
+  
+  #confettiCanvas{
+    position:fixed; inset:0;
+    width:100%; height:100%;
+    pointer-events:none;
+    z-index: 9999;
+  }
+</style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="topbar">
+    <div class="left">
+      <div class="pill" id="statusPill">Ready</div>
+    </div>
+    <div class="right">
+      <button class="ui-btn" id="shuffleBtn">Shuffle</button>
+      <button class="ui-btn" id="menuBtn">MENU</button>
+    </div>
+  </div>
+
+  <div id="stage">
+    <div id="wrap">
+      <div id="board">
+        <div id="boardInner"></div>
+        <div id="target" aria-label="Puzzle area"></div>
+      </div>
+
+      <div id="tray" aria-label="Piece drawer">
+        <div id="trayHead">
+          <div id="trayTitle">PIECE DRAWER</div>
+          <div id="trayTip">Tap/drag a piece up</div>
+        </div>
+        <div id="trayInner"></div>
+      </div>
+
+      <div id="hint">Grab a piece from the drawer, then drag it into the dashed box. Pieces snap when close.</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="startOverlay">
+    <div class="panel">
+      <h1>Emoji Jigsaw</h1>
+      <div class="sub">One emoji, chopped into jigsaw pieces. Put it back together.</div>
+
+      <div class="row">
+        <div class="opt">
+          <label>Difficulty (1–5)</label>
+          <select id="diffSel">
+            <option value="1" selected>1 (2 × 2)</option>
+            <option value="2">2 (3 × 3)</option>
+            <option value="3">3 (4 × 4)</option>
+            <option value="4">4 (5 × 5)</option>
+            <option value="5">5 (6 × 6)</option>
+          </select>
+          <div class="small-note">More pieces = harder.</div>
+        </div>
+        <div class="opt">
+          <label>Emoji</label>
+          <select id="emojiSel"></select>
+          <div class="small-note">Each puzzle is a single emoji.</div>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <div class="t-left">
+          <div class="t-name">Glow hints</div>
+          <div class="t-desc">Pieces glow when they’re close to the right spot.</div>
+        </div>
+        <input type="checkbox" id="glowChk" />
+      </div>
+
+      <div class="hr"></div>
+      <button class="btn-large" id="startBtn">START</button>
+      <div class="small-note">Tip: grab a piece and keep dragging — it should follow your finger.</div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="menuOverlay">
+    <div class="panel">
+      <h1>Menu</h1>
+      <div class="sub">Pause — choose an option.</div>
+      <div class="row">
+        <button class="btn-large" id="resumeBtn">RESUME</button>
+        <button class="btn-large" id="restartBtn">RESTART</button>
+        <button class="btn-large" id="backBtn">BACK TO ARCADE</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const board = $("board");
+  const boardInner = $("boardInner");
+  const target = $("target");
+
+  const trayInner = $("trayInner");
+  const statusPill = $("statusPill");
+
+  const startOverlay = $("startOverlay");
+  const menuOverlay = $("menuOverlay");
+
+  const diffSel = $("diffSel");
+  const emojiSel = $("emojiSel");
+  const glowChk = $("glowChk");
+
+  const startBtn = $("startBtn");
+  const shuffleBtn = $("shuffleBtn");
+  const menuBtn = $("menuBtn");
+  const resumeBtn = $("resumeBtn");
+  const restartBtn = $("restartBtn");
+  const backBtn = $("backBtn");
+
+  const confettiCanvas = $("confettiCanvas");
+  const cctx = confettiCanvas.getContext("2d");
+
+  const EMOJIS = [
+    "🦄","🐶","🐱","🦊","🐼","🐸","🐵","🦁","🐰","🐯",
+    "🦋","🐙","🦉","🐢","🐳","🚀","🛸","🪐","🌙","⭐",
+    "🎈","🎉","🍕","🍩","🧁","🍉","🍓","🍦","🎮","🏰",
+    "🌈","💫","🤖","👽","🧸","🪁","🎧","🎸","🎯","🎲"
+  ];
+
+  
+  EMOJIS.forEach(e => {
+    const opt = document.createElement("option");
+    opt.value = e;
+    opt.textContent = e;
+    emojiSel.appendChild(opt);
+  });
+  emojiSel.value = "🦄";
+
+  let state = null;
+
+  function setStatus(t){ statusPill.textContent = t; }
+  function showOverlay(el, show){ el.classList.toggle("hidden", !show); }
+
+  function randInt(a,b){ return a + ((Math.random()*(b-a+1))|0); }
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--) {
+      const j = (Math.random()*(i+1))|0;
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function fitConfettiCanvas(){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+    confettiCanvas.height = Math.floor(window.innerHeight * dpr);
+    confettiCanvas.style.width = window.innerWidth + "px";
+    confettiCanvas.style.height = window.innerHeight + "px";
+    cctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  fitConfettiCanvas();
+
+  function layoutSizes(){
+    const rect = board.getBoundingClientRect();
+    const size = Math.min(rect.width, rect.height) * 0.78;
+    const left = (rect.width - size)/2;
+    const top = (rect.height - size)/2;
+    target.style.width = size + "px";
+    target.style.height = size + "px";
+    target.style.left = (left) + "px";
+    target.style.top = (top) + "px";
+    target.style.transform = "none";
+    return { boardW: rect.width, boardH: rect.height, targetX:left, targetY:top, targetSize:size };
+  }
+
+  function makeEmojiCanvas(size, emoji){
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,size,size);
+
+    
+    const g = ctx.createRadialGradient(size*0.35, size*0.25, size*0.1, size*0.5, size*0.55, size*0.95);
+    g.addColorStop(0, "rgba(255,255,255,0.08)");
+    g.addColorStop(1, "rgba(255,255,255,0.00)");
+    ctx.fillStyle = "rgba(0,0,0,0.40)";
+    ctx.fillRect(0,0,size,size);
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,size,size);
+
+    
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `${Math.floor(size*0.72)}px system-ui, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji'`;
+    ctx.globalAlpha = 0.98;
+    ctx.fillText(emoji, size/2, size/2);
+
+    
+    ctx.globalAlpha = 0.16;
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.ellipse(size*0.35, size*0.25, size*0.58, size*0.36, -0.4, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    return canvas;
+  }
+
+  
+  function generateEdges(n){
+    const H = Array.from({length:n}, () => Array(n-1).fill(null));
+    const V = Array.from({length:n-1}, () => Array(n).fill(null));
+
+    function profile(){
+      return {
+        dir: (Math.random() < 0.5 ? 1 : -1),
+        amp: 0.78 + Math.random()*0.55,
+        fat: 0.85 + Math.random()*0.45,
+        skew: (Math.random()*2 - 1) * 0.18,
+        bite: 0.88 + Math.random()*0.40
+      };
+    }
+
+    for(let r=0;r<n;r++){
+      for(let c=0;c<n-1;c++){
+        H[r][c] = profile();
+      }
+    }
+    for(let r=0;r<n-1;r++){
+      for(let c=0;c<n;c++){
+        V[r][c] = profile();
+      }
+    }
+    return {H,V};
+  }
+
+  function flipProfile(p){
+    return { dir: -p.dir, amp: p.amp, fat: p.fat, skew: p.skew, bite: p.bite };
+  }
+
+function jigsawPath(ctx, w, h, tab, edges){
+    
+    
+    const t = tab;
+
+    function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+    function ampPx(p){ return tab * 0.90 * (p.amp || 1); }
+    function fat(p){ return (p.fat || 1); }
+    function skew(p){ return (p.skew || 0); }
+    function bite(p){ return (p.bite || 1); }
+
+    function edgeShape(p, L){
+      const s = skew(p), f = fat(p), b = bite(p);
+      const center = L*0.5 + s*L*0.10;
+      const bulbW  = clamp(L * 0.22 * f, L*0.16, L*0.28);
+      const neck   = clamp(L * 0.11 * b, L*0.07, L*0.14);
+
+      const a = clamp(center - bulbW, L*0.10, L*0.62);
+      const b1 = clamp(center - neck,  a + L*0.04, center - L*0.02);
+      const c = center;
+      const d1 = clamp(center + neck,  center + L*0.02, L - L*0.10);
+      const e = clamp(center + bulbW,  L*0.38, L*0.90);
+      const d = clamp(d1, c + L*0.02, e - L*0.04);
+
+      return {a,b1,c,d,e};
+    }
+
+    
+    function drawEdgeX(p, L, outward){
+      if(p === 0){
+        ctx.lineTo(ctx.__x + L, ctx.__y);
+        ctx.__x += L;
+        return;
+      }
+      const a = outward; 
+      const sh = edgeShape(p, L);
+
+      ctx.lineTo(ctx.__x + sh.a, ctx.__y);
+      ctx.bezierCurveTo(
+        ctx.__x + sh.b1, ctx.__y,
+        ctx.__x + sh.b1, ctx.__y + a*0.92,
+        ctx.__x + sh.c,  ctx.__y + a
+      );
+      ctx.bezierCurveTo(
+        ctx.__x + sh.d,  ctx.__y + a*0.92,
+        ctx.__x + sh.d,  ctx.__y,
+        ctx.__x + sh.e,  ctx.__y
+      );
+      ctx.lineTo(ctx.__x + L, ctx.__y);
+      ctx.__x += L;
+    }
+
+    
+    function drawEdgeY(p, L, outward){
+      if(p === 0){
+        ctx.lineTo(ctx.__x, ctx.__y + L);
+        ctx.__y += L;
+        return;
+      }
+      const a = outward;
+      const sh = edgeShape(p, L);
+
+      ctx.lineTo(ctx.__x, ctx.__y + sh.a);
+      ctx.bezierCurveTo(
+        ctx.__x,        ctx.__y + sh.b1,
+        ctx.__x + a*0.92, ctx.__y + sh.b1,
+        ctx.__x + a,      ctx.__y + sh.c
+      );
+      ctx.bezierCurveTo(
+        ctx.__x + a*0.92, ctx.__y + sh.d,
+        ctx.__x,         ctx.__y + sh.d,
+        ctx.__x,         ctx.__y + sh.e
+      );
+      ctx.lineTo(ctx.__x, ctx.__y + L);
+      ctx.__y += L;
+    }
+
+    ctx.beginPath();
+    ctx.__x = t; ctx.__y = t;
+    ctx.moveTo(ctx.__x, ctx.__y);
+
+    
+    drawEdgeX(edges.top, w, edges.top === 0 ? 0 : (-edges.top.dir) * ampPx(edges.top));
+
+    
+    drawEdgeY(edges.right, h, edges.right === 0 ? 0 : (edges.right.dir) * ampPx(edges.right));
+
+    
+    if(edges.bottom === 0){
+      ctx.lineTo(t, t + h);
+      ctx.__x = t;
+    } else {
+      
+      const p = edges.bottom;
+      const L = w;
+      const a = (p.dir) * ampPx(p); 
+      const sh = edgeShape(p, L);
+
+      
+      const y = t + h;
+      const x0 = t + w;
+
+      ctx.lineTo(x0 - sh.a, y);
+      ctx.bezierCurveTo(
+        x0 - sh.b1, y,
+        x0 - sh.b1, y + a*0.92,
+        x0 - sh.c,  y + a
+      );
+      ctx.bezierCurveTo(
+        x0 - sh.d,  y + a*0.92,
+        x0 - sh.d,  y,
+        x0 - sh.e,  y
+      );
+      ctx.lineTo(t, y);
+      ctx.__x = t;
+      ctx.__y = y;
+    }
+
+    
+    if(edges.left === 0){
+      ctx.closePath();
+    } else {
+      const p = edges.left;
+      const L = h;
+      const a = (-p.dir) * ampPx(p); 
+      const sh = edgeShape(p, L);
+
+      const x = t;
+      const y0 = t + h;
+
+      ctx.lineTo(x, y0 - sh.a);
+      ctx.bezierCurveTo(
+        x, y0 - sh.b1,
+        x + a*0.92, y0 - sh.b1,
+        x + a,      y0 - sh.c
+      );
+      ctx.bezierCurveTo(
+        x + a*0.92, y0 - sh.d,
+        x,          y0 - sh.d,
+        x,          y0 - sh.e
+      );
+      ctx.closePath();
+    }
+
+    delete ctx.__x; delete ctx.__y;
+  }
+
+function sliceIntoPiecesJigsaw(srcCanvas, n, targetSize){
+    const pieces = [];
+    const pw = targetSize / n;
+    const ph = targetSize / n;
+
+    const tab = Math.min(pw, ph) * 0.22; 
+    const edges = generateEdges(n);
+
+    for(let r=0;r<n;r++) {
+      for(let c=0;c<n;c++) {
+        const top    = (r === 0)   ? 0 : flipProfile(edges.V[r-1][c]);
+        const bottom = (r === n-1) ? 0 : edges.V[r][c];
+        const left   = (c === 0)   ? 0 : flipProfile(edges.H[r][c-1]);
+        const right  = (c === n-1) ? 0 : edges.H[r][c];
+
+        const pieceCanvas = document.createElement("canvas");
+        pieceCanvas.width  = Math.round(pw + tab*2);
+        pieceCanvas.height = Math.round(ph + tab*2);
+
+        const pctx = pieceCanvas.getContext("2d");
+        pctx.imageSmoothingEnabled = true;
+
+        
+        jigsawPath(pctx, pw, ph, tab, {top,right,bottom,left});
+        pctx.save();
+        pctx.clip();
+
+        
+        const sx = (c * srcCanvas.width / n) - (tab * srcCanvas.width / targetSize);
+        const sy = (r * srcCanvas.height / n) - (tab * srcCanvas.height / targetSize);
+        const sw = (srcCanvas.width / n) + (tab*2 * srcCanvas.width / targetSize);
+        const sh = (srcCanvas.height / n) + (tab*2 * srcCanvas.height / targetSize);
+
+        pctx.drawImage(
+          srcCanvas,
+          sx, sy, sw, sh,
+          0, 0,
+          pieceCanvas.width,
+          pieceCanvas.height
+        );
+
+        pctx.restore();
+
+        pieces.push({
+          r, c,
+          w: pieceCanvas.width, h: pieceCanvas.height,
+          tab,
+          canvas: pieceCanvas
+        });
+      }
+    }
+    return pieces;
+  }
+
+  function createPieceEl(piece, i){
+    const el = document.createElement("div");
+    el.className = "piece";
+    el.style.width = piece.w + "px";
+    el.style.height = piece.h + "px";
+    el.dataset.index = String(i);
+
+    const rot = randInt(-6, 6);
+    el.style.setProperty("--rot", rot + "deg");
+    el.dataset.rot = String(rot);
+    el.style.transform = `rotate(${rot}deg)`;
+
+    el.appendChild(piece.canvas);
+
+    el.addEventListener("pointerdown", (e) => {
+      if(!state || piece.locked) return;
+      e.preventDefault();
+
+      
+      if(piece.inTray){
+        liftToBoard(piece, el);
+      }
+
+      el.setPointerCapture(e.pointerId);
+      bringToFront(el);
+
+      const rect = el.getBoundingClientRect();
+      const parentRect = boardInner.getBoundingClientRect();
+
+      piece.drag = {
+        pointerId: e.pointerId,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        parentLeft: parentRect.left,
+        parentTop: parentRect.top
+      };
+    }, {passive:false});
+
+    el.addEventListener("pointermove", (e) => {
+      if(!state || piece.locked || !piece.drag || piece.drag.pointerId !== e.pointerId) return;
+      e.preventDefault();
+
+      const x = (e.clientX - piece.drag.parentLeft) - piece.drag.offsetX;
+      const y = (e.clientY - piece.drag.parentTop) - piece.drag.offsetY;
+      piece.x = x;
+      piece.y = y;
+      el.style.left = x + "px";
+      el.style.top  = y + "px";
+
+      
+      updateGlow(piece, el);
+    }, {passive:false});
+
+    const endDrag = (e) => {
+      if(!state || !piece.drag || piece.drag.pointerId !== e.pointerId) return;
+      e.preventDefault();
+      try { el.releasePointerCapture(e.pointerId); } catch(_e){}
+      piece.drag = null;
+
+      const wasLocked = piece.locked;
+      trySnap(piece, el);
+      updateGlow(piece, el);
+
+      
+      if(state && !piece.locked && !wasLocked){
+        const trayRect = trayInner.getBoundingClientRect();
+        if(e.clientY >= trayRect.top - 8){
+          sendToTray(piece, el);
+          setStatus(`Pieces left: ${countRemaining()}`);
+        }
+      }
+    };
+
+    el.addEventListener("pointerup", endDrag, {passive:false});
+    el.addEventListener("pointercancel", endDrag, {passive:false});
+
+    return el;
+  }
+
+  function bringToFront(el){
+    state.z += 1;
+    el.style.zIndex = String(state.z);
+  }
+
+  function countRemaining(){
+    return state.pieces.filter(p => !p.locked).length;
+  }
+
+  function scatterPieces(){
+    const unlocked = state.pieces.filter(p => !p.locked);
+
+    trayInner.innerHTML = "";
+
+    unlocked.forEach((p) => {
+      p.el.classList.remove("locked");
+      p.el.classList.remove("glow");
+      p.el.style.transform = `translate(-50%,-50%) scale(var(--trayScale, 0.46)) rotate(${p.el.dataset.rot}deg)`;
+
+      if(!p.inTray){
+        try { boardInner.removeChild(p.el); } catch(_e){}
+        p.inTray = true;
+        p.el.classList.add("in-tray");
+      } else if(p.slot){
+        try { p.slot.removeChild(p.el); } catch(_e){}
+      }
+
+      const slot = makeSlot();
+      p.slot = slot;
+      trayInner.appendChild(slot);
+      slot.appendChild(p.el);
+      p.el.style.left = "50%";
+      p.el.style.top  = "50%";
+    });
+
+    const slots = Array.from(trayInner.children);
+    shuffle(slots);
+    trayInner.innerHTML = "";
+    slots.forEach(s => trayInner.appendChild(s));
+
+    setStatus(`Pieces left: ${countRemaining()}`);
+  }
+
+function snapThreshold(){
+    
+    return Math.max(12, state.targetSize * 0.045);
+  }
+
+  function updateGlow(piece, el){
+    if(piece.locked || piece.inTray){ el.classList.remove("glow"); return; }
+    if(!state || !state.glowHints) { el.classList.remove("glow"); return; }
+    const snap = snapThreshold();
+    const dx = piece.x - piece.homeX;
+    const dy = piece.y - piece.homeY;
+    if(Math.abs(dx) <= snap && Math.abs(dy) <= snap){
+      el.classList.add("glow");
+    } else {
+      el.classList.remove("glow");
+    }
+  }
+
+
+  function makeSlot(){
+    const slot = document.createElement("div");
+    slot.className = "tray-slot";
+    return slot;
+  }
+
+  function liftToBoard(piece, el){
+    if(!piece.inTray) return;
+
+    const slot = piece.slot;
+    const slotRect = slot.getBoundingClientRect();
+    const boardRect = boardInner.getBoundingClientRect();
+
+    try { slot.removeChild(el); } catch(_e){}
+    try { trayInner.removeChild(slot); } catch(_e){}
+    piece.slot = null;
+
+    boardInner.appendChild(el);
+    el.classList.remove("in-tray");
+    piece.inTray = false;
+
+    const x = (slotRect.left - boardRect.left) + (slotRect.width - piece.w) * 0.5;
+    const y = (slotRect.top  - boardRect.top)  + (slotRect.height - piece.h) * 0.5;
+
+    piece.x = x; piece.y = y;
+    el.style.left = x + "px";
+    el.style.top  = y + "px";
+    el.style.transform = `rotate(${el.dataset.rot}deg)`;
+  }
+
+  function sendToTray(piece, el){
+    if(piece.locked) return;
+    if(piece.inTray) return;
+
+    const slot = makeSlot();
+    piece.slot = slot;
+    trayInner.appendChild(slot);
+
+    try { boardInner.removeChild(el); } catch(_e){}
+    slot.appendChild(el);
+
+    piece.inTray = true;
+    el.classList.add("in-tray");
+    el.classList.remove("glow");
+
+    piece.x = 0; piece.y = 0;
+    el.style.left = "50%";
+    el.style.top = "50%";
+  }
+
+function trySnap(piece, el){
+    if(piece.locked) return;
+
+    if(piece.inTray){
+      liftToBoard(piece, el);
+    }
+
+    const snap = snapThreshold();
+    const dx = piece.x - piece.homeX;
+    const dy = piece.y - piece.homeY;
+
+    if(Math.abs(dx) <= snap && Math.abs(dy) <= snap) {
+      piece.x = piece.homeX;
+      piece.y = piece.homeY;
+      el.style.left = piece.homeX + "px";
+      el.style.top  = piece.homeY + "px";
+      piece.locked = true;
+      el.classList.add("locked");
+      if(piece.slot){ try { trayInner.removeChild(piece.slot); } catch(_e){} piece.slot = null; }
+      piece.inTray = false;
+      el.classList.remove("glow");
+      el.style.transform = "rotate(0deg)";
+
+      setStatus(`Pieces left: ${countRemaining()}`);
+
+      if(countRemaining() === 0) {
+        setStatus("Finished!");
+        startConfetti();
+
+        showOverlay(menuOverlay, true);
+        menuOverlay.querySelector("h1").textContent = "Nice!";
+        menuOverlay.querySelector(".sub").textContent = "Puzzle complete!";
+        $("resumeBtn").textContent = "PLAY AGAIN";
+      }
+    } else {
+      setStatus(`Pieces left: ${countRemaining()}`);
+    }
+  }
+
+  
+  let confettiRunning = false;
+  function startConfetti(){
+    if(confettiRunning) return;
+    confettiRunning = true;
+    fitConfettiCanvas();
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    const colors = ["#ffd700","#00e5ff","#ff5252","#7CFF6B","#E040FB","#ffffff"];
+    const N = 180;
+    const parts = [];
+    for(let i=0;i<N;i++){
+      parts.push({
+        x: Math.random()*W,
+        y: -20 - Math.random()*H*0.35,
+        vx: (Math.random()*2-1) * 2.3,
+        vy: 2.5 + Math.random()*4.5,
+        r: 2 + Math.random()*4,
+        rot: Math.random()*Math.PI*2,
+        vr: (Math.random()*2-1)*0.2,
+        w: 6 + Math.random()*10,
+        h: 4 + Math.random()*8,
+        c: colors[(Math.random()*colors.length)|0],
+        life: 180 + (Math.random()*60)|0
+      });
+    }
+
+    let frame = 0;
+    function tick(){
+      frame++;
+      cctx.clearRect(0,0,W,H);
+      cctx.globalAlpha = 0.98;
+
+      for(const p of parts){
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.03; 
+        p.rot += p.vr;
+        p.life--;
+
+        
+        if(p.x < -30) p.x = W + 30;
+        if(p.x > W + 30) p.x = -30;
+
+        cctx.save();
+        cctx.translate(p.x, p.y);
+        cctx.rotate(p.rot);
+        cctx.fillStyle = p.c;
+        cctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+        cctx.restore();
+      }
+
+      const alive = parts.some(p => p.life > 0 && p.y < H + 60);
+      if(frame < 260 && alive){
+        requestAnimationFrame(tick);
+      } else {
+        cctx.clearRect(0,0,W,H);
+        confettiRunning = false;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function build(){
+    
+    const lvl = parseInt(diffSel.value,10);
+    const map = {1:2, 2:3, 3:4, 4:5, 5:6};
+    const n = map[lvl] || 4;
+
+    const emoji = emojiSel.value || "🦄";
+    const glowHints = !!glowChk.checked;
+
+    boardInner.innerHTML = "";
+      trayInner.innerHTML = "";
+    trayInner.innerHTML = "";
+    const {targetSize, targetX, targetY} = layoutSizes();
+
+    const src = makeEmojiCanvas(720, emoji);
+    const rawPieces = sliceIntoPiecesJigsaw(src, n, targetSize);
+
+    state = {
+      n,
+      lvl,
+      emoji,
+      glowHints,
+      targetSize,
+      targetX, targetY,
+      pieces: [],
+      z: 10
+    };
+
+    rawPieces.forEach((rp, idx) => {
+      
+      const tab = rp.tab;
+      const homeX = targetX + rp.c * (targetSize/n) - tab;
+      const homeY = targetY + rp.r * (targetSize/n) - tab;
+
+      const piece = {
+        ...rp,
+        homeX, homeY,
+        x: 0, y: 0,
+        locked: false,
+        drag: null,
+        el: null
+      };
+
+      const el = createPieceEl(piece, idx);
+      piece.el = el;
+
+      el.style.left = "0px";
+      el.style.top = "0px";
+      el.style.zIndex = String(state.z + idx);
+
+      
+      const slot = makeSlot();
+      trayInner.appendChild(slot);
+      piece.slot = slot;
+      slot.appendChild(el);
+      piece.inTray = true;
+      el.classList.add("in-tray");
+      el.style.left = "50%";
+      el.style.top  = "50%";
+
+      state.pieces.push(piece);
+    });
+
+    scatterPieces();
+  }
+
+  
+  startBtn.addEventListener("click", () => {
+    showOverlay(startOverlay, false);
+    showOverlay(menuOverlay, false);
+    build();
+  });
+
+  shuffleBtn.addEventListener("click", () => {
+    if(!state) return;
+    scatterPieces();
+  });
+
+  menuBtn.addEventListener("click", () => {
+    if(startOverlay && !startOverlay.classList.contains("hidden")) return;
+    showOverlay(menuOverlay, true);
+    menuOverlay.querySelector("h1").textContent = "Menu";
+    menuOverlay.querySelector(".sub").textContent = "Pause — choose an option.";
+    $("resumeBtn").textContent = "RESUME";
+  });
+
+  resumeBtn.addEventListener("click", () => {
+    if(resumeBtn.textContent === "PLAY AGAIN") {
+      showOverlay(menuOverlay, false);
+      showOverlay(startOverlay, true);
+      state = null;
+      setStatus("Ready");
+      boardInner.innerHTML = "";
+      trayInner.innerHTML = "";
+    trayInner.innerHTML = "";
+    } else {
+      showOverlay(menuOverlay, false);
+    }
+  });
+
+  restartBtn.addEventListener("click", () => {
+    showOverlay(menuOverlay, false);
+    showOverlay(startOverlay, true);
+    state = null;
+    setStatus("Ready");
+    boardInner.innerHTML = "";
+      trayInner.innerHTML = "";
+    trayInner.innerHTML = "";
+  });
+
+  backBtn.addEventListener("click", () => window.location.href="index.html");
+
+  window.addEventListener("resize", () => {
+    fitConfettiCanvas();
+    if(!state) return;
+    build(); 
+  });
+
+  setStatus("Ready");
+})();
+</script>
+</body>
+</html>

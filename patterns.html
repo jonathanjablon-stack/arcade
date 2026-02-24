@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Arcade! Hooray! — Pattern Maker</title>
+<style>
+
+        html, body { margin:0; padding:0; height:100%; background:#000; overflow:hidden; font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif; color:#fff; }
+        body{ background: radial-gradient(circle at 25% 20%, #222 0%, #000 70%); touch-action: none; overscroll-behavior:none; }
+        :root{
+            --ui-bg: rgba(255,255,255,0.07);
+            --ui-bg2: rgba(0,0,0,0.32);
+            --ui-border: rgba(255,255,255,0.16);
+            --ui-border-strong: rgba(255,255,255,0.28);
+            --ui-accent: #00e5ff;
+            --ui-gold: #ffd700;
+            --ui-radius: 14px;
+            --danger:#ff5252;
+            --ok:#7CFF6B;
+            --purple:#E040FB;
+        }
+        .ui-btn{
+            display:inline-flex; align-items:center; justify-content:center; gap:8px;
+            padding: 8px 12px; border-radius: var(--ui-radius);
+            border: 1px solid var(--ui-border); background: var(--ui-bg); color:#fff;
+            font-weight: 900; letter-spacing: 0.2px; user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ui-btn:active{ transform: scale(0.98); border-color: var(--ui-border-strong); background: rgba(255,255,255,0.10); }
+        .topbar{
+            position:absolute; top:10px; left:10px; right:10px; z-index:20;
+            display:flex; align-items:center; justify-content:space-between; gap:10px;
+            pointer-events:none;
+        }
+        .topbar .left, .topbar .right{ display:flex; gap:8px; align-items:center; pointer-events:auto; }
+        .pill{
+            display:inline-flex; align-items:center; gap:8px;
+            padding: 7px 10px; border-radius: 999px;
+            border: 1px solid var(--ui-border); background: var(--ui-bg2);
+            font-weight: 900; letter-spacing:0.2px;
+            user-select:none;
+        }
+        
+.overlay{
+    position:absolute; inset:0; z-index:50;
+    background: rgba(0,0,0,0.95);
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap: 18px;
+    padding: 78px 18px 26px;
+    box-sizing:border-box;
+    overflow-y:auto;
+    -webkit-overflow-scrolling: touch;
+}
+.splash-title{
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 1000;
+    letter-spacing: 1px;
+    text-align:center;
+    color: var(--ui-gold);
+    text-shadow: 0 0 18px rgba(255,215,0,0.35);
+}
+.menu-sub{
+    margin-top: -8px;
+    color: rgba(255,255,255,0.72);
+    font-size: 13px;
+    text-align:center;
+    max-width: 560px;
+    line-height: 1.25;
+}
+.pm-menu-wrap{
+    width: 100%;
+    max-width: 560px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap: 12px;
+}
+.pm-section-title{
+    font-size: 12px;
+    color: rgba(255,255,255,0.60);
+    font-weight: 1000;
+    letter-spacing: 0.7px;
+    text-align:center;
+    margin-bottom: 8px;
+}
+.pm-card{
+    border: 1px solid var(--ui-border);
+    background: rgba(255,255,255,0.06);
+    border-radius: 18px;
+    padding: 14px 14px 12px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+}
+.pm-pill-row{
+    display:flex;
+    gap: 10px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+.pm-pill{
+    border-radius: 999px;
+    border: 2px solid #555;
+    background:#333;
+    color:#fff;
+    padding: 10px 14px;
+    font-weight: 1000;
+    min-width: 46px;
+    text-align:center;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+}
+.pm-pill:active{ transform: scale(0.985); background:#3d3d3d; }
+.pm-pill.sel{
+    background: rgba(45,125,255,0.85);
+    border-color: rgba(95,160,255,0.95);
+}
+.btn-large-opt{
+    background: #333; border: 2px solid #555; color: #fff;
+    padding: 18px 16px; font-size: 1.35rem; border-radius: 15px; width: 100%;
+    cursor: pointer; transition: transform 0.1s; text-align: center;
+    font-weight: 1000;
+    -webkit-tap-highlight-color: transparent;
+    user-select:none;
+}
+.btn-large-opt:active { transform: scale(0.985); background: #444; }
+        .panel{
+            width:min(560px, 96vw);
+            border: 1px solid var(--ui-border);
+            background: rgba(255,255,255,0.06);
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+            padding: 18px 16px 16px;
+        }
+        .panel h1{
+            margin: 4px 0 6px;
+            font-size: 30px;
+            color: var(--ui-gold);
+            text-shadow: 0 0 18px rgba(255,215,0,0.35);
+            letter-spacing: 1px;
+            text-align:center;
+        }
+        .panel .sub{ text-align:center; color: rgba(255,255,255,0.75); font-size: 13px; margin-bottom: 12px; }
+        .row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+        .opt{
+            flex: 1 1 220px;
+            border: 1px solid var(--ui-border);
+            background: rgba(0,0,0,0.20);
+            border-radius: 14px;
+            padding: 10px 10px 12px;
+            min-width: 210px;
+        }
+        .opt label{ display:block; font-weight: 900; margin-bottom: 6px; }
+        select, input[type="range"]{
+            width:100%;
+            border-radius: 12px;
+            border: 1px solid var(--ui-border);
+            background: rgba(255,255,255,0.08);
+            color:#fff;
+            padding: 10px 12px;
+            font-weight: 900;
+            outline:none;
+        }
+        select option{ background:#111; color:#fff; }
+        .btn-large{
+            display:block; width:100%;
+            border-radius: 16px;
+            border: 2px solid #555;
+            background:#333;
+            color:#fff;
+            padding: 18px 16px;
+            font-size: 20px;
+            font-weight: 1000;
+            letter-spacing: 0.4px;
+            text-align:center;
+            user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-large:active{ transform: scale(0.985); background:#3d3d3d; }
+        .small-note{ color: rgba(255,255,255,0.70); font-size: 12px; text-align:center; margin-top:8px; }
+        .hr{ height:1px; background: rgba(255,255,255,0.10); margin: 10px 0; }
+        .hidden{ display:none !important; }
+
+#stage {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  padding: 58px 10px 14px;
+  box-sizing:border-box;
+}
+#playWrap {
+  width:min(920px, 96vw);
+  height:min(820px, calc(100vh - 92px));
+  border-radius: 18px;
+  border: 1px solid var(--ui-border);
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+  display:flex;
+  flex-direction:column;
+  padding: 12px;
+  box-sizing:border-box;
+  gap: 12px;
+}
+#seq {
+  flex: 0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--ui-border);
+  background: rgba(0,0,0,0.25);
+  border-radius: 16px;
+  min-height: 110px;
+}
+.token {
+  width: clamp(44px, 9vmin, 86px);
+  height: clamp(44px, 9vmin, 86px);
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 1000;
+  font-size: clamp(22px, 5vmin, 46px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+  user-select:none;
+}
+.token.miss {
+  border-color: rgba(255,82,82,0.55);
+  background: rgba(255,82,82,0.10);
+}
+.token.hit {
+  border-color: rgba(124,255,107,0.55);
+  background: rgba(124,255,107,0.10);
+}
+.token.color {
+  font-size: 0;
+}
+.token.color::after {
+  content:"";
+  width: 62%;
+  height: 62%;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.35);
+  background: var(--c, #00e5ff);
+  box-shadow: 0 0 22px rgba(0,0,0,0.35);
+}
+#prompt {
+  text-align:center;
+  font-weight: 1000;
+  letter-spacing: 0.3px;
+  color: rgba(255,255,255,0.82);
+}
+#choices {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  flex: 1 1 auto;
+  align-content: start;
+}
+.choice {
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.07);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  display:flex; align-items:center; justify-content:center;
+  user-select:none;
+  -webkit-tap-highlight-color: transparent;
+  cursor:pointer;
+  min-height: 88px;
+}
+.choice:active{ transform: scale(0.985); }
+.choice .token{ pointer-events:none; }
+#banner {
+  text-align:center;
+  font-weight: 1000;
+  letter-spacing: 0.3px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.22);
+  border-radius: 16px;
+  padding: 14px 10px;
+  min-height: 108px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+}
+#bannerText{
+  font-size: clamp(18px, 3.2vmin, 32px);
+  line-height: 1.05;
+}
+#tally{
+  font-size: clamp(13px, 2.2vmin, 18px);
+  color: rgba(255,255,255,0.78);
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="left">
+      <div class="pill" id="statusPill">Ready</div>
+    </div>
+    <div class="right">
+      <button class="ui-btn" id="nextBtn">Next</button>
+      <button class="ui-btn" id="menuBtn">MENU</button>
+    </div>
+  </div>
+
+  <div id="stage">
+    <div id="playWrap">
+      <div id="seq" aria-label="Pattern sequence"></div>
+      <div id="prompt">Pick what comes next.</div>
+      <div id="choices" aria-label="Choices"></div>
+      <div id="banner">
+        <div id="bannerText"></div>
+        <div id="tally">Right: 0 • Wrong: 0</div>
+      </div>
+    </div>
+  </div>
+
+  
+<div class="overlay" id="startOverlay">
+  <h1 class="splash-title">PATTERNS</h1>
+  <div class="menu-sub">Number patterns only — the rules use addition, subtraction, and sometimes alternating steps. Predict the next number.</div>
+
+  
+  <select id="diffSel" style="position:absolute; left:-9999px; top:-9999px;">
+    <option value="1" selected>1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
+  <select id="soundSel" style="position:absolute; left:-9999px; top:-9999px;">
+    <option value="on" selected>On</option>
+    <option value="off">Off</option>
+  </select>
+
+  <div class="pm-menu-wrap">
+    <div class="pm-card">
+      <div class="pm-section-title">DIFFICULTY</div>
+      <div class="pm-pill-row" id="diffBtns">
+        <button class="pm-pill" type="button" data-d="1">1</button>
+        <button class="pm-pill" type="button" data-d="2">2</button>
+        <button class="pm-pill" type="button" data-d="3">3</button>
+        <button class="pm-pill" type="button" data-d="4">4</button>
+        <button class="pm-pill" type="button" data-d="5">5</button>
+      </div>
+      <div class="small-note" style="margin-top:10px;">1 = gentle, 5 = brutal.</div>
+    </div>
+
+    <div class="pm-card">
+      <div class="pm-section-title">SOUND</div>
+      <div class="pm-pill-row" id="soundBtns">
+        <button class="pm-pill" type="button" data-s="on">On</button>
+        <button class="pm-pill" type="button" data-s="off">Off</button>
+      </div>
+    </div>
+
+    <button class="btn-large-opt" id="startBtn">START</button>
+    <div class="small-note">Tip: if you get one wrong, you jump to a new puzzle (no free retries).</div>
+  </div>
+</div>
+
+
+<div class="overlay hidden" id="menuOverlay">
+  <h1 class="splash-title">MENU</h1>
+  <div class="menu-sub">Paused.</div>
+  <div class="pm-menu-wrap" style="max-width:420px;">
+    <button class="btn-large-opt" id="resumeBtn">RESUME</button>
+    <button class="btn-large-opt" id="restartBtn">RESTART</button>
+    <button class="btn-large-opt" style="background:#444" id="backBtn">BACK TO ARCADE</button>
+  </div>
+</div>
+
+
+<div class="overlay hidden" id="explainOverlay">
+  <h1 class="splash-title" style="color: var(--danger); text-shadow: 0 0 18px rgba(255,82,82,0.35);">NOT QUITE!</h1>
+  <div class="menu-sub" id="explainTop" style="font-size:16px; max-width:680px;"></div>
+
+  <div class="pm-menu-wrap" style="max-width:720px;">
+    <div class="pm-card">
+      <div class="pm-section-title">THE PATTERN</div>
+      <div id="explainSeq" style="font-weight:1000; font-size: clamp(18px, 3.2vmin, 28px); text-align:center; line-height:1.15;"></div>
+      <div class="hr"></div>
+      <div class="pm-section-title">RULE</div>
+      <div id="explainRule" style="font-weight:900; font-size: clamp(16px, 2.8vmin, 22px); text-align:center; color: rgba(255,255,255,0.88); line-height:1.2;"></div>
+      <div class="hr"></div>
+      <div id="explainBottom" style="text-align:center; font-weight:1000; font-size: clamp(18px, 3.0vmin, 26px);"></div>
+    </div>
+
+    <button class="btn-large-opt" id="explainContinueBtn">NEXT PUZZLE</button>
+  </div>
+</div>
+
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const seqEl = $("seq");
+  const choicesEl = $("choices");
+  const bannerTextEl = $("bannerText");
+  const tallyEl = $("tally");
+  const statusPill = $("statusPill");
+
+  const startOverlay = $("startOverlay");
+  const menuOverlay  = $("menuOverlay");
+
+  const diffSel = $("diffSel");
+  const soundSel = $("soundSel");
+
+  const startBtn = $("startBtn");
+  const nextBtn  = $("nextBtn");
+  const menuBtn  = $("menuBtn");
+  const resumeBtn = $("resumeBtn");
+  const restartBtn = $("restartBtn");
+  const backBtn = $("backBtn");
+
+  let state = null;
+  let rightCount = 0;
+  let wrongCount = 0;
+
+  function setBanner(msg){
+    if(!bannerTextEl) return;
+    bannerTextEl.textContent = msg || "";
+  }
+  function updateTally(){
+    if(!tallyEl) return;
+    tallyEl.textContent = `Right: ${rightCount} • Wrong: ${wrongCount}`;
+  }
+
+  const COLORS = [
+    {name:"Red",   hex:"#ff5252"},
+    {name:"Gold",  hex:"#ffd700"},
+    {name:"Cyan",  hex:"#00e5ff"},
+    {name:"Green", hex:"#7CFF6B"},
+    {name:"Purple",hex:"#E040FB"},
+    {name:"Blue",  hex:"#4da3ff"},
+    {name:"Orange",hex:"#ff9f1a"},
+  ];
+
+  function setStatus(t){ statusPill.textContent = t; }
+
+  function showOverlay(el, show){ el.classList.toggle("hidden", !show); }
+
+function bindPress(el, fn){
+  if(!el) return;
+  el.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); fn(e); }, {passive:false});
+  el.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); fn(e); });
+}
+
+
+
+function showExplain(p, guess){
+  if(!explainOverlay) return;
+  const g = (guess===null || guess===undefined) ? "—" : String(guess);
+  const ans = (p && p.answer!=null) ? String(p.answer) : "—";
+  const seqStr = (p && Array.isArray(p.seq)) ? p.seq.map(x=>String(x)).join(", ") : "";
+
+  if(explainTop) explainTop.textContent = `You picked ${g}. The correct next number was ${ans}.`;
+  if(explainSeq) explainSeq.textContent = seqStr + " , …";
+  if(explainRule) explainRule.textContent = (p && p.explain) ? p.explain : "Rule unavailable (but the answer above is correct).";
+  if(explainBottom) explainBottom.textContent = `Next term: ${ans}`;
+
+  showOverlay(explainOverlay, true);
+}
+
+
+function syncStartUI(){
+  const level = parseInt(diffSel.value,10) || 1;
+  const sound = (soundSel.value === "on") ? "on" : "off";
+
+  document.querySelectorAll('#diffBtns .pm-pill').forEach(b=>{
+    b.classList.toggle('sel', parseInt(b.getAttribute('data-d'),10) === level);
+  });
+  document.querySelectorAll('#soundBtns .pm-pill').forEach(b=>{
+    b.classList.toggle('sel', b.getAttribute('data-s') === sound);
+  });
+}
+
+function setLevel(lv){
+  const v = String(Math.min(5, Math.max(1, lv|0)));
+  diffSel.value = v;
+  syncStartUI();
+}
+
+function setSound(v){
+  soundSel.value = (v === "off") ? "off" : "on";
+  syncStartUI();
+}
+
+  function beep(freq=520, dur=0.06, vol=0.02){
+    if(!state || !state.sound) return;
+    try {
+      const ctx = state.audio || (state.audio = new (window.AudioContext||window.webkitAudioContext)());
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type="sine"; o.frequency.value=freq;
+      g.gain.value=vol;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime+dur);
+    } catch(e){}
+  }
+
+  function randInt(a,b){ return a + ((Math.random()*(b-a+1))|0); }
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--) {
+      const j = (Math.random()*(i+1))|0;
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function makeToken(val, kind){
+    const t = document.createElement("div");
+    t.className = "token";
+    if(kind === "color") {
+      t.classList.add("color");
+      t.style.setProperty("--c", val.hex);
+      t.setAttribute("aria-label", val.name);
+    } else {
+      t.textContent = String(val);
+      t.setAttribute("aria-label", String(val));
+    }
+    return t;
+  }
+
+  
+
+function genPattern(level){
+  const lenRanges = {
+    1: [5,6],
+    2: [6,7],
+    3: [7,9],
+    4: [8,10],
+    5: [9,12]
+  };
+  const [minL,maxL] = lenRanges[level] || [6,8];
+  const L = randInt(minL, maxL);
+
+  
+  
+  const pool = [];
+  const add = (name, w) => pool.push({name, w});
+
+  
+  add("arith", 0.7);          
+  add("incInc", 1.2);         
+  add("stepRun", 1.2);        
+  add("altInc", (level>=2)?1.1:0.4); 
+
+  if(level >= 2){
+    add("cycle3", 0.9);
+    add("altStep", 0.8);      
+    add("geo", 0.7);          
+  }
+  if(level >= 3){
+    add("deltaPoly", 1.0);    
+    add("opCycle", 0.7);      
+  }
+  if(level >= 4){
+    add("interleave", 0.9);
+    add("mulAdd", 0.8);
+    add("squares", 0.7);      
+  }
+  if(level >= 5){
+    add("recurrence", 0.9);
+  }
+
+  
+  const total = pool.reduce((s,p)=>s+p.w,0);
+  let r = Math.random()*total;
+  let chosen = pool[0].name;
+  for(const p of pool){
+    r -= p.w;
+    if(r <= 0){ chosen = p.name; break; }
+  }
+
+  return genNumbers(L, chosen, level);
+}
+
+
+function genNumbers(L, chosen, level){
+  const MAX = (level <= 2) ? 60 : (level === 3 ? 90 : 140);
+  const MIN = 0;
+
+  const clampOk = (n) => (n >= MIN && n <= MAX);
+
+  const makeDistractors = (correct, candidates=[]) => {
+    const d = [];
+    const used = new Set([correct]);
+    for(const c of candidates){
+      if(c === correct) continue;
+      if(!Number.isFinite(c)) continue;
+      if(c < MIN) continue;
+      if(used.has(c)) continue;
+      used.add(c);
+      d.push(c);
+      if(d.length >= 6) break;
+    }
+    return d;
+  };
+
+  const fmtStep = (n) => (n >= 0 ? `+${n}` : `${n}`);
+
+  
+  if(chosen === "arith"){
+    let step = randInt(1, Math.min(9, level*2+1));
+    if(Math.random() < 0.35) step *= -1;
+
+    
+    let start = randInt(5, 25);
+    if(step < 0){
+      const drop = (L-1) * (-step);
+      start = randInt(Math.min(MAX, drop + 12), MAX);
+    }
+
+    const seq = [];
+    for(let i=0;i<L;i++){
+      const v = start + step*i;
+      if(!clampOk(v)) return genNumbers(L, "stepRun", Math.max(level,2));
+      seq.push(v);
+    }
+    const answer = start + step*L;
+
+    const candidates = [
+      seq[L-1] - step,
+      seq[L-1] + (step>0? step+1 : step-1),
+      seq[L-1] + (step>0? step-1 : step+1),
+      seq[L-1] + (step*2),
+      answer + 1,
+      answer - 1
+    ];
+
+    const explain = `Add ${Math.abs(step)} each time (${step<0?"down":"up"} by ${Math.abs(step)}).`;
+    return {seq, answer, kind:"numbers", level, family:"arith", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "stepRun"){
+    const sgn = (Math.random() < 0.45 && level >= 2) ? -1 : 1;
+    let inc0 = randInt(1, Math.min(7, 2 + level*2));
+    let d = randInt(1, Math.min(5, 1 + level));
+
+    if(level >= 3 && Math.random() < 0.25){
+      inc0 = randInt(1,3)*2;
+      d = randInt(1,3)*2;
+    }
+
+    let start = randInt(5, 25);
+    if(sgn < 0){
+      const totalDrop = (L*inc0) + (d*(L-1)*L/2);
+      start = randInt(Math.min(MAX, Math.max(20, totalDrop + 8)), MAX);
+    }
+
+    const seq = [start];
+    const steps = [];
+    for(let i=0;i<L-1;i++){
+      const inc = sgn*(inc0 + i*d);
+      steps.push(inc);
+      const next = seq[seq.length-1] + inc;
+      if(!clampOk(next)) return genNumbers(L, "deltaPoly", Math.max(level,3));
+      seq.push(next);
+    }
+
+    const incNext = sgn*(inc0 + (L-1)*d);
+    const answer = seq[L-1] + incNext;
+
+    const candidates = [
+      seq[L-1] + sgn*(inc0 + (L-2)*d),
+      seq[L-1] + sgn*(inc0 + (L)*d),
+      seq[L-1] - incNext,
+      answer + (sgn*1),
+      answer - (sgn*1),
+      seq[L-1] + sgn*inc0
+    ];
+
+    const preview = steps.slice(0, Math.min(6, steps.length)).map(fmtStep).join(", ");
+    const explain = `The steps change each time: ${preview}${steps.length>6?", …":""}. Next step is ${fmtStep(incNext)}.`;
+    return {seq, answer, kind:"numbers", level, family:"stepRun", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "altInc"){
+    let a = randInt(1, Math.min(7, 2+level*2));
+    let b = randInt(1, Math.min(7, 2+level*2));
+    if(a === b) b = (b % 7) + 1;
+    const drift = (level <= 2) ? 1 : randInt(1, Math.min(3, level-1));
+    const mode = (level >= 3 && Math.random() < 0.35) ? "plusMinus" : "plusPlus";
+
+    let start = randInt(6, 24);
+    const seq = [start];
+    const steps = [];
+    for(let i=1;i<L;i++){
+      const pairIdx = Math.floor((i-1)/2);
+      const base = (i%2===1) ? a : b;
+      const inc = base + pairIdx*drift;
+      const signedInc = (mode==="plusMinus" && i%2===0) ? -inc : inc;
+      steps.push(signedInc);
+      const next = seq[i-1] + signedInc;
+      if(!clampOk(next)) return genNumbers(L, "stepRun", Math.max(level,2));
+      seq.push(next);
+    }
+
+    const pairIdx = Math.floor((L-1)/2);
+    const base = (L%2===1) ? a : b;
+    const inc = base + pairIdx*drift;
+    const signedInc = (mode==="plusMinus" && L%2===0) ? -inc : inc;
+    const answer = seq[L-1] + signedInc;
+
+    const candidates = [
+      seq[L-1] + inc,
+      seq[L-1] - inc,
+      seq[L-1] + signedInc + drift,
+      seq[L-1] + signedInc - drift,
+      answer + 2,
+      answer - 2
+    ];
+
+    const explain = `Alternate steps that drift: ${steps.slice(0,6).map(fmtStep).join(", ")}${steps.length>6?", …":""}. Next step is ${fmtStep(signedInc)}.`;
+    return {seq, answer, kind:"numbers", level, family:"altInc", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "geo"){
+    const r = (Math.random() < 0.75) ? 2 : 3;
+    const c = randInt(-6, Math.min(10, 2+level*3));
+    let start = randInt(1, (r===2)?10:6);
+
+    const seq = [start];
+    for(let i=1;i<L;i++){
+      const next = seq[i-1]*r + c;
+      if(!clampOk(next)) return genNumbers(L, "incInc", Math.max(level,3));
+      seq.push(next);
+    }
+    const answer = seq[L-1]*r + c;
+
+    const candidates = [
+      seq[L-1]*r - c,
+      seq[L-1] + c,
+      seq[L-1]*(r===2?3:2) + c,
+      answer + r,
+      answer - r
+    ];
+
+    const explain = `Each time: (previous × ${r}) ${c>=0?`+ ${c}`:`− ${Math.abs(c)}`}.`;
+    return {seq, answer, kind:"numbers", level, family:"geo", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "deltaPoly"){
+    const ddChoices = (level <= 2) ? [1] : [-2,-1,1,2];
+    let dd = ddChoices[randInt(0, ddChoices.length-1)];
+    let diff = randInt(1, Math.min(9, 2+level*2));
+    let start = (dd < 0) ? randInt(18, 35) : randInt(2, 18);
+
+    const seq = [start];
+    const diffs = [];
+    for(let i=1;i<L;i++){
+      const next = seq[i-1] + diff;
+      diffs.push(diff);
+      if(!clampOk(next)) return genNumbers(L, "interleave", Math.max(level,4));
+      seq.push(next);
+      diff += dd;
+      if(level >= 3 && Math.abs(diff) <= 1 && Math.random() < 0.35) diff += dd;
+    }
+    const answer = seq[L-1] + diff;
+
+    const candidates = [
+      seq[L-1] + (diff - dd),
+      seq[L-1] + (diff + dd),
+      seq[L-1] + diff + 1,
+      seq[L-1] + diff - 1,
+      answer + 3,
+      answer - 3
+    ];
+
+    const preview = diffs.slice(0,6).map(fmtStep).join(", ");
+    const explain = `The increments themselves change by ${dd>=0?`+${dd}`:`${dd}`}: steps ${preview}${diffs.length>6?", …":""}. Next step is ${fmtStep(diff)}.`;
+    return {seq, answer, kind:"numbers", level, family:"deltaPoly", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "opCycle"){
+    const a = randInt(1, Math.min(9, 2+level*2));
+    const b = randInt(1, Math.min(9, 2+level*2));
+    let start = randInt(2, 14);
+    const ops = [
+      {name:`+${a}`, fn:(x)=>x+a},
+      {name:`×2`, fn:(x)=>x*2},
+      {name:`-${b}`, fn:(x)=>x-b}
+    ];
+
+    const seq = [start];
+    for(let i=1;i<L;i++){
+      const op = ops[(i-1)%3];
+      const next = op.fn(seq[i-1]);
+      if(!clampOk(next)) return genNumbers(L, "mulAdd", Math.max(level,4));
+      seq.push(next);
+    }
+    const opNext = ops[(L-1)%3];
+    const answer = opNext.fn(seq[L-1]);
+
+    const candidates = [
+      ops[(L)%3].fn(seq[L-1]),
+      ops[(L-2+3)%3].fn(seq[L-1]),
+      answer + a,
+      answer - b,
+      answer + 2,
+      answer - 2
+    ];
+
+    const explain = `Repeat a 3-step rule: ${ops.map(o=>o.name).join(", ")}. Next step is ${opNext.name}.`;
+    return {seq, answer, kind:"numbers", level, family:"opCycle", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "squares"){
+    const scale = (level <= 3) ? 1 : randInt(1, 3);
+    const offset = randInt(0, 12);
+    const n0 = randInt(1, 3);
+
+    const seq = [];
+    for(let i=0;i<L;i++){
+      const n = n0 + i;
+      const v = offset + scale*(n*n);
+      if(!clampOk(v)) return genNumbers(L, "deltaPoly", Math.max(level,3));
+      seq.push(v);
+    }
+    const nNext = n0 + L;
+    const answer = offset + scale*(nNext*nNext);
+
+    const candidates = [
+      offset + scale*((n0+L-1)*(n0+L-1)),
+      offset + scale*((n0+L+1)*(n0+L+1)),
+      answer + scale*2,
+      answer - scale*2,
+      answer + 1,
+      answer - 1
+    ];
+
+    const explain = `Square numbers${scale!==1?` × ${scale}`:""}${offset?` then + ${offset}`:""} (n² pattern).`;
+    return {seq, answer, kind:"numbers", level, family:"squares", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "altStep"){
+    let a = randInt(1, Math.min(9, 2+level*2));
+    let b = randInt(1, Math.min(9, 2+level*2));
+    if(a === b) b = Math.max(1, (b % 9) + 1);
+
+    const mode = (level <= 2)
+      ? (Math.random() < 0.25 ? "plusMinus" : "plusPlus")
+      : (Math.random() < 0.40 ? "plusMinus" : "plusPlus");
+
+    const seq = [randInt(5, 25)];
+    const steps = [];
+    for(let i=1;i<L;i++){
+      const add = (i%2===1) ? a : b;
+      const inc = (mode === "plusMinus" && i%2===0) ? -add : add;
+      steps.push(inc);
+      const next = seq[i-1] + inc;
+      if(!clampOk(next)) return genNumbers(L, "arith", level);
+      seq.push(next);
+    }
+
+    const nextStep = ((L)%2===1) ? a : b;
+    const incNext = (mode === "plusMinus" && (L%2===0)) ? -nextStep : nextStep;
+    const answer = seq[L-1] + incNext;
+
+    const candidates = [
+      seq[L-1] + nextStep,
+      seq[L-1] - nextStep,
+      seq[L-1] + a,
+      seq[L-1] + b,
+      seq[L-1] + (a+b),
+      seq[L-1] - (a+b)
+    ];
+
+    const explain = `Repeat two steps: ${steps.slice(0,4).map(fmtStep).join(", ")}${mode==="plusMinus"?" (alternating +/−).":""} Next step is ${fmtStep(incNext)}.`;
+    return {seq, answer, kind:"numbers", level, family:"altStep", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "incInc"){
+    let p = randInt(1, Math.min(6, level+2));
+    let q = randInt(1, Math.min(4, level));
+    const start = randInt(1, 18);
+
+    const seq = [start];
+    const diffs = [];
+    let inc = p;
+    for(let i=1;i<L;i++){
+      diffs.push(inc);
+      const next = seq[i-1] + inc;
+      if(!clampOk(next)) return genNumbers(L, "cycle3", Math.max(level,3));
+      seq.push(next);
+      inc += q;
+    }
+    const answer = seq[L-1] + inc;
+
+    const candidates = [
+      seq[L-1] + (inc-q),
+      seq[L-1] + (inc+q),
+      seq[L-1] + p,
+      seq[L-1] + (p+q),
+      seq[L-1] + (inc - 1),
+      seq[L-1] + (inc + 1),
+    ];
+
+    const explain = `Add numbers that grow by ${q}: ${diffs.slice(0,6).map(fmtStep).join(", ")}${diffs.length>6?", …":""}. Next add ${inc}.`;
+    return {seq, answer, kind:"numbers", level, family:"incInc", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "cycle3"){
+    let a = randInt(1, Math.min(9, 2+level*2));
+    let b = randInt(1, Math.min(9, 2+level*2));
+    let c = randInt(1, Math.min(9, 2+level*2));
+    const steps = [a,b,c];
+    if(level >= 3 && Math.random() < 0.30){
+      steps[randInt(0,2)] *= -1;
+    }
+
+    const start = randInt(8, 28);
+    const seq = [start];
+    for(let i=1;i<L;i++){
+      const st = steps[(i-1) % 3];
+      const next = seq[i-1] + st;
+      if(!clampOk(next)) return genNumbers(L, "altStep", Math.max(level,2));
+      seq.push(next);
+    }
+    const nextStep = steps[(L-1)%3];
+    const answer = seq[L-1] + nextStep;
+
+    const candidates = [
+      seq[L-1] + steps[(L)%3],
+      seq[L-1] + steps[(L-2+3)%3],
+      seq[L-1] + (nextStep + 1),
+      seq[L-1] + (nextStep - 1),
+      seq[L-1] - nextStep,
+    ];
+
+    const explain = `Cycle the same 3 steps: ${steps.map(fmtStep).join(", ")}. Next step is ${fmtStep(nextStep)}.`;
+    return {seq, answer, kind:"numbers", level, family:"cycle3", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "interleave"){
+    const start1 = randInt(2, 14);
+    const start2 = randInt(10, 26);
+    let step1 = randInt(1, Math.min(8, 2+level*2));
+    let step2 = randInt(1, Math.min(8, 2+level*2));
+    if(Math.random() < 0.35) step2 *= -1;
+
+    const seq = [];
+    let a0 = start1, b0 = start2;
+    for(let i=0;i<L;i++){
+      if(i%2===0){
+        const v = a0;
+        if(!clampOk(v)) return genNumbers(L, "arith", level);
+        seq.push(v);
+        a0 += step1;
+      } else {
+        const v = b0;
+        if(!clampOk(v)) return genNumbers(L, "altStep", level);
+        seq.push(v);
+        b0 += step2;
+      }
+    }
+    const answer = (L%2===0) ? a0 : b0;
+
+    const candidates = [
+      seq[L-1] + step1,
+      seq[L-1] + step2,
+      (L%2===0) ? (seq[L-2] + step1) : (seq[L-2] + step2),
+      answer + 1,
+      answer - 1
+    ];
+
+    const explain = `Two sequences interleaved: positions 1,3,5… go ${fmtStep(step1)}; positions 2,4,6… go ${fmtStep(step2)}.`;
+    return {seq, answer, kind:"numbers", level, family:"interleave", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  if(chosen === "mulAdd"){
+    const start = randInt(2, 9);
+    let c1 = randInt(1, Math.min(9, 2+level*2));
+    let c2 = randInt(1, Math.min(9, 2+level*2));
+    const sign1 = (Math.random() < 0.50) ? 1 : -1;
+    const sign2 = (Math.random() < 0.50) ? 1 : -1;
+
+    const seq = [start];
+    for(let i=1;i<L;i++){
+      const prev = seq[i-1];
+      const isOdd = (i%2===1);
+      const c = isOdd ? c1 : c2;
+      const sg = isOdd ? sign1 : sign2;
+      const next = prev*2 + sg*c;
+      if(!clampOk(next)) return genNumbers(L, "incInc", Math.max(level,3));
+      seq.push(next);
+    }
+
+    const last = seq[L-1];
+    const isOdd = (L%2===1);
+    const c = isOdd ? c1 : c2;
+    const sg = isOdd ? sign1 : sign2;
+    const answer = last*2 + sg*c;
+
+    const candidates = [
+      last*2 - sg*c,
+      last*2 + sg*(c+1),
+      last + sg*c,
+      last*2 + sg*(isOdd?c2:c1),
+      answer + 2,
+      answer - 2
+    ];
+
+    const explain = `Alternate: ×2 ${sign1>0?`+ ${c1}`:`− ${c1}`} then ×2 ${sign2>0?`+ ${c2}`:`− ${c2}`}, repeating.`;
+    return {seq, answer, kind:"numbers", level, family:"mulAdd", explain, distractors: makeDistractors(answer, candidates)};
+  }
+
+  
+  {
+    const a = randInt(1, 8);
+    const b = randInt(2, 12);
+    const k = randInt(-2, 3);
+    const seq = [a,b];
+    for(let i=2;i<L;i++){
+      const next = seq[i-1] + seq[i-2] + k;
+      if(!clampOk(next)) return genNumbers(L, "mulAdd", Math.max(level,4));
+      seq.push(next);
+    }
+    const answer = seq[L-1] + seq[L-2] + k;
+
+    const candidates = [
+      seq[L-1] + seq[L-2],
+      seq[L-1] + seq[L-2] + (k+1),
+      seq[L-1] + seq[L-2] + (k-1),
+      seq[L-1] + (seq[L-1] + k),
+      seq[L-1] + seq[L-2] - k
+    ];
+
+    const explain = `Each term = previous + one before it ${k===0?"":" " + (k>0?`+ ${k}`:`− ${Math.abs(k)}`)}.`;
+    return {seq, answer, kind:"numbers", level, family:"recurrence", explain, distractors: makeDistractors(answer, candidates)};
+  }
+}
+
+
+function buildChoices(p){
+  const correct = p.answer;
+  const options = [correct];
+
+  
+  const used = new Set([correct]);
+  if(p && Array.isArray(p.distractors)){
+    for(const d of p.distractors){
+      if(options.length >= 4) break;
+      if(!Number.isFinite(d)) continue;
+      if(used.has(d)) continue;
+      used.add(d);
+      options.push(d);
+    }
+  }
+
+  
+  const spread = (p.level <= 2) ? 12 : (p.level === 3 ? 18 : 28);
+  while(options.length < 4){
+    const c = correct + randInt(-spread, spread);
+    if(c < 0) continue;
+    if(used.has(c)) continue;
+    used.add(c);
+    options.push(c);
+  }
+  shuffle(options);
+  return options;
+}
+
+
+
+function renderPuzzle(p){
+    seqEl.innerHTML = "";
+    p.seq.forEach(v => {
+      seqEl.appendChild(makeToken(v, p.kind === "colors" ? "color" : "text"));
+      if(p.kind === "colors") {
+        seqEl.lastChild.classList.add("color");
+        seqEl.lastChild.style.setProperty("--c", v.hex);
+      }
+    });
+
+    choicesEl.innerHTML = "";
+    const opts = buildChoices(p);
+
+    opts.forEach(v => {
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.type = "button";
+
+      const tok = makeToken(v, p.kind === "colors" ? "color" : "text");
+      if(p.kind === "colors") {
+        tok.classList.add("color");
+        tok.style.setProperty("--c", v.hex);
+      }
+      btn.appendChild(tok);
+
+      btn.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        choose(v, p);
+      }, {passive:false});
+
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function equal(a,b, kind){
+    if(kind === "colors") return a.name === b.name;
+    return a === b;
+  }
+
+  function choose(val, p){
+    const correct = equal(val, p.answer, p.kind);
+    
+    Array.from(seqEl.children).forEach(el => el.classList.remove("hit","miss"));
+
+    if(correct) {
+      rightCount++;
+      setBanner("✅ Nice!");
+      beep(820, 0.08, 0.02);
+      updateTally();
+      setTimeout(()=>{ newPuzzle(); }, 550);
+    } else {
+      wrongCount++;
+      setBanner("❌ Oops!");
+      beep(220, 0.08, 0.02);
+      updateTally();
+      
+      showExplain(p, val);
+    }
+  }
+
+  function newPuzzle(){
+    const level = parseInt(diffSel.value,10);
+    state.level = level;
+    state.sound = (soundSel.value === "on");
+    const p = genPattern(level);
+    state.puzzle = p;
+    setBanner("");
+    setStatus(`Level ${level} — Numbers`);
+    renderPuzzle(p);
+  }
+
+  function start(){
+    state = {
+      level: parseInt(diffSel.value,10),
+      sound: (soundSel.value === "on"),
+      audio: null,
+      puzzle: null
+    };
+    rightCount = 0;
+    wrongCount = 0;
+    updateTally();
+    setBanner("");
+    showOverlay(startOverlay, false);
+    showOverlay(menuOverlay, false);
+    if(explainOverlay) showOverlay(explainOverlay, false);
+    newPuzzle();
+  }
+
+
+
+document.querySelectorAll('#diffBtns .pm-pill').forEach(btn=>{
+  const fn = (e)=>{ if(e){ e.preventDefault(); e.stopPropagation(); } setLevel(parseInt(btn.getAttribute('data-d'),10) || 1); };
+  btn.addEventListener('pointerdown', fn, {passive:false});
+  btn.addEventListener('click', fn);
+});
+document.querySelectorAll('#soundBtns .pm-pill').forEach(btn=>{
+  const fn = (e)=>{ if(e){ e.preventDefault(); e.stopPropagation(); } setSound(btn.getAttribute('data-s') || 'on'); };
+  btn.addEventListener('pointerdown', fn, {passive:false});
+  btn.addEventListener('click', fn);
+});
+syncStartUI();
+
+  bindPress(startBtn, () => start());
+  bindPress(nextBtn, () => {
+    if(!state) return;
+    newPuzzle();
+  });
+  bindPress(menuBtn, () => {
+    if(startOverlay && !startOverlay.classList.contains("hidden")) return;
+    showOverlay(menuOverlay, true);
+  });
+  bindPress(resumeBtn, () => showOverlay(menuOverlay, false));
+  bindPress(restartBtn, () => {
+    showOverlay(menuOverlay, false);
+    showOverlay(startOverlay, true);
+    if(explainOverlay) showOverlay(explainOverlay, false);
+    state = null;
+    setStatus("Ready");
+    seqEl.innerHTML=""; choicesEl.innerHTML=""; setBanner("");
+    rightCount = 0; wrongCount = 0; updateTally();
+  });
+  bindPress(backBtn, () => window.location.href="index.html");
+
+  bindPress(explainContinueBtn, () => {
+    showOverlay(explainOverlay, false);
+    if(!state) return;
+    newPuzzle();
+  });
+
+  setStatus("Ready");
+})();
+</script>
+</body>
+</html>

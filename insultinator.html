@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Arcade — Insultinator (Kid Edition)</title>
+  <style>
+    :root{
+      --bg:#0b0f18;
+      --text:#e9f1ff;
+      --muted:#a9b6d1;
+      --line:rgba(255,255,255,.12);
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --r: 18px;
+
+      --accentA:#7cf7ff;
+      --accentB:#b48cff;
+      --accentC:#78ffb6;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,247,255,.12), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(180,140,255,.12), transparent 55%),
+        linear-gradient(180deg, #070b12 0%, var(--bg) 60%, #070b12 100%);
+      overflow-x:hidden;
+    }
+    .wrap{max-width:1050px;margin:0 auto;padding:18px 16px 52px}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:14px 16px; border:1px solid var(--line);
+      border-radius: var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      box-shadow: var(--shadow);
+      position:sticky; top:10px; z-index:10;
+      backdrop-filter: blur(10px);
+    }
+    .brand{display:flex; align-items:center; gap:12px; min-width:220px}
+    .logo{
+      width:42px;height:42px;border-radius:14px;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(124,247,255,.95), rgba(124,247,255,.25)),
+        radial-gradient(18px 18px at 70% 70%, rgba(180,140,255,.95), rgba(180,140,255,.25)),
+        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow: 0 10px 35px rgba(0,0,0,.35);
+    }
+    h1{font-size:16px;margin:0;letter-spacing:.2px}
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,.16);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      color:var(--text);
+      padding:10px 12px; border-radius:14px;
+      cursor:pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,.30);
+      user-select:none;
+      transition: transform .05s ease, border-color .15s ease, background .15s ease, filter .15s ease;
+      font-weight:950;
+      letter-spacing:.2px;
+    }
+    .btn:hover{border-color: rgba(124,247,255,.40)}
+    .btn:active{transform: translateY(1px) scale(.99)}
+    .btn.warn{
+      border-color: rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
+      box-shadow:none;
+      font-weight:900;
+    }
+    .btn.good{
+      border-color: rgba(180,140,255,.45);
+      background: linear-gradient(180deg, rgba(180,140,255,.18), rgba(180,140,255,.06));
+    }
+
+    
+    .btn.generate{
+      padding:12px 16px;
+      border-color: rgba(124,247,255,.60);
+      background:
+        radial-gradient(160px 80px at 25% 30%, rgba(124,247,255,.35), transparent 60%),
+        radial-gradient(160px 80px at 75% 70%, rgba(180,140,255,.30), transparent 60%),
+        linear-gradient(180deg, rgba(124,247,255,.22), rgba(124,247,255,.07));
+      box-shadow:
+        0 16px 44px rgba(0,0,0,.45),
+        0 0 0 1px rgba(124,247,255,.15) inset,
+        0 0 24px rgba(124,247,255,.10);
+      position:relative;
+      transform: translateZ(0);
+      font-size:14px;
+    }
+    .btn.generate:before{
+      content:"";
+      position:absolute; inset:-2px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(124,247,255,.35), rgba(180,140,255,.28), rgba(120,255,182,.20));
+      filter: blur(12px);
+      opacity:.55;
+      z-index:-1;
+    }
+    .btn.generate .spark{display:inline-block;margin-right:6px}
+
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.16);
+      color:var(--muted); font-size:12px;
+    }
+    .main{margin-top:16px; display:grid; grid-template-columns: 1fr; gap:14px}
+    .card{
+      border-radius: var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      display:flex; justify-content:space-between; align-items:flex-end;
+      gap:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    }
+    .card .hd .t{font-weight:950; letter-spacing:.2px}
+    .card .hd .d{font-size:12px; color:var(--muted); margin-top:3px}
+    .card .bd{padding:14px}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input[type="range"]{width:100%}
+    .mini{font-size:12px;color:var(--muted);line-height:1.25}
+    .bigbox{
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.16);
+      background: radial-gradient(800px 240px at 20% 0%, rgba(124,247,255,.10), transparent 55%),
+                  radial-gradient(800px 240px at 80% 0%, rgba(180,140,255,.10), transparent 55%),
+                  rgba(0,0,0,.16);
+      padding:16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+    }
+    .insult{
+      font-size:30px;
+      line-height:1.12;
+      letter-spacing:.2px;
+      font-weight:950;
+      margin:0;
+      text-shadow: 0 10px 40px rgba(0,0,0,.55);
+      word-break: break-word;
+    }
+    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .split{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .split .btn{flex:1 1 auto}
+    .hr{height:1px;background:var(--line);margin:14px 0}
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 18px;
+      padding:10px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.75);
+      border:1px solid rgba(255,255,255,.18);
+      color:var(--text);
+      box-shadow: 0 10px 40px rgba(0,0,0,.45);
+      font-size:13px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index:90;
+    }
+    .toast.show{opacity:1; transform: translateX(-50%) translateY(-2px)}
+
+    
+    .backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.82);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:80;
+    }
+    .backdrop.show{display:flex}
+    .sheet{
+      width:min(820px, 100%);
+      border-radius: 22px 22px 0 0;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(10,14,24,.97);
+      box-shadow: 0 24px 80px rgba(0,0,0,.65);
+      padding:14px 14px 18px;
+      backdrop-filter: blur(10px);
+    }
+    .sheetTop{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px;
+      padding:6px 2px 12px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+    }
+    .sheetTitle{font-weight:950}
+    .chipGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    @media (max-width: 520px){ .chipGrid{grid-template-columns:1fr} }
+    .chip{
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      border-radius: 18px;
+      padding:12px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .05s ease, border-color .15s ease, background .15s ease;
+    }
+    .chip:active{transform: translateY(1px)}
+    .chip:hover{border-color: rgba(124,247,255,.40)}
+    .chip .big{font-weight:950}
+    .chip .small{font-size:12px;color:var(--muted); margin-top:4px}
+    .nameRow{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .nameRow input{
+      flex:1 1 220px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.30);
+      color:var(--text);
+      padding:10px 12px;
+      outline:none;
+      font-size:15px;
+    }
+    .hint{color:var(--muted); font-size:12px; margin-top:8px; line-height:1.25}
+
+    
+    .list{
+      display:flex; flex-direction:column; gap:10px;
+      max-height:60vh; overflow:auto; padding-right:4px;
+      margin-top:12px;
+    }
+    .item{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding:10px 10px 10px 12px;
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    }
+    .item .txt{font-weight:950; line-height:1.2}
+    .item .subtxt{font-size:12px;color:var(--muted); margin-top:3px}
+    .item .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .tinybtn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.22);
+      color:var(--text);
+      padding:7px 9px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:950;
+      font-size:12px;
+    }
+    .tinybtn:hover{border-color: rgba(124,247,255,.35)}
+    .tinybtn:active{transform: translateY(1px)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Arcade — Insultinator</h1>
+          <div class="mini">Kid Edition</div>
+        </div>
+      </div>
+
+      <div class="row" style="justify-content:flex-end; flex:1">
+        <span class="pill">🔈 speech: <span id="speechOk">checking…</span></span>
+        <button class="btn warn" id="btnHistory">History</button>
+        <button class="btn warn" id="btnClear">Clear</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="card">
+        <div class="hd">
+          <div>
+            <div class="t">Make one</div>
+            <div class="d">Tap Target to set who it’s about.</div>
+          </div>
+          <div class="row">
+            <button class="btn warn" id="btnTarget">Target: <span id="targetLabel">You</span></button>
+            <button class="btn generate" id="btnGenerate"><span class="spark">✨</span>Generate</button>
+            <button class="btn good" id="btnSpeak">Speak</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="bigbox">
+            <p class="insult" id="insultText">Tap Generate.</p>
+            <div class="split">
+              <button class="btn" id="btnCopy">Copy</button>
+              <button class="btn" id="btnStar">Star</button>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="gap:14px">
+            <div style="flex:1 1 220px">
+              <label for="rate">Speed</label>
+              <input id="rate" type="range" min="0.7" max="1.4" step="0.05" value="1.05" />
+              <div class="mini"><span style="float:left">slow</span><span style="float:right">fast</span></div>
+            </div>
+            <div style="flex:1 1 220px">
+              <label for="pitch">Pitch</label>
+              <input id="pitch" type="range" min="0.6" max="1.6" step="0.05" value="1.1" />
+              <div class="mini"><span style="float:left">low</span><span style="float:right">high</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied.</div>
+
+  
+  <div class="backdrop" id="targetBackdrop" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Set target">
+      <div class="sheetTop">
+        <div>
+          <div class="sheetTitle">Set Target</div>
+          <div class="mini">Pick what kind of target it is.</div>
+        </div>
+        <button class="btn warn" id="btnCloseTarget">Done</button>
+      </div>
+
+      <div class="chipGrid" id="chipGrid"></div>
+
+      <div class="nameRow" id="nameRow" style="display:none">
+        <input id="nameInput" type="text" maxlength="40" placeholder="Type a name…" />
+        <button class="btn generate" id="btnSaveTarget"><span class="spark">✨</span>Save</button>
+      </div>
+
+      <div class="hint" id="targetHint">If you pick “You”, you don’t need a name.</div>
+    </div>
+  </div>
+
+  
+  <div class="backdrop" id="historyBackdrop" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="History">
+      <div class="sheetTop">
+        <div>
+          <div class="sheetTitle">History</div>
+          <div class="mini">Tap Speak or Copy. Star keeps it.</div>
+        </div>
+        <button class="btn warn" id="btnCloseHistory">Done</button>
+      </div>
+
+      <div class="list" id="historyList"></div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (sel) => document.querySelector(sel);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const now = () => Date.now();
+  const uid = () => Math.random().toString(16).slice(2) + "-" + now().toString(16);
+  const norm = (s) => (s || "").trim().replace(/\s+/g, " ");
+  const cap = (s) => s ? (s[0].toUpperCase() + s.slice(1)) : s;
+
+  const STORAGE_KEY = "arcade_insultinator_kid_v3";
+  const loadState = () => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }catch(e){ return {}; } };
+  const saveState = (st) => { try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(st)); }catch(e){} };
+
+  let state = loadState();
+  if (!state.history) state.history = [];
+  if (!state.stars) state.stars = {};
+  if (!state.settings) state.settings = {};
+  if (!state.target) state.target = { kind:"you", name:"" };
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  const WORDS = {
+    interj: ["Hey", "Whoa", "Wow", "Uh-oh", "Listen", "Okay", "Yikes", "Beep-boop"],
+    adj: ["goofy","silly","weird","wobbly","noisy","messy","wild","wonky","bouncy","sloppy","confusing","extra","sleepy","grumpy","squishy","tiny","gigantic"],
+    noun: ["banana","sock","robot","hamster","pickle","toaster","cupcake","penguin","turtle","pancake","bubble","pillow","spoon","pirate","snowman","taco","kite","jellyfish","marshmallow"],
+    verb: ["dance","wiggle","shuffle","bounce","stumble","spin","sneeze","zoom","bonk","trip","mumble","giggle","panic","hop","flip","clap","waddle"],
+    adv: ["slowly","loudly","quietly","backwards","sideways","super fast","for no reason","like a cartoon","like a baby penguin","like a tornado"]
+  };
+
+  const TARGET_KINDS = [
+    { id:"you", label:"You", desc:"(default)", needsName:false, number:"singular", person:"second" },
+    { id:"person", label:"Single person", desc:"One kid / one grownup", needsName:true, number:"singular", person:"third" },
+    { id:"animal", label:"Animal", desc:"One pet / one creature", needsName:true, number:"singular", person:"third" },
+    { id:"thing", label:"Thing", desc:"One object", needsName:true, number:"singular", person:"third" },
+    { id:"group", label:"Group of people", desc:"A team / a bunch", needsName:true, number:"plural", person:"third" }
+  ];
+
+  function targetLabel(t){
+    const k = TARGET_KINDS.find(x => x.id === t.kind) || TARGET_KINDS[0];
+    if (k.id === "you") return "You";
+    const name = norm(t.name);
+    return name ? name : k.label;
+  }
+
+  function getTargetGrammar(){
+    const kind = state.target?.kind || "you";
+    const name = norm(state.target?.name || "");
+    const k = TARGET_KINDS.find(x => x.id === kind) || TARGET_KINDS[0];
+
+    const subj = (k.id === "you") ? "you" : (name || "they");
+    const be = (k.id === "you") ? "are" : (k.number === "plural" ? "are" : "is");
+    const have = (k.id === "you") ? "have" : (k.number === "plural" ? "have" : "has");
+
+    return { kind:k.id, subj, be, have, number:k.number, person:k.person };
+  }
+
+  function articleFor(phrase){
+    const s = norm(phrase).toLowerCase();
+    if (!s) return "a";
+    const first = s[0];
+    return "aeiou".includes(first) ? "an" : "a";
+  }
+
+  function conjThirdSingular(base){
+    const v = base.toLowerCase();
+    if (/(s|x|z|ch|sh)$/.test(v)) return v + "es";
+    if (/[^aeiou]y$/.test(v)) return v.slice(0, -1) + "ies";
+    return v + "s";
+  }
+
+  function conjugateVerb(base, g){
+    if (g.person === "second" || g.number === "plural") return base;
+    return conjThirdSingular(base);
+  }
+
+  function adjectivePhrase(intensity){
+    const adj = pick(WORDS.adj);
+    if (intensity > 0.82 && Math.random() < 0.55) return "mega " + adj;
+    if (intensity > 0.70 && Math.random() < 0.70) return "super " + adj;
+    return adj;
+  }
+
+  function nounPhrase(noun, adjPhrase, g){
+    if (g.number === "plural") return `${adjPhrase} ${noun}`;
+    const art = articleFor(adjPhrase);
+    return `${art} ${adjPhrase} ${noun}`;
+  }
+
+  const PATTERNS = [
+    ({g, interj, v, adv, np}) => `${cap(interj)}! ${cap(g.subj)} ${conjugateVerb(v,g)} ${adv} like ${np}.`,
+    ({g, np}) => `${cap(g.subj)} ${g.be} ${np}.`,
+    ({g, np1, np2}) => `${cap(g.subj)} ${g.be} ${np1} and ${np2}.`,
+    ({g, v, adv}) => `${cap(g.subj)} ${conjugateVerb(v,g)} ${adv}. On purpose.`,
+    ({g, np}) => `Why ${g.be} ${g.subj} acting like ${np}?`,
+    ({g, np}) => `Please stop being ${np}.`,
+    ({g, np}) => `If ${g.subj} ${g.be} ${np}, that would explain everything.`,
+    ({g, np}) => `${cap(g.subj)} ${g.have} the brain of ${np}.`,
+    ({g, np}) => `Not to be mean, but ${g.subj} ${g.be} ${np}.`,
+    ({g, np}) => `I can't believe ${g.subj} just did that — ${np}.`,
+    ({g, v, adv}) => `${cap(g.subj)} ${conjugateVerb(v,g)} ${adv}. Wow.`,
+    ({g, np}) => `${cap(g.subj)} ${g.be} basically ${np}.`
+  ];
+
+  function makeInsult(){
+    const g = getTargetGrammar();
+    const intensity = Math.random();
+    const length = Math.random();
+
+    const interj = pick(WORDS.interj);
+    const v = pick(WORDS.verb);
+    const adv = pick(WORDS.adv);
+
+    const adj1 = adjectivePhrase(intensity);
+    const adj2 = adjectivePhrase(intensity);
+    const n1 = pick(WORDS.noun);
+    const n2 = pick(WORDS.noun);
+
+    const np1 = nounPhrase(n1, adj1, g);
+    const np2 = nounPhrase(n2, adj2, g);
+
+    const pool = (g.number === "plural")
+      ? PATTERNS.filter((_, i) => ![5,7].includes(i))
+      : PATTERNS;
+
+    // Weight toward longer-ish patterns when length is high
+    let pattern;
+    if (length > 0.75) pattern = pick(pool);
+    else pattern = pick(pool);
+
+    let text = pattern({ g, interj, v, adv, np: np1, np1, np2 });
+    text = norm(text)
+      .replace(/\s+\./g, ".")
+      .replace(/\s+\?/g, "?")
+      .replace(/\s+—\s+/g, " — ");
+
+    text = cap(text);
+    $("#insultText").textContent = text;
+    addHistory(text);
+    return text;
+  }
+
+  function addHistory(text){
+    const id = uid();
+    state.history.unshift({ id, t: now(), text });
+
+    const starred = state.history.filter(it => state.stars[it.id]);
+    const non = state.history.filter(it => !state.stars[it.id]).slice(0, 50);
+    state.history = [...starred, ...non].sort((a,b) => b.t - a.t);
+
+    saveState(state);
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const box = $("#historyList");
+    box.innerHTML = "";
+    if (!state.history.length){
+      box.innerHTML = `<div class="mini" style="opacity:.85">No history yet.</div>`;
+      return;
+    }
+    for (const it of state.history){
+      const isStar = !!state.stars[it.id];
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <div style="flex:1 1 auto; min-width: 180px">
+          <div class="txt">${escapeHtml(it.text)}</div>
+          <div class="subtxt">${new Date(it.t).toLocaleString()}</div>
+        </div>
+        <div class="actions">
+          <button class="tinybtn" data-act="say" data-id="${it.id}">Speak</button>
+          <button class="tinybtn" data-act="copy" data-id="${it.id}">Copy</button>
+          <button class="tinybtn" data-act="star" data-id="${it.id}">${isStar ? "★" : "☆"}</button>
+        </div>
+      `;
+      box.appendChild(el);
+    }
+  }
+
+  let toastTimer = null;
+  function toast(msg){
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 900);
+  }
+
+  async function copyText(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      toast("Copied.");
+    }catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand("copy"); toast("Copied."); }catch(_){ toast("Copy failed."); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  const speechOk = () => (!!window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined");
+
+  function updateSpeechBadge(){
+    $("#speechOk").textContent = speechOk() ? "ready" : "off";
+  }
+
+  function speak(text){
+    if (!speechOk()){
+      toast("Speech not available.");
+      return;
+    }
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending){
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      toast("Stopped.");
+      return;
+    }
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = +$("#rate").value;
+    u.pitch = +$("#pitch").value;
+    try{
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    }catch(e){
+      toast("Speech blocked.");
+    }
+  }
+
+  function openSheet(sel){
+    const b = $(sel);
+    b.classList.add("show");
+    b.setAttribute("aria-hidden", "false");
+  }
+  function closeSheet(sel){
+    const b = $(sel);
+    b.classList.remove("show");
+    b.setAttribute("aria-hidden", "true");
+  }
+
+  function renderChips(){
+    const grid = $("#chipGrid");
+    grid.innerHTML = "";
+    for (const k of TARGET_KINDS){
+      const el = document.createElement("div");
+      el.className = "chip";
+      el.setAttribute("data-kind", k.id);
+      const selected = (state.target.kind === k.id);
+      el.style.borderColor = selected ? "rgba(124,247,255,.55)" : "rgba(255,255,255,.16)";
+      el.style.background = selected ? "rgba(124,247,255,.10)" : "rgba(255,255,255,.06)";
+      el.innerHTML = `
+        <div class="big">${k.label}</div>
+        <div class="small">${k.desc}</div>
+      `;
+      grid.appendChild(el);
+    }
+  }
+
+  function refreshNameUI(){
+    const k = TARGET_KINDS.find(x => x.id === state.target.kind) || TARGET_KINDS[0];
+    const needs = !!k.needsName;
+    $("#nameRow").style.display = needs ? "flex" : "none";
+    $("#targetHint").textContent = needs ? "Type a name, then tap Save." : "Done — it will say “you”.";
+    $("#nameInput").value = norm(state.target.name || "");
+  }
+
+  function updateTargetLabel(){
+    $("#targetLabel").textContent = targetLabel(state.target);
+  }
+
+  // Buttons
+  $("#btnGenerate").addEventListener("click", () => { makeInsult(); });
+  $("#btnSpeak").addEventListener("click", () => {
+    const text = $("#insultText").textContent;
+    if (!text || text === "Tap Generate.") speak(makeInsult());
+    else speak(text);
+  });
+  $("#btnCopy").addEventListener("click", () => copyText($("#insultText").textContent));
+  $("#btnStar").addEventListener("click", () => {
+    const cur = $("#insultText").textContent;
+    const it = state.history.find(x => x.text === cur);
+    if (!it){ toast("Generate first."); return; }
+    state.stars[it.id] = true;
+    saveState(state);
+    renderHistory();
+    toast("Starred ★");
+  });
+
+  $("#btnClear").addEventListener("click", () => {
+    const starIds = new Set(Object.keys(state.stars || {}));
+    state.history = (state.history || []).filter(it => starIds.has(it.id));
+    saveState(state);
+    renderHistory();
+    toast("Cleared.");
+  });
+
+  // History sheet
+  $("#btnHistory").addEventListener("click", () => {
+    renderHistory();
+    openSheet("#historyBackdrop");
+  });
+  $("#btnCloseHistory").addEventListener("click", () => closeSheet("#historyBackdrop"));
+  $("#historyBackdrop").addEventListener("click", (e) => {
+    if (e.target === $("#historyBackdrop")) closeSheet("#historyBackdrop");
+  });
+  $("#historyList").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const id = btn.getAttribute("data-id");
+    const act = btn.getAttribute("data-act");
+    const it = state.history.find(x => x.id === id);
+    if (!it) return;
+    if (act === "say"){
+      $("#insultText").textContent = it.text;
+      speak(it.text);
+    } else if (act === "copy"){
+      copyText(it.text);
+    } else if (act === "star"){
+      if (state.stars[id]) delete state.stars[id];
+      else state.stars[id] = true;
+      saveState(state);
+      renderHistory();
+    }
+  });
+
+  // Target sheet
+  $("#btnTarget").addEventListener("click", () => {
+    renderChips();
+    refreshNameUI();
+    openSheet("#targetBackdrop");
+    setTimeout(() => {
+      const k = TARGET_KINDS.find(x => x.id === state.target.kind);
+      if (k && k.needsName) $("#nameInput").focus();
+    }, 60);
+  });
+  $("#btnCloseTarget").addEventListener("click", () => {
+    closeSheet("#targetBackdrop");
+    updateTargetLabel();
+    saveState(state);
+  });
+  $("#targetBackdrop").addEventListener("click", (e) => {
+    if (e.target === $("#targetBackdrop")) {
+      closeSheet("#targetBackdrop");
+      updateTargetLabel();
+      saveState(state);
+    }
+  });
+  $("#chipGrid").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    state.target.kind = chip.getAttribute("data-kind") || "you";
+    if (state.target.kind === "you") state.target.name = "";
+    renderChips();
+    refreshNameUI();
+  });
+  $("#btnSaveTarget").addEventListener("click", () => {
+    const name = norm($("#nameInput").value).replace(/[<>]/g,"").slice(0, 40);
+    state.target.name = name;
+    saveState(state);
+    renderChips();
+    refreshNameUI();
+    toast("Saved.");
+  });
+
+  // Persist sliders
+  function saveSettings(){
+    state.settings = { rate: +$("#rate").value, pitch: +$("#pitch").value };
+    saveState(state);
+  }
+  function restoreSettings(){
+    const s = state.settings || {};
+    if (typeof s.rate === "number") $("#rate").value = s.rate;
+    if (typeof s.pitch === "number") $("#pitch").value = s.pitch;
+  }
+  $("#rate").addEventListener("input", saveSettings);
+  $("#pitch").addEventListener("input", saveSettings);
+
+  // Init
+  restoreSettings();
+  updateSpeechBadge();
+  setTimeout(updateSpeechBadge, 250);
+  updateTargetLabel();
+
+})();
+</script>
+</body>
+</html>

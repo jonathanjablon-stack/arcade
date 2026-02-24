@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Arcade Trivia</title>
+    <style>
+        
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; background: #111; color: white; touch-action: none; }
+        :root{
+            --ui-bg: rgba(255,255,255,0.07);
+            --ui-border: rgba(255,255,255,0.16);
+            --ui-accent: #00e5ff;
+            --ui-radius: 14px;
+            --correct: #2ecc71;
+            --wrong: #e74c3c;
+        }
+
+        
+        .ui-btn{
+            display:inline-flex; align-items:center; justify-content:center;
+            gap: 8px; padding: 8px 12px; border-radius: var(--ui-radius);
+            border: 1px solid var(--ui-border); background: var(--ui-bg);
+            color: #fff; font-weight: 800; letter-spacing: 0.2px;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+        }
+        .ui-btn:active{ transform: scale(0.98); background: rgba(255,255,255,0.15); }
+        .back-btn{ position:fixed; top:10px; left:10px; z-index:1000; backdrop-filter:blur(6px); }
+        #global-settings-btn{ position:fixed; top:10px; right:10px; z-index:1000; }
+        
+        
+        #game-view {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; width: 100%; position: relative;
+            background: radial-gradient(circle at center, #1a0b2e 0%, #000 80%);
+        }
+
+        
+        .hud-bar {
+            position: absolute; top: 70px; width: 90%; max-width: 600px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 99px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+        }
+        .hud-group { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+        .hud-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .hud-val { font-size: 24px; font-weight: 900; font-family: monospace; }
+        .c-green { color: var(--correct); }
+        .c-red { color: var(--wrong); }
+        .c-gold { color: #ffd700; }
+
+        
+        .question-box {
+            width: 90%; max-width: 600px;
+            min-height: 160px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+        }
+        .q-category {
+            background: #333; color: #aaa; padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px;
+            border: 1px solid #555;
+        }
+        .q-text {
+            font-size: clamp(20px, 5vw, 32px);
+            font-weight: 800; line-height: 1.3;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        
+        .answers-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            width: 94%; max-width: 600px;
+        }
+        .ans-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            min-height: 80px;
+            padding: 10px;
+            font-size: clamp(16px, 4vw, 22px);
+            font-weight: 700; color: #eee;
+            cursor: pointer; position: relative;
+            transition: transform 0.1s, background 0.2s, border-color 0.2s;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+        .ans-btn:active { transform: scale(0.96); }
+        .ans-btn.correct { background: var(--correct) !important; border-color: #fff !important; color: #000; z-index: 10; }
+        .ans-btn.wrong { background: var(--wrong) !important; border-color: #fff !important; opacity: 0.8; z-index: 10; animation: shake 0.4s; }
+
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-8px);} 75% {transform: translateX(8px);} }
+
+        
+        #cat-menu {
+            position: absolute; inset: 0; z-index: 50;
+            background: rgba(10,10,12,0.96);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 20px; padding: 20px;
+        }
+        .menu-title { font-size: 3rem; font-weight: 900; color: #ffd700; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,215,0,0.4); text-align: center;}
+        .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 500px; }
+        .cat-btn {
+            padding: 25px; font-size: 1.4rem; font-weight: 800;
+            background: #222; border: 2px solid #444; border-radius: 18px; color: #fff;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .cat-btn:hover { border-color: var(--ui-accent); background: #2a2a2a; transform: translateY(-3px); }
+        .cat-btn:active { transform: scale(0.98); }
+        .cat-btn small { display: block; font-size: 0.8rem; color: #888; margin-top: 5px; font-weight: normal; }
+
+        
+        #feedback-overlay {
+            display: none; position: fixed; inset: 0; z-index: 2000;
+            background: rgba(0,0,0,0.4); pointer-events: none;
+            align-items: center; justify-content: center;
+        }
+        #feedback-text {
+            font-size: 15vw; font-weight: 900;
+            text-shadow: 0 5px 30px rgba(0,0,0,0.5);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0%{transform:scale(0); opacity:0;} 80%{transform:scale(1.1); opacity:1;} 100%{transform:scale(1);} }
+
+        
+        #global-settings-modal {
+            position: fixed; inset: 0; z-index: 2100;
+            display: none; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+        }
+        .settings-panel {
+            width: min(400px, 90%); background: #1a1a1a;
+            border: 1px solid #444; border-radius: 18px; padding: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        .set-row:last-child { border: none; margin: 0; padding: 0; }
+        .set-label { font-weight: bold; }
+        .set-desc { font-size: 12px; color: #888; }
+        input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--ui-accent); }
+
+    
+
+        .splash-title{ color:#ffd700 !important; text-shadow:0 0 16px rgba(255,215,0,0.25) !important; }
+        [id$="-menu"].overlay, #menuOverlay, #startOverlay, #cat-menu, #g-balloons .b-start-overlay{ background: rgba(0,0,0,0.95) !important; }
+        #cat-menu .menu-title, #startOverlay .panel h1, #g-balloons .b-start-overlay h1{ color:#ffd700 !important; text-shadow:0 0 18px rgba(255,215,0,0.35) !important; }
+        #startOverlay .big-btn, #startOverlay .small, #cat-menu .cat-btn, #g-balloons .b-start-overlay .btn-large-opt{ background:#333 !important; border:2px solid #555 !important; border-radius:15px !important; color:#fff !important; font-weight:900 !important; box-shadow:none !important; }
+        #g-balloons .b-start-overlay .btn-large-opt{ font-size: 1.9rem !important; padding: 20px 28px !important; max-width: 320px; width: 80%; }
+    </style>
+</head>
+<body>
+
+    <button class="ui-btn back-btn" onclick="window.location.href='index.html'">← MENU</button>
+
+    <button id="global-settings-btn" class="ui-btn" onclick="Settings.open()">⚙️</button>
+
+    <div id="game-view">
+        <div class="hud-bar">
+            <div class="hud-group">
+                <span class="hud-label">Correct</span>
+                <span class="hud-val c-green" id="score-c">0</span>
+            </div>
+            <div class="hud-group">
+                <span class="hud-label">Streak</span>
+                <span class="hud-val c-gold" id="score-s">0</span>
+            </div>
+            <div class="hud-group">
+                <span class="hud-label">Missed</span>
+                <span class="hud-val c-red" id="score-w">0</span>
+            </div>
+        </div>
+
+        <div class="question-box">
+            <div class="q-category" id="q-cat-label">CATEGORY</div>
+            <div class="q-text" id="q-text">Loading...</div>
+        </div>
+
+        <div class="answers-grid" id="ans-grid">
+            </div>
+    </div>
+
+    <div id="cat-menu">
+        <div class="menu-title">TRIVIA TIME</div>
+        <div class="cat-grid">
+            <button class="cat-btn" onclick="Game.start('science')">🧪 Science<small>Space, Animals, Body</small></button>
+            <button class="cat-btn" onclick="Game.start('math')">🧮 Math<small>Numbers, Shapes, Logic</small></button>
+            <button class="cat-btn" onclick="Game.start('spelling')">📝 Spelling<small>Sentences & Riddles</small></button>
+            <button class="cat-btn" onclick="Game.start('vocab')">📖 Words<small>Definitions & Opposites</small></button>
+            <button class="cat-btn" onclick="Game.start('general')">🌍 General<small>World, Movies, Fun</small></button>
+            <button class="cat-btn" onclick="Game.start('all')" style="grid-column: span 2; background: linear-gradient(45deg, #444, #222); border-color:#ffd700;">🎲 MIX IT UP!<small>Anything goes!</small></button>
+        </div>
+    </div>
+
+    <div id="feedback-overlay">
+        <div id="feedback-text"></div>
+        <canvas id="confetti-canvas" style="position:absolute; inset:0; pointer-events:none;"></canvas>
+    </div>
+
+    <div id="global-settings-modal">
+        <div class="settings-panel">
+            <h2 style="margin-top:0; color:#ffd700;">SETTINGS</h2>
+            <div class="set-row">
+                <div>
+                    <div class="set-label">Sound</div>
+                    <div class="set-desc">Mute game sounds</div>
+                </div>
+                <input type="checkbox" id="set-sound" checked onchange="Settings.toggle('sound')">
+            </div>
+            <div class="set-row">
+                <div>
+                    <div class="set-label">Reduced Motion</div>
+                    <div class="set-desc">Disable confetti & shakes</div>
+                </div>
+                <input type="checkbox" id="set-motion" onchange="Settings.toggle('motion')">
+            </div>
+            <div style="text-align:right; margin-top:20px;">
+                <button class="ui-btn" onclick="Settings.close()">Done</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const MathGen = (function(){
+    function get() {
+        const type = randInt(0, 4); 
+        let q = "", a = "", w1, w2, w3;
+
+        if (type === 0) { 
+            const n1 = randInt(5, 50), n2 = randInt(5, 50);
+            q = `${n1} + ${n2} = ?`;
+            a = n1 + n2;
+        } else if (type === 1) { 
+            const n1 = randInt(10, 99), n2 = randInt(1, n1);
+            q = `${n1} - ${n2} = ?`;
+            a = n1 - n2;
+        } else if (type === 2) { 
+            const n1 = randInt(2, 9), n2 = randInt(2, 9);
+            q = `${n1} × ${n2} = ?`;
+            a = n1 * n2;
+        } else if (type === 3) { 
+            const shapes = [
+                {n:"Triangle", s:3}, {n:"Square", s:4}, {n:"Pentagon", s:5}, 
+                {n:"Hexagon", s:6}, {n:"Octagon", s:8}, {n:"Rectangle", s:4}
+            ];
+            const s = pick(shapes);
+            q = `How many sides does a ${s.n} have?`;
+            a = s.s;
+        } else { 
+            const t = randInt(0, 2);
+            if(t===0) { q="How many minutes in an hour?"; a=60; }
+            else if(t===1) { q="How many cents in a dollar?"; a=100; }
+            else { q="How many hours in a day?"; a=24; }
+        }
+
+        
+        let ans = parseInt(a);
+        let wrongs = new Set();
+        while(wrongs.size < 3) {
+            let offset = randInt(-10, 10);
+            let val = ans + offset;
+            if(val !== ans && val > 0) wrongs.add(val);
+        }
+        return { q: q, options: [a, ...wrongs], correct: a };
+    }
+    return { get };
+})();
+
+const SPELLING_DATA = [
+    
+    ["Where do you go to learn?", "School", "Skool", "Schoal", "Scool"],
+    ["What do you use to write?", "Pencil", "Pensil", "Pencel", "Pensel"],
+    ["Who helps you learn?", "Teacher", "Teecher", "Techer", "Teechur"],
+    ["What do you read?", "Book", "Boke", "Booc", "Buk"],
+    ["What do you sit on?", "Chair", "Chare", "Cheir", "Cher"],
+    ["What do you write on?", "Paper", "Payper", "Papeer", "Paipr"],
+    ["What marks the time on the wall?", "Clock", "Clok", "Clockk", "Cloc"],
+    ["What do you create in art class?", "Picture", "Pikture", "Picter", "Picher"],
+    ["What carries you to school?", "Bus", "Buss", "Buzz", "Bs"],
+    ["What do you use to cut paper?", "Scissors", "Sissors", "Cissors", "Scisors"],
+    
+    
+    ["A good pal is a...", "Friend", "Frend", "Freind", "Frind"],
+    ["Your female parent is your...", "Mother", "Muther", "Mudder", "Mather"],
+    ["Your male parent is your...", "Father", "Fader", "Fatheer", "Fatherr"],
+    ["Your aunt's child is your...", "Cousin", "Cuzin", "Couzin", "Cosun"],
+    ["A group of related people is a...", "Family", "Famly", "Fammily", "Familey"],
+    ["More than one person...", "People", "Peeple", "Peopel", "Peepl"],
+    ["A baby dog is a...", "Puppy", "Puppey", "Pupie", "Pupy"],
+    ["A baby cat is a...", "Kitten", "Kiten", "Kittin", "Kitin"],
+    
+    
+    ["When something is funny, you...", "Laugh", "Laff", "Laph", "Lagh"],
+    ["When you use your brain, you...", "Think", "Thinkk", "Thinc", "Thinc"],
+    ["When you rest at night, you...", "Sleep", "Slep", "Slepe", "Sleap"],
+    ["When you move fast on feet, you...", "Run", "Rnn", "Rune", "Ruun"],
+    ["To make words on paper...", "Write", "Rite", "Writ", "Wryte"],
+    ["To see with your eyes...", "Watch", "Wach", "Wotch", "Watsh"],
+    ["To begin something...", "Start", "Sterrt", "Sturt", "Starte"],
+    
+    
+    ["The reason for something...", "Because", "Becuz", "Becuse", "Beacause"],
+    ["Very pleasing to look at...", "Beautiful", "Beutiful", "Bootiful", "Beatifull"],
+    ["Often or every time...", "Always", "Allways", "Alway", "Awlays"],
+    ["To get something...", "Receive", "Recieve", "Receve", "Riceive"],
+    ["To think something is true...", "Believe", "Beleive", "Belive", "Beleeve"],
+    ["Not the same...", "Different", "Diffrent", "Diferent", "Differant"],
+    ["Very needed...", "Necessary", "Neccessary", "Necesary", "Necessery"],
+    ["A specific time or moment...", "Minute", "Minit", "Minuet", "Minut"],
+    ["The day before today...", "Yesterday", "Yestday", "Yusterday", "Yesturday"],
+    ["The day after today...", "Tomorrow", "Tomorow", "Toomorrow", "Tommorrow"],
+    
+    
+    ["Where you live...", "House", "Howse", "Hose", "Hous"],
+    ["What you use to pay...", "Money", "Munny", "Monny", "Mony"],
+    ["What falls from the sky?", "Rain", "Rane", "Rayn", "Rann"],
+    ["The meal in the evening...", "Dinner", "Diner", "Dinnur", "Denner"],
+    ["The meal at midday...", "Lunch", "Lunchh", "Lutch", "Lunc"],
+    ["A celebration is a...", "Party", "Partie", "Partey", "Partt"],
+    ["What shines at night?", "Moon", "Mune", "Mooan", "Moun"],
+    ["What shines in the day?", "Sun", "Snn", "Sunn", "Sune"],
+    ["The season after winter...", "Spring", "Sping", "Sprng", "Spreng"],
+    ["The season with snow...", "Winter", "Wintr", "Wintur", "Whinter"],
+    
+    
+    ["A red fruit...", "Apple", "Aplle", "Appel", "Apel"],
+    ["A yellow curved fruit...", "Banana", "Bananna", "Bannana", "Bnana"],
+    ["A juicy orange fruit...", "Orange", "Orang", "Orrange", "Oringe"],
+    ["A purple fruit bunch...", "Grape", "Graip", "Grayp", "Grepe"],
+    ["You bake it in an oven...", "Bread", "Bred", "Breade", "Brade"],
+    ["White drink from cows...", "Milk", "Mulk", "Milc", "Mylk"],
+    ["Sweet treat...", "Candy", "Candie", "Kandy", "Cande"],
+    
+    
+    ["The color of grass...", "Green", "Grean", "Grene", "Grin"],
+    ["The color of the sky...", "Blue", "Bloo", "Bleu", "Blu"],
+    ["The color of the sun...", "Yellow", "Yelow", "Yello", "Yllow"],
+    ["The color of a grape...", "Purple", "Purpel", "Perple", "Purpl"],
+    ["A round shape...", "Circle", "Sircle", "Cirkle", "Circel"],
+    ["A box shape...", "Square", "Skware", "Squar", "Squer"],
+    
+    
+    ["Opposite of big...", "Little", "Littel", "Litle", "Litl"],
+    ["Opposite of day...", "Night", "Nite", "Niyt", "Nigt"],
+    ["A large body of water...", "Ocean", "Oshun", "Oshen", "Ocian"],
+    ["Sound from a dog...", "Bark", "Barck", "Barc", "Barque"],
+    ["Sound from a cat...", "Meow", "Meeow", "Meou", "Meoh"]
+];
+
+const STATIC_DATA = {
+    science: [
+        ["Which planet is known as the 'Red Planet'?", "Mars", "Venus", "Jupiter", "Saturn"],
+        ["What is the hottest planet?", "Venus", "Mars", "Earth", "Neptune"],
+        ["What planet do we live on?", "Earth", "Mars", "The Moon", "Sun"],
+        ["What is the Sun?", "A Star", "A Planet", "A Moon", "A Rock"],
+        ["Which planet has large rings?", "Saturn", "Mercury", "Mars", "Pluto"],
+        ["What do humans breathe to live?", "Oxygen", "Helium", "Carbon", "Water"],
+        ["What gas do plants breathe in?", "Carbon Dioxide", "Oxygen", "Sugar", "Salt"],
+        ["What group of animals has feathers?", "Birds", "Mammals", "Reptiles", "Fish"],
+        ["What group of animals has fur and drinks milk?", "Mammals", "Birds", "Fish", "Insects"],
+        ["Which animal is an amphibian?", "Frog", "Dog", "Cat", "Lion"],
+        ["How many legs does a spider have?", "8", "6", "4", "10"],
+        ["How many legs does an insect have?", "6", "8", "100", "2"],
+        ["What do bees make?", "Honey", "Jam", "Milk", "Butter"],
+        ["What does a caterpillar turn into?", "Butterfly", "Worm", "Fly", "Spider"],
+        ["Which animal sleeps standing up?", "Horse", "Dog", "Cat", "Human"],
+        ["Which bird cannot fly?", "Penguin", "Eagle", "Hawk", "Crow"],
+        ["What is the largest animal in the ocean?", "Blue Whale", "Shark", "Octopus", "Tuna"],
+        ["What is a baby kangaroo called?", "Joey", "Cub", "Pup", "Calf"],
+        ["What do herbivores eat?", "Plants", "Meat", "Pizza", "Bugs"],
+        ["What do carnivores eat?", "Meat", "Plants", "Grass", "Leaves"],
+        ["Which animal is nocturnal (awake at night)?", "Owl", "Chicken", "Cow", "Horse"],
+        ["Do fish have lungs?", "No (Gills)", "Yes", "Some do", "Maybe"],
+        ["What freezes into ice?", "Water", "Milk", "Soda", "Oil"],
+        ["At what temperature does water freeze?", "32°F (0°C)", "100°F", "50°F", "70°F"],
+        ["What falls from clouds in winter?", "Snow", "Sand", "Dirt", "Leaves"],
+        ["What is the loud sound during a storm?", "Thunder", "Lightning", "Wind", "Rain"],
+        ["What is the bright flash during a storm?", "Lightning", "Thunder", "Sun", "Fire"],
+        ["What colors are in a rainbow?", "ROYGBIV", "Black & White", "Pink & Brown", "Only Blue"],
+        ["What is the hardest rock?", "Diamond", "Chalk", "Coal", "Sandstone"],
+        ["What is hot liquid rock underground?", "Magma", "Lava", "Water", "Mud"],
+        ["What pumps blood through your body?", "Heart", "Brain", "Stomach", "Lungs"],
+        ["What helps you digest food?", "Stomach", "Heart", "Brain", "Lungs"],
+        ["What protects your brain?", "Skull", "Ribs", "Knees", "Elbows"],
+        ["What do you use to hear?", "Ears", "Eyes", "Nose", "Mouth"],
+        ["What do you use to smell?", "Nose", "Ears", "Eyes", "Hands"],
+        ["Which is a Solid?", "Rock", "Water", "Air", "Juice"],
+        ["Which is a Liquid?", "Water", "Ice", "Steam", "Wood"],
+        ["Which is a Gas?", "Steam", "Ice", "Water", "Rock"],
+        ["What pulls everything down to Earth?", "Gravity", "Magnetism", "Magic", "Glue"],
+        ["What poles does a magnet have?", "North & South", "East & West", "Up & Down", "Left & Right"]
+    ],
+    vocab: [
+        ["What is the opposite of 'Hot'?", "Cold", "Warm", "Boiling", "Spicy"],
+        ["What is the opposite of 'Fast'?", "Slow", "Quick", "Run", "Speed"],
+        ["What is the opposite of 'Big'?", "Small", "Huge", "Giant", "Large"],
+        ["What is the opposite of 'Happy'?", "Sad", "Glad", "Joyful", "Funny"],
+        ["What is the opposite of 'Up'?", "Down", "Left", "Right", "Above"],
+        ["What is the opposite of 'Dark'?", "Light", "Night", "Black", "Dim"],
+        ["What is the opposite of 'Wet'?", "Dry", "Soaked", "Water", "Rain"],
+        ["What is the opposite of 'Hard'?", "Soft", "Solid", "Tough", "Rock"],
+        ["What is the opposite of 'Asleep'?", "Awake", "Tired", "Nap", "Bed"],
+        ["What is the opposite of 'Start'?", "Finish", "Begin", "Go", "Play"],
+        ["What is the opposite of 'Full'?", "Empty", "Stuffed", "Hungry", "All"],
+        ["What is the opposite of 'Loud'?", "Quiet", "Noisy", "Yell", "Music"],
+        ["What does 'Annual' mean?", "Yearly", "Daily", "Weekly", "Never"],
+        ["What does 'Invisible' mean?", "Cannot be seen", "Can be seen", "Bright", "Dark"],
+        ["What is a 'Doe'?", "A female deer", "A male deer", "A baby deer", "A bear"],
+        ["What is a 'Buck'?", "A male deer", "A female deer", "A rabbit", "A duck"],
+        ["What does 'Sprint' mean?", "Run fast", "Walk slow", "Sleep", "Eat"],
+        ["A person who flies a plane is a...", "Pilot", "Driver", "Captain", "Chef"],
+        ["A person who fixes teeth is a...", "Dentist", "Doctor", "Vet", "Teacher"],
+        ["A person who puts out fires is a...", "Firefighter", "Police", "Teacher", "Baker"],
+        ["A story that is not true is...", "Fiction", "Non-fiction", "Fact", "News"],
+        ["A story about a person's life is...", "Biography", "Fantasy", "Mystery", "Joke"],
+        ["What do you use to unlock a door?", "Key", "Hammer", "Spoon", "Pencil"],
+        ["What provides shade on a sunny day?", "Umbrella", "Raincoat", "Boots", "Lamp"],
+        ["What word means the same as 'Happy'?", "Glad", "Sad", "Mad", "Tired"],
+        ["What word means the same as 'Angry'?", "Mad", "Glad", "Nice", "Calm"],
+        ["What word means the same as 'Small'?", "Tiny", "Huge", "Big", "Giant"],
+        ["What word means the same as 'Look'?", "See", "Hear", "Smell", "Touch"],
+        ["Which word rhymes with 'Cat'?", "Bat", "Dog", "Fish", "Car"],
+        ["Which word rhymes with 'Blue'?", "Shoe", "Red", "Sky", "Green"],
+        ["Which word rhymes with 'House'?", "Mouse", "Barn", "Door", "Roof"],
+        ["Which is the correct spelling for the number 2?", "Two", "To", "Too", "Tu"],
+        ["Which is the correct spelling for 'look with eyes'?", "See", "Sea", "Cee", "Si"],
+        ["Which is the correct spelling for 'an insect'?", "Bee", "Be", "Bea", "Bi"]
+    ],
+    general: [
+        ["Who is Mickey Mouse's girlfriend?", "Minnie", "Daisy", "Donald", "Goofy"],
+        ["What kind of animal is Donald?", "Duck", "Mouse", "Dog", "Goose"],
+        ["In 'Frozen', what is the snowman's name?", "Olaf", "Sven", "Kristoff", "Hans"],
+        ["What does 'Hakuna Matata' mean?", "No worries", "Hello", "Goodbye", "Good food"],
+        ["Who lives in a pineapple under the sea?", "SpongeBob", "Patrick", "Squidward", "Sandy"],
+        ["What color are Smurfs?", "Blue", "Green", "Red", "Yellow"],
+        ["What does a genie come out of?", "Lamp", "Box", "Hat", "Shoe"],
+        ["Which superhero climbs walls?", "Spider-Man", "Batman", "Superman", "Flash"],
+        ["Which superhero uses a shield?", "Captain America", "Iron Man", "Hulk", "Thor"],
+        ["What school does Harry Potter go to?", "Hogwarts", "Disney", "High School", "Magic School"],
+        ["What country has Pyramids?", "Egypt", "USA", "France", "China"],
+        ["What city has the Eiffel Tower?", "Paris", "London", "New York", "Rome"],
+        ["What is the capital of the USA?", "Washington D.C.", "New York", "Los Angeles", "Texas"],
+        ["How many states are in the USA?", "50", "13", "100", "52"],
+        ["What colors are on the American flag?", "Red, White, Blue", "Green, White, Red", "Blue, Yellow, Red", "Black & White"],
+        ["What currency (money) do we use in the USA?", "Dollar", "Euro", "Pound", "Yen"],
+        ["What month is Halloween in?", "October", "November", "September", "December"],
+        ["What month is Christmas in?", "December", "January", "July", "May"],
+        ["What day comes after Friday?", "Saturday", "Sunday", "Thursday", "Monday"],
+        ["How many months are in a year?", "12", "10", "6", "24"],
+        ["How many days are in a week?", "7", "5", "10", "14"],
+        ["What sport uses a bat and ball?", "Baseball", "Soccer", "Football", "Basketball"],
+        ["What sport is played on ice?", "Hockey", "Soccer", "Tennis", "Golf"],
+        ["What do you use to row a boat?", "Oars", "Shovels", "Spoons", "Bats"],
+        ["Which is a Primary Color?", "Red", "Green", "Purple", "Orange"],
+        ["Mixing Red and Blue makes...?", "Purple", "Green", "Orange", "Brown"],
+        ["Mixing Yellow and Blue makes...?", "Green", "Purple", "Orange", "Black"],
+        ["Mixing Red and Yellow makes...?", "Orange", "Purple", "Green", "Brown"],
+        ["What do you wear on your hands?", "Gloves", "Socks", "Hats", "Shoes"],
+        ["What has a face but no eyes?", "Clock", "Doll", "Cat", "Baby"],
+        ["What has legs but cannot walk?", "Table", "Dog", "Cat", "Spider"],
+        ["What goes up but never comes down?", "Age", "Rain", "Ball", "Bird"],
+        ["Which fruit is yellow and curved?", "Banana", "Apple", "Orange", "Grape"],
+        ["Which vegetable is orange and crunchy?", "Carrot", "Potato", "Corn", "Pea"]
+    ]
+};
+
+const Game = (function(){
+    let currentPool = [];
+    let score = { c: 0, s: 0, w: 0 };
+    let isTransitioning = false;
+    let currentMode = '';
+
+    
+    const ui = {
+        view: document.getElementById('game-view'),
+        menu: document.getElementById('cat-menu'),
+        qText: document.getElementById('q-text'),
+        qLabel: document.getElementById('q-cat-label'),
+        grid: document.getElementById('ans-grid'),
+        sc: document.getElementById('score-c'),
+        ss: document.getElementById('score-s'),
+        sw: document.getElementById('score-w')
+    };
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function start(category) {
+        currentMode = category;
+        
+        if(category === 'all') {
+            
+            currentPool = [
+                ...STATIC_DATA.science, 
+                ...STATIC_DATA.vocab, 
+                ...STATIC_DATA.general,
+                ...SPELLING_DATA, 
+                'GEN_MATH', 'GEN_MATH', 'GEN_MATH', 'GEN_MATH'
+            ];
+            ui.qLabel.innerText = "MIXED BAG";
+            shuffle(currentPool);
+        } else if (category === 'math') {
+            currentPool = ['GEN_MATH']; 
+            ui.qLabel.innerText = "MATH";
+        } else if (category === 'spelling') {
+            currentPool = [...SPELLING_DATA]; 
+            ui.qLabel.innerText = "SPELLING";
+            shuffle(currentPool);
+        } else {
+            currentPool = [...STATIC_DATA[category]];
+            ui.qLabel.innerText = category.toUpperCase();
+            shuffle(currentPool);
+        }
+        
+        score = { c: 0, s: 0, w: 0 };
+        updateScore();
+        ui.menu.style.display = 'none';
+        nextQuestion();
+    }
+
+    function updateScore() {
+        ui.sc.innerText = score.c;
+        ui.ss.innerText = score.s;
+        ui.sw.innerText = score.w;
+    }
+
+    function nextQuestion() {
+        isTransitioning = false;
+        ui.grid.innerHTML = '';
+        let qData = null;
+
+        
+        if (currentMode === 'math') {
+            qData = MathGen.get();
+        } 
+        else if (currentMode === 'all') {
+             
+             if(currentPool.length > 0 && currentPool[currentPool.length-1] === 'GEN_MATH'){
+                 currentPool.pop();
+                 qData = MathGen.get();
+                 
+                 
+                 if(Math.random() > 0.5) currentPool.unshift('GEN_MATH');
+             } else {
+                 if (currentPool.length === 0) {
+                     alert("You finished the mixed set! Restarting...");
+                     start('all'); return;
+                 }
+                 const r = currentPool.pop();
+                 qData = { q: r[0], options: [r[1], r[2], r[3], r[4]], correct: r[1] };
+             }
+        }
+        else {
+            
+            if (currentPool.length === 0) {
+                 
+                 if(currentMode === 'spelling') currentPool = [...SPELLING_DATA];
+                 else currentPool = [...STATIC_DATA[currentMode]];
+                 shuffle(currentPool);
+            }
+            const r = currentPool.pop();
+            qData = { q: r[0], options: [r[1], r[2], r[3], r[4]], correct: r[1] };
+        }
+
+        
+        
+        let opts = qData.options;
+        let uniqueOpts = [...new Set(opts)];
+        while(uniqueOpts.length < 4) {
+             if(typeof qData.correct === 'number') {
+                let n = qData.correct + randInt(1, 5) * (Math.random() > 0.5 ? 1 : -1);
+                if(!uniqueOpts.includes(n)) uniqueOpts.push(n);
+             } else {
+                uniqueOpts.push("None"); 
+             }
+        }
+        qData.options = uniqueOpts;
+
+        
+        ui.qText.innerText = qData.q;
+        
+        let displayOpts = [...qData.options];
+        shuffle(displayOpts);
+
+        displayOpts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'ans-btn';
+            btn.innerText = opt;
+            btn.onclick = () => check(btn, opt, qData.correct);
+            ui.grid.appendChild(btn);
+        });
+    }
+
+    function check(btn, selected, correct) {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
+        
+        if (selected == correct) {
+            btn.classList.add('correct');
+            score.c++;
+            score.s++;
+            updateScore();
+            Feedback.show(true);
+            setTimeout(nextQuestion, 1200);
+        } else {
+            btn.classList.add('wrong');
+            score.w++;
+            score.s = 0;
+            updateScore();
+            Feedback.show(false);
+            
+            
+            Array.from(ui.grid.children).forEach(b => {
+                if (b.innerText == correct) b.classList.add('correct');
+            });
+            setTimeout(nextQuestion, 2000);
+        }
+    }
+
+    return { start };
+})();
+
+const Settings = (function(){
+    let s = { sound: true, motion: true };
+    function open() { document.getElementById('global-settings-modal').style.display = 'flex'; }
+    function close() { document.getElementById('global-settings-modal').style.display = 'none'; }
+    function toggle(key) {
+        s[key] = !s[key];
+        if(key === 'sound' && FX.ctx && FX.ctx.state === 'running' && !s.sound) FX.ctx.suspend();
+        if(key === 'sound' && FX.ctx && FX.ctx.state === 'suspended' && s.sound) FX.ctx.resume();
+    }
+    return { open, close, toggle, get: k => s[k] };
+})();
+
+const Feedback = (function(){
+    const el = document.getElementById('feedback-overlay');
+    const txt = document.getElementById('feedback-text');
+    const cvs = document.getElementById('confetti-canvas');
+    const ctx = cvs.getContext('2d');
+    let particles = [];
+
+    function show(isWin) {
+        el.style.display = 'flex';
+        txt.innerText = isWin ? ["AWESOME!", "GREAT!", "SUPER!", "GENIUS!"][Math.floor(Math.random()*4)] : "OOPS!";
+        txt.style.color = isWin ? "#2ecc71" : "#e74c3c";
+        
+        if (Settings.get('sound')) FX.play(isWin ? 'win' : 'lose');
+        
+        if (isWin && Settings.get('motion')) {
+            spawnConfetti();
+            loop();
+        } else {
+            ctx.clearRect(0,0,cvs.width,cvs.height);
+        }
+
+        setTimeout(() => {
+            el.style.display = 'none';
+            particles = [];
+        }, 1000);
+    }
+
+    function spawnConfetti() {
+        cvs.width = window.innerWidth;
+        cvs.height = window.innerHeight;
+        particles = [];
+        for(let i=0; i<80; i++) {
+            particles.push({
+                x: cvs.width/2, y: cvs.height/2,
+                vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20,
+                color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                size: Math.random()*10+5
+            });
+        }
+    }
+
+    function loop() {
+        if(particles.length === 0) return;
+        ctx.clearRect(0,0,cvs.width,cvs.height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            p.vy += 0.5;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+        });
+        requestAnimationFrame(loop);
+    }
+
+    return { show };
+})();
+
+const FX = (function(){
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let ctx = new AudioContext();
+
+    function tone(freq, type, dur) {
+        if(!Settings.get('sound')) return;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        g.gain.setValueAtTime(0.1, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + dur);
+    }
+
+    function play(type) {
+        if(ctx.state === 'suspended') ctx.resume();
+        if(type === 'win') {
+            tone(440, 'sine', 0.1);
+            setTimeout(()=>tone(554, 'sine', 0.1), 100);
+            setTimeout(()=>tone(659, 'sine', 0.2), 200);
+        } else {
+            tone(150, 'sawtooth', 0.3);
+        }
+    }
+
+    return { play, ctx };
+})();
+
+</script>
+</body>
+</html>
