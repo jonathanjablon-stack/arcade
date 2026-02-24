@@ -1,0 +1,2815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcade Index Editor</title>
+  <style>
+    html, body { height:100%; background:#000; }
+    body{
+      margin:0;
+      font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+      color:#fff;
+      background: radial-gradient(circle at 25% 20%, #222 0%, #000 70%);
+      overflow:hidden;
+      overscroll-behavior:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wrap{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      box-sizing:border-box;
+      padding:12px 10px 10px;
+      max-width:1100px;
+      margin:0 auto;
+      gap:10px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:220px;
+    }
+    .title{
+      font-weight:1000;
+      letter-spacing:2px;
+      color:#ffd700;
+      text-shadow:0 0 12px rgba(255,215,0,0.22);
+      font-size: clamp(20px, 3.2vw, 34px);
+      line-height:1.05;
+      margin:0;
+    }
+    .subtitle{
+      color: rgba(255,255,255,0.72);
+      font-size: 12px;
+      margin:0;
+    }
+    .tabs{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .tabbtn{
+      appearance:none;
+      border:2px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+      color:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:900;
+      letter-spacing:.2px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tabbtn[aria-selected="true"]{
+      border-color: rgba(255,215,0,0.45);
+      background: rgba(255,215,0,0.10);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+    }
+    .actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      flex:1 1 auto;
+    }
+    .btn{
+      appearance:none;
+      border:2px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+      color:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn:active{ transform: scale(0.985); }
+    .btn.primary{
+      border-color: rgba(255,215,0,0.45);
+      background: rgba(255,215,0,0.12);
+    }
+    .btn.danger{
+      border-color: rgba(255,80,80,0.35);
+      background: rgba(255,80,80,0.10);
+    }
+    .btn.good{
+      border-color: rgba(80,255,160,0.35);
+      background: rgba(80,255,160,0.10);
+    }
+    .btn.ghost{
+      border-color: rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.18);
+    }
+    input[type="file"]{ display:none; }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.80);
+      font-size: 12px;
+      user-select:none;
+      max-width: 55vw;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .panel{
+      flex:1 1 auto;
+      min-height:0;
+      display:flex;
+      border-radius:18px;
+      border:2px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      overflow:hidden;
+    }
+    .pane-left{
+      width: 380px;
+      max-width: 46%;
+      min-width: 290px;
+      border-right: 2px solid rgba(255,255,255,0.10);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .pane-right{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      min-height:0;
+    }
+    .pane-head{
+      padding:10px 10px 8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      border-bottom: 2px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.20);
+    }
+    .pane-head .h{
+      font-weight:1000;
+      letter-spacing:.4px;
+      color: rgba(255,255,255,0.92);
+      font-size: 13px;
+    }
+    .pane-head .mini{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .mini .btn{
+      padding:8px 10px;
+      border-radius:12px;
+      font-size: 12px;
+    }
+    .list{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:auto;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .item{
+      border:2px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      border-radius:16px;
+      padding:10px 10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .item[aria-selected="true"]{
+      border-color: rgba(255,215,0,0.45);
+      background: rgba(255,215,0,0.10);
+    }
+    .item.missing{
+      border-color: rgba(255,80,80,0.30);
+      background: rgba(255,80,80,0.07);
+    }
+    .item.loaded{
+      border-color: rgba(80,255,160,0.28);
+      background: rgba(80,255,160,0.07);
+    }
+    .drag{
+      width:24px;
+      height:24px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.85);
+      font-weight:1000;
+      line-height:1;
+      flex:0 0 auto;
+      touch-action:none;
+    }
+    .it-mid{
+      min-width:0;
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .it-name{
+      font-weight:1000;
+      font-size: 13px;
+      color:#fff;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .it-href{
+      font-size: 11px;
+      color: rgba(255,255,255,0.68);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .it-emoji{
+      font-size:18px;
+      font-weight:1000;
+      line-height:1;
+      flex:0 0 auto;
+      width:36px;
+      text-align:center;
+    }
+    .it-controls{
+      display:flex;
+      gap:6px;
+      flex:0 0 auto;
+      align-items:center;
+    }
+    .iconbtn{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      border:2px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color:#fff;
+      font-weight:1000;
+      cursor:pointer;
+      user-select:none;
+    }
+    .iconbtn:active{ transform: scale(0.985); }
+    .iconbtn[disabled]{ opacity:.45; cursor:not-allowed; }
+    .statusdot{
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.25);
+      font-weight:1000;
+      font-size: 12px;
+      flex:0 0 auto;
+    }
+    .statusdot.ok{ color:#7dffb3; border-color: rgba(80,255,160,0.35); background: rgba(80,255,160,0.10); }
+    .statusdot.bad{ color:#ffaaaa; border-color: rgba(255,80,80,0.35); background: rgba(255,80,80,0.10); }
+
+    .subsection{
+      margin-top:8px;
+      padding-top:10px;
+      border-top: 2px solid rgba(255,255,255,0.10);
+    }
+    .subhead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin: 0 2px 6px;
+      color: rgba(255,255,255,0.82);
+      font-weight:1000;
+      letter-spacing:.2px;
+      font-size: 12px;
+    }
+    .miniPill{
+      font-size: 11px;
+      font-weight:900;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.82);
+      flex: 0 0 auto;
+    }
+
+    .editor{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:auto;
+      padding:12px 12px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .fieldrow{
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap:10px;
+      align-items:center;
+    }
+    .label{
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .input, .textarea, select{
+      width:100%;
+      box-sizing:border-box;
+      border-radius:14px;
+      padding:10px 10px;
+      border:2px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.25);
+      color:#fff;
+      outline:none;
+      font-weight:800;
+      font-size: 13px;
+    }
+    select{ cursor:pointer; }
+    .textarea{
+      min-height:92px;
+      resize:none;
+      font-weight:700;
+      line-height:1.35;
+    }
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .hint{
+      margin-top:2px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.65);
+      line-height:1.35;
+    }
+    .preview{
+      border-top: 2px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.15);
+      padding:10px 10px 12px;
+      overflow:auto;
+    }
+    .arcade-wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    .arcade-title{
+      text-align:center;
+      font-weight:1000;
+      letter-spacing:2px;
+      color:#ffd700;
+      text-shadow:0 0 12px rgba(255,215,0,0.22);
+      margin: 6px 0 4px;
+      font-size: clamp(18px, 2.8vw, 26px);
+      line-height: 1.05;
+    }
+    .arcade-subtitle{
+      text-align:center;
+      color: rgba(255,255,255,0.75);
+      margin: 0 0 8px;
+      font-size: 12px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+    .card{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
+      height: 92px;
+      border-radius:16px;
+      border:2px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+      text-decoration:none;
+      color:#fff;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      user-select:none;
+    }
+    .emoji{ font-weight:1000; font-size: 22px; line-height:1; }
+    .name{ font-weight:900; letter-spacing:0.2px; font-size: 14px; text-align:center; }
+
+    .codepane, .commentpane{ display:none; height:100%; width:100%; flex-direction:column; min-height:0; }
+    .codepane[aria-hidden="false"], .commentpane[aria-hidden="false"]{ display:flex; }
+    .codehead, .commenthead{
+      padding:10px 10px 8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      border-bottom: 2px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.20);
+    }
+    .codebox{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:auto;
+      padding:12px;
+      box-sizing:border-box;
+      background: rgba(0,0,0,0.25);
+    }
+    pre{
+      margin:0;
+      white-space:pre;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height:1.35;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .commentbody{ flex:1 1 auto; min-height:0; display:flex; overflow:hidden; }
+    .filesCol{
+      width: 320px;
+      max-width: 40%;
+      min-width: 240px;
+      border-right: 2px solid rgba(255,255,255,0.10);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .filesList, .commentsList{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:auto;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .fileItem, .commentItem{
+      border:2px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      border-radius:16px;
+      padding:10px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .fileItem[aria-selected="true"], .commentItem[aria-selected="true"]{
+      border-color: rgba(255,215,0,0.45);
+      background: rgba(255,215,0,0.10);
+    }
+    .fileNameRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .fileNm{
+      font-weight:1000;
+      font-size: 13px;
+      color:#fff;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      flex:1 1 auto;
+      min-width:0;
+    }
+    .fileMeta{
+      font-size: 11px;
+      color: rgba(255,255,255,0.68);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.88);
+      font-size: 11px;
+      font-weight:900;
+      flex:0 0 auto;
+    }
+    .commentsCol{
+      width: 360px;
+      max-width: 44%;
+      min-width: 260px;
+      border-right: 2px solid rgba(255,255,255,0.10);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .commentSnippet{
+      font-size: 12px;
+      color: rgba(255,255,255,0.86);
+      line-height:1.25;
+      max-height: 2.6em;
+      overflow:hidden;
+    }
+    .commentLoc{
+      font-size: 11px;
+      color: rgba(255,255,255,0.62);
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .tagpill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.86);
+      font-size: 11px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .commentEditCol{
+      flex:1 1 auto;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .commentEditPad{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:auto;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      padding:10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.88);
+      color: rgba(255,255,255,0.92);
+      font-size: 12px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .16s ease, transform .16s ease;
+      z-index: 9999;
+    }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); }
+
+    .modalOverlay{
+      position: fixed;
+      inset:0;
+      background: rgba(0,0,0,0.62);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 9998;
+      padding: 14px;
+    }
+    .modalOverlay.show{ display:flex; }
+    .modal{
+      max-width: 640px;
+      width: 100%;
+      border-radius: 18px;
+      border:2px solid rgba(255,255,255,0.16);
+      background: rgba(10,10,10,0.92);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding:12px 12px 10px;
+      border-bottom:2px solid rgba(255,255,255,0.10);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      background: rgba(0,0,0,0.25);
+    }
+    .modalTitle{
+      font-weight:1000;
+      letter-spacing:.4px;
+      color:#ffd700;
+    }
+    .modalBody{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    @media (max-width: 860px){
+      .panel{ flex-direction:column; }
+      .pane-left{ width:auto; max-width:none; min-width:0; border-right:none; border-bottom:2px solid rgba(255,255,255,0.10); }
+      .fieldrow{ grid-template-columns: 120px 1fr; }
+      .commentbody{ flex-direction:column; }
+      .filesCol, .commentsCol{ width:auto; max-width:none; min-width:0; border-right:none; border-bottom:2px solid rgba(255,255,255,0.10); }
+    }
+    .recrow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.25);
+      margin-bottom:8px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .recrow:hover{ border-color: rgba(255,215,0,0.35); }
+    .recrow.sel{ outline:2px solid rgba(255,215,0,0.35); }
+    .recmeta{ display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
+    .recname{ font-weight:900; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .recsub{ font-size:12px; color: rgba(255,255,255,0.75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .badge{
+      font-size:11px;
+      font-weight:900;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.25);
+    }
+    .badge.ok{ border-color: rgba(80,255,160,0.35); background: rgba(80,255,160,0.10); }
+    .badge.warn{ border-color: rgba(255,80,80,0.35); background: rgba(255,80,80,0.10); }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="title">Arcade Index Editor</div>
+        <div class="subtitle">Load an index.html, edit game tiles, then download a new index file.</div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Tabs">
+        <button class="tabbtn" id="tabBuilder" role="tab" aria-selected="true" aria-controls="builderPanel">Builder</button>
+        <button class="tabbtn" id="tabCode" role="tab" aria-selected="false" aria-controls="codePanel">HTML Code</button>
+        <button class="tabbtn" id="tabComments" role="tab" aria-selected="false" aria-controls="commentsPanel">Comments</button>
+        <button class="tabbtn" id="tabReconcile" role="tab" aria-selected="false" aria-controls="reconcilePanel">Reconcile</button>
+      </div>
+
+      <div class="actions">
+        <label class="btn primary" for="fileInput">Load index.html</label>
+        <input id="fileInput" type="file" accept=".html,text/html" />
+
+        <label class="btn" for="gameFilesInput" id="lblGameFiles" style="display:none;">Load game files</label>
+        <input id="gameFilesInput" type="file" accept=".html,text/html" multiple />
+
+        <div class="pill" id="filePill">No index loaded</div>
+        <div class="pill" id="syncPill" style="display:none;">0 / 0 game files loaded</div>
+
+        <button class="btn" id="btnDownload" disabled>Download updated index</button>
+      </div>
+    </div>
+
+    <div class="panel" id="builderPanel" role="tabpanel" aria-labelledby="tabBuilder">
+      <div class="pane-left">
+        <div class="pane-head">
+          <div class="h">Games</div>
+          <div class="mini">
+            <button class="btn" id="btnAdd">Add</button>
+          </div>
+        </div>
+        <div class="list" id="gameList">
+          <div class="hint">Load an <span class="pill" style="padding:2px 8px;">index.html</span> to begin.</div>
+        </div>
+      </div>
+
+      <div class="pane-right">
+        <div class="pane-head">
+          <div class="h">Edit selected</div>
+          <div class="mini">
+            <button class="btn danger" id="btnDelete" disabled>Delete</button>
+          </div>
+        </div>
+
+        <div class="editor" id="editor">
+          <div class="hint" id="editorHint">
+            Load an existing <span class="pill" style="padding:2px 8px;">index.html</span>, then click a game on the left to edit it.
+          </div>
+
+          <div class="fieldrow">
+            <div class="label">Game name</div>
+            <input class="input" id="inName" placeholder="e.g., Mini Golf" disabled />
+          </div>
+
+          <div class="fieldrow">
+            <div class="label">File (href)</div>
+            <input class="input" id="inHref" placeholder="e.g., minigolf.html" disabled />
+          </div>
+
+          <div class="row2">
+            <div class="fieldrow" style="grid-template-columns:140px 1fr;">
+              <div class="label">Emoji/text</div>
+              <input class="input" id="inEmoji" placeholder="e.g., ⛳" disabled />
+            </div>
+            <div class="fieldrow" style="grid-template-columns:140px 1fr;">
+              <div class="label">Emoji color</div>
+              <input class="input" id="inEmojiColor" placeholder="#ffd700" disabled />
+            </div>
+          </div>
+
+          <div class="fieldrow">
+            <div class="label">Subtitle HTML</div>
+            <textarea class="textarea" id="inSubtitle" placeholder='Example: Pick a game. Use the in-game &lt;span class="tag"&gt;MENU&lt;/span&gt; button to come back here.' disabled></textarea>
+          </div>
+
+          <div class="fieldrow">
+            <div class="label">Title text</div>
+            <input class="input" id="inTitle" placeholder="Arcade! Hooray!" disabled />
+          </div>
+
+          <div class="hint">Tip: Emoji color is optional. Use a hex like <span class="pill" style="padding:2px 8px;">#00e5ff</span> or leave it blank.</div>
+        </div>
+
+        <div class="preview" id="preview">
+          <div class="arcade-wrap">
+            <div class="arcade-title" id="prevTitle">Arcade! Hooray!</div>
+            <div class="arcade-subtitle" id="prevSubtitle">Pick a game. Use the in-game <span class="pill" style="padding:2px 8px;">MENU</span> button to come back here.</div>
+            <div class="grid" id="prevGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel codepane" id="codePanel" role="tabpanel" aria-labelledby="tabCode" aria-hidden="true">
+      <div class="codehead">
+        <div class="pill" id="codePill">Generated HTML (updates as you edit)</div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn" id="btnCopy">Copy HTML</button>
+        </div>
+      </div>
+      <div class="codebox"><pre id="codePre"></pre></div>
+    </div>
+
+    <div class="panel commentpane" id="commentsPanel" role="tabpanel" aria-labelledby="tabComments" aria-hidden="true">
+      <div class="commenthead">
+        <div class="pill" id="commentsPill">Comments Editor</div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+          <label class="btn primary" for="batchInput">Load HTML files</label>
+          <input id="batchInput" type="file" accept=".html,text/html" multiple />
+          <button class="btn" id="btnDownloadZip" disabled>Download Changed Files</button>
+          <button class="btn" id="btnDownloadOne" disabled>Download selected file</button>
+          <button class="btn ghost" id="btnClearBatch" disabled>Clear</button>
+        </div>
+      </div>
+
+      <div class="commentbody">
+        <div class="filesCol">
+          <div class="pane-head">
+            <div class="h">Files</div>
+            <div class="mini">
+              <select id="filePick" title="Select file">
+                <option value="__ALL__">All loaded files</option>
+              </select>
+              <select id="commentFilter">
+                <option value="nonintegral">Non-integral (recommended)</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+          </div>
+          <div class="filesList" id="filesList"></div>
+        </div>
+
+        <div class="commentsCol">
+          <div class="pane-head">
+            <div class="h">Comments</div>
+            <div class="mini">
+              <div class="pill" id="countsPill">0</div>
+            </div>
+          </div>
+          <div class="commentsList" id="commentsList"></div>
+        </div>
+
+        <div class="commentEditCol">
+          <div class="pane-head">
+            <div class="h">Edit</div>
+            <div class="mini">
+              <button class="btn ghost" id="btnSelectAllComments" disabled>Select all</button>
+              <button class="btn ghost" id="btnKeepComment" disabled>Keep</button>
+              <button class="btn danger" id="btnDeleteComment" disabled>Delete</button>
+              <button class="btn" id="btnApplyComment" disabled>Apply</button>
+            </div>
+          </div>
+
+          <div class="commentEditPad">
+            <div class="hint" id="commentHint">Finds HTML comments plus JS/CSS comments. Each entry shows whether it’s inside html/script/style, and (best effort) the nearest enclosing tag.</div>
+
+            <div class="row2">
+              <div class="fieldrow" style="grid-template-columns:140px 1fr;">
+                <div class="label">Location</div>
+                <input class="input" id="commentLoc" disabled />
+              </div>
+              <div class="fieldrow" style="grid-template-columns:140px 1fr;">
+                <div class="label">Context</div>
+                <input class="input" id="commentCtx" disabled />
+              </div>
+            </div>
+
+            <div class="fieldrow">
+              <div class="label">Inside tag</div>
+              <input class="input" id="commentInside" disabled />
+            </div>
+
+            <div class="fieldrow">
+              <div class="label">Comment text</div>
+              <textarea class="textarea" id="commentText" disabled></textarea>
+            </div>
+
+            <div class="hint">Apply replaces the comment body. Delete removes the full comment token. Keep marks it as “integral” so it won’t show under Non-integral.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel reconcilepane" id="reconcilePanel" role="tabpanel" aria-labelledby="tabReconcile" aria-hidden="true" style="display:none;">
+          <div class="pill" style="position:absolute; top:12px; left:12px;">Reconcile Cleaned Files</div>
+          <div class="commentbody" style="height:100%; padding-top:42px;">
+            <div class="filesCol">
+              <div class="h">Folder</div>
+              <div class="mini" style="margin-top:6px;">
+                <button class="btn primary" id="btnPickFolder">Pick folder</button>
+              </div>
+              <div class="hint" id="folderHint" style="margin-top:10px;">
+                Choose a folder that contains both the originals and the <span class="pill" style="padding:2px 8px;">_cleaned</span> versions.
+                Chrome/Edge only (File System Access API).
+              </div>
+              <div class="divider"></div>
+              <div class="h">Pairs found</div>
+              <div class="hint" id="reconcileSummary">No folder selected.</div>
+              <div class="divider"></div>
+              <div class="mini">
+                <button class="btn ghost" id="btnReconcileSelectAll" disabled>Select all</button>
+                <button class="btn ghost" id="btnReconcileClear" disabled>Clear</button>
+              </div>
+              <div class="divider"></div>
+              <div class="mini">
+                <button class="btn" id="btnReplaceSelected" disabled>Replace selected</button>
+                <button class="btn danger" id="btnReplaceAll" disabled>Replace all</button>
+              </div>
+	            <div class="hint" id="reconcileFeedback" style="margin-top:10px; min-height:18px;"></div>
+              <div class="hint" style="margin-top:10px;">
+	              Replacement behavior: original is copied to <span class="pill" style="padding:2px 8px;">archive/</span> with a timestamp, then overwritten by the cleaned content; the <span class="pill" style="padding:2px 8px;">_cleaned</span> file is then removed.
+              </div>
+            </div>
+    
+            <div class="commentsCol" style="flex:1;">
+              <div class="h">Files</div>
+              <div class="hint">Only files with a matching <span class="pill" style="padding:2px 8px;">_cleaned</span> partner show up here.</div>
+              <div class="divider"></div>
+              <div class="list" id="reconcileList" style="flex:1; overflow:auto;">
+                <div class="hint">Pick a folder to scan.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+    
+      <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <div class="modalHead">
+            <div class="modalTitle" id="modalTitle">Load game files?</div>
+            <button class="btn ghost" id="btnModalClose">Close</button>
+          </div>
+          <div class="modalBody">
+            <div class="hint" id="modalHint">Your index.html is loaded. Next, load the individual game HTML files so this page can tell you what's missing (and what's extra).</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <label class="btn primary" for="gameFilesInput">Choose game HTML files</label>
+              <button class="btn" id="btnModalSkip">Skip for now</button>
+            </div>
+            <div class="hint">Tip: you can load everything in one go — it will auto-mark which ones are not referenced by the index.</div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+    
+
+  <script>
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    const state = {
+      loadedName: null,
+      original: {
+        titleText: "Arcade! Hooray!",
+        subtitleHTML: 'Pick a game. Use the in-game <span class="tag">MENU</span> button to come back here.',
+        docTitle: "Arcade! Hooray! — Menu",
+        styles: "",
+        metas: [
+          '<meta charset="UTF-8" />',
+          '<meta name="viewport" content="width=device-width, initial-scale=1.0" />'
+        ]
+      },
+      games: [],
+      selected: -1,
+
+      // game file sync info
+      gameFiles: new Map(), // normName -> {name,text}
+    };
+
+    const batchState = {
+      files: [],
+      // selectedFile: -2 none, -1 all, >=0 index into files
+      selectedFile: -2,
+      // multi-select comment keys "fileIndex:commentIndex"
+      selectedComments: new Set(),
+      reconcileDir: null,
+      reconcilePairs: [],
+      selectedReconcile: new Set(),
+      filter: "nonintegral"
+    };
+
+    const els = {
+      tabBuilder: $("#tabBuilder"),
+      tabCode: $("#tabCode"),
+      tabComments: $("#tabComments"),
+      tabReconcile: $("#tabReconcile"),
+      builderPanel: $("#builderPanel"),
+      codePanel: $("#codePanel"),
+      commentsPanel: $("#commentsPanel"),
+      reconcilePanel: $("#reconcilePanel"),
+
+      fileInput: $("#fileInput"),
+      filePill: $("#filePill"),
+      btnDownload: $("#btnDownload"),
+      btnAdd: $("#btnAdd"),
+      btnDelete: $("#btnDelete"),
+      gameList: $("#gameList"),
+
+      inName: $("#inName"),
+      inHref: $("#inHref"),
+      inEmoji: $("#inEmoji"),
+      inEmojiColor: $("#inEmojiColor"),
+      inSubtitle: $("#inSubtitle"),
+      inTitle: $("#inTitle"),
+
+      prevTitle: $("#prevTitle"),
+      prevSubtitle: $("#prevSubtitle"),
+      prevGrid: $("#prevGrid"),
+
+      codePre: $("#codePre"),
+      btnCopy: $("#btnCopy"),
+      toast: $("#toast"),
+      editorHint: $("#editorHint"),
+      codePill: $("#codePill"),
+
+      // game files
+      gameFilesInput: $("#gameFilesInput"),
+      lblGameFiles: $("#lblGameFiles"),
+      syncPill: $("#syncPill"),
+
+      // modal
+      modalOverlay: $("#modalOverlay"),
+      btnModalClose: $("#btnModalClose"),
+      btnModalSkip: $("#btnModalSkip"),
+
+      // comments tab
+      batchInput: $("#batchInput"),
+      commentsPill: $("#commentsPill"),
+      countsPill: $("#countsPill"),
+      filePick: $("#filePick"),
+      btnDownloadOne: $("#btnDownloadOne"),
+      btnDownloadZip: $("#btnDownloadZip"),
+      btnClearBatch: $("#btnClearBatch"),
+      filesList: $("#filesList"),
+      commentsList: $("#commentsList"),
+      commentFilter: $("#commentFilter"),
+      btnSelectAllComments: $("#btnSelectAllComments"),
+      btnKeepComment: $("#btnKeepComment"),
+      btnDeleteComment: $("#btnDeleteComment"),
+      btnApplyComment: $("#btnApplyComment"),
+      commentLoc: $("#commentLoc"),
+      commentCtx: $("#commentCtx"),
+      commentInside: $("#commentInside"),
+      commentText: $("#commentText"),
+      btnPickFolder: $("#btnPickFolder"),
+      folderHint: $("#folderHint"),
+      reconcileSummary: $("#reconcileSummary"),
+      reconcileList: $("#reconcileList"),
+      btnReconcileSelectAll: $("#btnReconcileSelectAll"),
+      btnReconcileClear: $("#btnReconcileClear"),
+      btnReplaceSelected: $("#btnReplaceSelected"),
+	      btnReplaceAll: $("#btnReplaceAll"),
+	      reconcileFeedback: $("#reconcileFeedback")
+    };
+
+    function toast(msg){
+      els.toast.textContent = msg;
+      els.toast.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=>els.toast.classList.remove("show"), 1200);
+    }
+
+    function escapeHtml(s){
+      return (s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    }
+
+    function normalizeHex(s){
+      s = (s ?? "").trim();
+      if(!s) return "";
+      if(/^#[0-9a-fA-F]{3}$/.test(s) || /^#[0-9a-fA-F]{6}$/.test(s)) return s;
+      if(/^[0-9a-fA-F]{3}$/.test(s)) return "#"+s;
+      if(/^[0-9a-fA-F]{6}$/.test(s)) return "#"+s;
+      return s;
+    }
+
+    function normName(name){
+      const base = String(name || "").split(/[\\/]/).pop();
+      return base.toLowerCase();
+    }
+
+    function isLikelyLocalHref(href){
+      const h = (href || "").trim();
+      if(!h) return false;
+      if(/^https?:\/\//i.test(h)) return false;
+      if(/^data:/i.test(h)) return false;
+      if(h.startsWith("#")) return false;
+      return true;
+    }
+
+    function selectTab(which){
+      const isBuilder = which === "builder";
+      const isCode = which === "code";
+      const isComments = which === "comments";
+      const isReconcile = which === "reconcile";
+
+      els.tabBuilder.setAttribute("aria-selected", isBuilder ? "true" : "false");
+      els.tabCode.setAttribute("aria-selected", isCode ? "true" : "false");
+      els.tabComments.setAttribute("aria-selected", isComments ? "true" : "false");
+      els.tabReconcile.setAttribute("aria-selected", isReconcile ? "true" : "false");
+
+      els.builderPanel.style.display = isBuilder ? "flex" : "none";
+      els.codePanel.setAttribute("aria-hidden", isCode ? "false" : "true");
+      els.codePanel.style.display = isCode ? "block" : "none";
+      els.commentsPanel.setAttribute("aria-hidden", isComments ? "false" : "true");
+      els.commentsPanel.style.display = isComments ? "flex" : "none";
+      els.reconcilePanel.setAttribute("aria-hidden", isReconcile ? "false" : "true");
+      els.reconcilePanel.style.display = isReconcile ? "flex" : "none";
+
+      if(isCode) renderCode();
+      if(isComments) renderCommentsUI();
+      if(isReconcile) renderReconcileUI();
+    }
+
+    els.tabBuilder.addEventListener("click", ()=>selectTab("builder"));
+    els.tabCode.addEventListener("click", ()=>selectTab("code"));
+    els.tabComments.addEventListener("click", ()=>selectTab("comments"));
+    els.tabReconcile.addEventListener("click", ()=>selectTab("reconcile"));
+
+    function setEditorEnabled(on){
+      for(const el of [els.inName, els.inHref, els.inEmoji, els.inEmojiColor, els.inSubtitle, els.inTitle]) el.disabled = !on;
+      els.btnDelete.disabled = !on || state.selected < 0;
+    }
+
+    function showModal(on){
+      els.modalOverlay.classList.toggle("show", !!on);
+      els.modalOverlay.setAttribute("aria-hidden", on ? "false" : "true");
+    }
+
+    els.btnModalClose.addEventListener("click", ()=>showModal(false));
+    els.btnModalSkip.addEventListener("click", ()=>showModal(false));
+    els.modalOverlay.addEventListener("click", (e)=>{ if(e.target === els.modalOverlay) showModal(false); });
+
+    function updateSyncPill(){
+      const hrefs = state.games.map(g=>g.href).filter(isLikelyLocalHref).map(normName);
+      const unique = Array.from(new Set(hrefs));
+      const loaded = unique.filter(n=>state.gameFiles.has(n)).length;
+
+      els.syncPill.style.display = state.loadedName ? "inline-flex" : "none";
+      els.lblGameFiles.style.display = state.loadedName ? "inline-flex" : "none";
+      els.syncPill.textContent = `${loaded} / ${unique.length} game files loaded`;
+
+      // helpful: mark "all loaded" state
+      if(unique.length && loaded === unique.length){
+        els.syncPill.style.borderColor = "rgba(80,255,160,0.35)";
+        els.syncPill.style.background = "rgba(80,255,160,0.10)";
+        els.syncPill.style.color = "rgba(255,255,255,0.92)";
+      } else if(unique.length && loaded < unique.length){
+        els.syncPill.style.borderColor = "rgba(255,80,80,0.35)";
+        els.syncPill.style.background = "rgba(255,80,80,0.10)";
+        els.syncPill.style.color = "rgba(255,255,255,0.92)";
+      } else {
+        els.syncPill.style.borderColor = "rgba(255,255,255,0.18)";
+        els.syncPill.style.background = "rgba(0,0,0,0.25)";
+        els.syncPill.style.color = "rgba(255,255,255,0.80)";
+      }
+    }
+
+    function readIndexHtml(text){
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "text/html");
+
+      const docTitle = (doc.querySelector("title")?.textContent || "Arcade! Hooray! — Menu").trim();
+      const styleText = $$("style", doc).map(s=>s.textContent || "").join("\n\n");
+      const titleText = (doc.querySelector(".title")?.textContent || "Arcade! Hooray!").trim();
+      const subtitleEl = doc.querySelector(".subtitle");
+      const subtitleHTML = subtitleEl ? (subtitleEl.innerHTML || "").trim() : 'Pick a game. Use the in-game <span class="tag">MENU</span> button to come back here.';
+
+      const grid = doc.querySelector(".grid");
+      const cards = grid ? $$("a.card", grid) : [];
+      const games = cards.map(a=>{
+        const emojiEl = a.querySelector(".emoji");
+        const nameEl = a.querySelector(".name");
+        const href = (a.getAttribute("href") || "").trim();
+        const emojiText = (emojiEl?.textContent || "").trim();
+        const inline = (emojiEl?.getAttribute("style") || "");
+        let emojiColor = "";
+        const m = inline.match(/color\s*:\s*([^;]+)/i);
+        if(m) emojiColor = (m[1] || "").trim();
+        const name = (nameEl?.textContent || "").trim();
+        return { href, name, emojiText, emojiColor };
+      });
+
+      state.original.docTitle = docTitle;
+      state.original.styles = styleText;
+      state.original.titleText = titleText;
+      state.original.subtitleHTML = subtitleHTML;
+
+      state.games = games.length ? games : [];
+      state.selected = state.games.length ? 0 : -1;
+
+      els.inTitle.value = state.original.titleText;
+      els.inSubtitle.value = state.original.subtitleHTML;
+
+      renderList();
+      renderEditor();
+      renderPreview();
+      renderCode();
+
+      els.btnDownload.disabled = state.games.length === 0;
+      setEditorEnabled(state.games.length > 0);
+
+      // prompt to load game files right after index load
+      updateSyncPill();
+      showModal(true);
+    }
+
+    function defaultGame(){
+      return { href:"newgame.html", name:"New Game", emojiText:"🎮", emojiColor:"#00e5ff" };
+    }
+
+    function renderList(){
+      els.gameList.innerHTML = "";
+      if(!state.loadedName){
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = "Load an index.html to begin.";
+        els.gameList.appendChild(hint);
+        return;
+      }
+
+      // Primary list: games in index
+      state.games.forEach((g, idx)=>{
+        const hrefKey = isLikelyLocalHref(g.href) ? normName(g.href) : "";
+        const isLoaded = hrefKey && state.gameFiles.has(hrefKey);
+        const isMissing = hrefKey && !state.gameFiles.has(hrefKey);
+
+        const it = document.createElement("div");
+        it.className = "item";
+        if(isLoaded) it.classList.add("loaded");
+        if(isMissing) it.classList.add("missing");
+
+        it.setAttribute("role","option");
+        it.setAttribute("aria-selected", idx === state.selected ? "true" : "false");
+        it.addEventListener("click", ()=>{ state.selected = idx; renderList(); renderEditor(); setEditorEnabled(true); });
+
+        const drag = document.createElement("div");
+        drag.className = "drag";
+        drag.textContent = "≡";
+        it.appendChild(drag);
+
+        const em = document.createElement("div");
+        em.className = "it-emoji";
+        em.textContent = g.emojiText || "🎮";
+        if((g.emojiColor || "").trim()) em.style.color = g.emojiColor.trim();
+        it.appendChild(em);
+
+        const mid = document.createElement("div");
+        mid.className = "it-mid";
+        const nm = document.createElement("div");
+        nm.className = "it-name";
+        nm.textContent = g.name || "(untitled)";
+        const hr = document.createElement("div");
+        hr.className = "it-href";
+        hr.textContent = g.href || "";
+        mid.appendChild(nm);
+        mid.appendChild(hr);
+        it.appendChild(mid);
+
+        const ctr = document.createElement("div");
+        ctr.className = "it-controls";
+
+        const dot = document.createElement("div");
+        dot.className = "statusdot";
+        if(!hrefKey){
+          dot.textContent = "•";
+        }else if(isLoaded){
+          dot.classList.add("ok");
+          dot.textContent = "✓";
+          dot.title = "File loaded";
+        }else{
+          dot.classList.add("bad");
+          dot.textContent = "!";
+          dot.title = "In index, but not loaded";
+        }
+
+        const up = document.createElement("button");
+        up.className = "iconbtn";
+        up.textContent = "↑";
+        up.disabled = idx === 0;
+        up.addEventListener("click", (e)=>{ e.stopPropagation(); move(idx, idx-1); });
+
+        const dn = document.createElement("button");
+        dn.className = "iconbtn";
+        dn.textContent = "↓";
+        dn.disabled = idx === state.games.length - 1;
+        dn.addEventListener("click", (e)=>{ e.stopPropagation(); move(idx, idx+1); });
+
+        ctr.appendChild(dot);
+        ctr.appendChild(up);
+        ctr.appendChild(dn);
+        it.appendChild(ctr);
+
+        attachDragReorder(drag, idx);
+        els.gameList.appendChild(it);
+      });
+
+      // Secondary section: loaded extras not in index
+      const indexHrefs = new Set(state.games.map(g=>g.href).filter(isLikelyLocalHref).map(normName));
+      const extras = Array.from(state.gameFiles.values()).filter(f=>!indexHrefs.has(normName(f.name)));
+
+      const sec = document.createElement("div");
+      sec.className = "subsection";
+
+      const head = document.createElement("div");
+      head.className = "subhead";
+      head.innerHTML = `<span>Loaded but not in index</span><span class="miniPill">${extras.length}</span>`;
+      sec.appendChild(head);
+
+      if(extras.length === 0){
+        const h = document.createElement("div");
+        h.className = "hint";
+        h.textContent = "None.";
+        sec.appendChild(h);
+      }else{
+        extras.sort((a,b)=>a.name.localeCompare(b.name));
+        for(const f of extras){
+          const it = document.createElement("div");
+          it.className = "item missing"; // red-highlight to scream "extra"
+          it.style.cursor = "default";
+          it.addEventListener("click", (e)=>e.stopPropagation());
+
+          const drag = document.createElement("div");
+          drag.className = "drag";
+          drag.textContent = "…";
+          it.appendChild(drag);
+
+          const em = document.createElement("div");
+          em.className = "it-emoji";
+          em.textContent = "📄";
+          it.appendChild(em);
+
+          const mid = document.createElement("div");
+          mid.className = "it-mid";
+          const nm = document.createElement("div");
+          nm.className = "it-name";
+          nm.textContent = f.name;
+          const hr = document.createElement("div");
+          hr.className = "it-href";
+          hr.textContent = "Loaded file not referenced by index";
+          mid.appendChild(nm);
+          mid.appendChild(hr);
+          it.appendChild(mid);
+
+          const ctr = document.createElement("div");
+          ctr.className = "it-controls";
+          const dot = document.createElement("div");
+          dot.className = "statusdot bad";
+          dot.textContent = "✕";
+          dot.title = "Loaded but not in index";
+          ctr.appendChild(dot);
+          it.appendChild(ctr);
+
+          sec.appendChild(it);
+        }
+      }
+
+      els.gameList.appendChild(sec);
+
+      updateSyncPill();
+    }
+
+    function attachDragReorder(handle, idx){
+      let startY = 0;
+      let startIdx = idx;
+      let dragging = false;
+
+      const yOf = (ev)=> (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY;
+
+      const onDown = (ev)=>{
+        if(ev.button !== undefined && ev.button !== 0) return;
+        dragging = true;
+        startIdx = idx;
+        startY = yOf(ev);
+        try{ handle.setPointerCapture?.(ev.pointerId); }catch{}
+        if(ev.cancelable) ev.preventDefault();
+      };
+
+      const onMove = (ev)=>{
+        if(!dragging) return;
+        const y = yOf(ev);
+        const dy = y - startY;
+        if(Math.abs(dy) < 26) return;
+
+        const dir = dy > 0 ? 1 : -1;
+        const from = startIdx;
+        const to = Math.max(0, Math.min(state.games.length-1, from + dir));
+        if(to !== from){
+          move(from, to);
+          startIdx = to;
+          startY = y;
+        }
+        if(ev.cancelable) ev.preventDefault();
+      };
+
+      const onUp = ()=>{ dragging = false; };
+
+      handle.addEventListener("pointerdown", onDown, {passive:false});
+      handle.addEventListener("pointermove", onMove, {passive:false});
+      handle.addEventListener("pointerup", onUp, {passive:true});
+      handle.addEventListener("pointercancel", onUp, {passive:true});
+
+      handle.addEventListener("touchstart", onDown, {passive:false});
+      handle.addEventListener("touchmove", onMove, {passive:false});
+      handle.addEventListener("touchend", onUp, {passive:true});
+      handle.addEventListener("touchcancel", onUp, {passive:true});
+    }
+
+    function move(from, to){
+      if(from === to) return;
+      const arr = state.games;
+      const it = arr.splice(from, 1)[0];
+      arr.splice(to, 0, it);
+      if(state.selected === from) state.selected = to;
+      else if(state.selected > from && state.selected <= to) state.selected--;
+      else if(state.selected < from && state.selected >= to) state.selected++;
+      renderList();
+      renderPreview();
+      renderCode();
+    }
+
+    function renderEditor(){
+      const has = state.selected >= 0 && state.selected < state.games.length;
+      els.editorHint.style.display = has ? "none" : "block";
+      if(!has){
+        els.inName.value = "";
+        els.inHref.value = "";
+        els.inEmoji.value = "";
+        els.inEmojiColor.value = "";
+        els.btnDelete.disabled = true;
+        return;
+      }
+      const g = state.games[state.selected];
+      els.inName.value = g.name || "";
+      els.inHref.value = g.href || "";
+      els.inEmoji.value = g.emojiText || "";
+      els.inEmojiColor.value = g.emojiColor || "";
+      els.btnDelete.disabled = false;
+    }
+
+    function renderPreview(){
+      els.prevTitle.textContent = state.original.titleText || "Arcade! Hooray!";
+      els.prevSubtitle.innerHTML = state.original.subtitleHTML || "";
+      els.prevGrid.innerHTML = "";
+      state.games.forEach(g=>{
+        const a = document.createElement("a");
+        a.className = "card";
+        a.href = g.href || "#";
+        const em = document.createElement("div");
+        em.className = "emoji";
+        em.textContent = g.emojiText || "🎮";
+        if((g.emojiColor || "").trim()) em.style.color = g.emojiColor.trim();
+        const nm = document.createElement("div");
+        nm.className = "name";
+        nm.textContent = g.name || "(untitled)";
+        a.appendChild(em);
+        a.appendChild(nm);
+        els.prevGrid.appendChild(a);
+      });
+    }
+
+    function bindEditor(){
+      const onAny = ()=>{
+        if(state.selected < 0) return;
+        const g = state.games[state.selected];
+        g.name = (els.inName.value || "").trim();
+        g.href = (els.inHref.value || "").trim();
+        g.emojiText = (els.inEmoji.value || "").trim();
+        g.emojiColor = normalizeHex(els.inEmojiColor.value || "");
+        els.inEmojiColor.value = g.emojiColor;
+        state.original.subtitleHTML = els.inSubtitle.value || "";
+        state.original.titleText = (els.inTitle.value || "").trim() || "Arcade! Hooray!";
+        renderList();
+        renderPreview();
+        renderCode();
+      };
+      for(const el of [els.inName, els.inHref, els.inEmoji, els.inEmojiColor, els.inSubtitle, els.inTitle]){
+        el.addEventListener("input", onAny);
+        el.addEventListener("change", onAny);
+      }
+    }
+
+    function buildIndexHtml(){
+      const metas = state.original.metas.join("\n  ");
+      const styles = state.original.styles || "";
+      const docTitle = escapeHtml(state.original.docTitle || "Arcade! Hooray! — Menu");
+      const titleText = escapeHtml(state.original.titleText || "Arcade! Hooray!");
+      const subtitleHTML = state.original.subtitleHTML || "";
+      const cards = state.games.map(g=>{
+        const href = escapeHtml((g.href || "").trim());
+        const name = escapeHtml((g.name || "").trim());
+        const emojiText = escapeHtml((g.emojiText || "").trim());
+        const color = (g.emojiColor || "").trim();
+        const styleAttr = color ? ` style="color:${escapeHtml(color)}"` : "";
+        return `      <a class="card" href="${href}"><div class="emoji"${styleAttr}>${emojiText}</div><div class="name">${name}</div></a>`;
+      }).join("\n");
+
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  ${metas}
+  <title>${docTitle}</title>
+  <style>
+${styles}
+    .recrow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.25);
+      margin-bottom:8px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .recrow:hover{ border-color: rgba(255,215,0,0.35); }
+    .recrow.sel{ outline:2px solid rgba(255,215,0,0.35); }
+    .recmeta{ display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
+    .recname{ font-weight:900; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .recsub{ font-size:12px; color: rgba(255,255,255,0.75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .badge{
+      font-size:11px;
+      font-weight:900;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.25);
+    }
+    .badge.ok{ border-color: rgba(80,255,160,0.35); background: rgba(80,255,160,0.10); }
+    .badge.warn{ border-color: rgba(255,80,80,0.35); background: rgba(255,80,80,0.10); }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">${titleText}</div>
+    <div class="subtitle">${subtitleHTML}</div>
+
+    <div class="grid">
+${cards}
+    </div>
+  </div>
+</body>
+</html>
+`;
+    }
+
+    function renderCode(){
+      const code = buildIndexHtml();
+      els.codePre.textContent = code;
+      els.codePill.textContent = state.loadedName ? `Generated HTML from ${state.loadedName}` : "Generated HTML (updates as you edit)";
+    }
+
+    function downloadBlob(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    }
+
+    function downloadFile(text, filename){
+      const blob = new Blob([text], {type:"text/html;charset=utf-8"});
+      downloadBlob(blob, filename);
+    }
+
+    function timestampName(prefix="index", ext="html"){
+      const d = new Date();
+      const pad = (n)=> String(n).padStart(2,"0");
+      const y = d.getFullYear();
+      const mo = pad(d.getMonth()+1);
+      const da = pad(d.getDate());
+      const h = pad(d.getHours());
+      const mi = pad(d.getMinutes());
+      const s = pad(d.getSeconds());
+      return `${prefix}_${y}${mo}${da}_${h}${mi}${s}.${ext}`;
+    }
+
+    els.fileInput.addEventListener("change", async (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const text = await f.text();
+      state.loadedName = f.name;
+      state.gameFiles.clear(); // reset file sync on new index
+      els.filePill.textContent = f.name;
+      readIndexHtml(text);
+      toast("Index loaded");
+    });
+
+    els.gameFilesInput.addEventListener("change", async (e)=>{
+      const files = Array.from(e.target.files || []).filter(f=>/\.html?$/i.test(f.name) || f.type === "text/html" || f.type === "");
+      if(files.length === 0) return;
+      for(const f of files){
+        const txt = await f.text();
+        state.gameFiles.set(normName(f.name), {name:f.name, text:txt});
+      }
+      showModal(false);
+      renderList();
+      toast("Game files loaded");
+      els.gameFilesInput.value = "";
+    });
+
+    els.btnAdd.addEventListener("click", ()=>{
+      state.games.push(defaultGame());
+      state.selected = state.games.length - 1;
+      renderList();
+      renderEditor();
+      setEditorEnabled(true);
+      renderPreview();
+      renderCode();
+      els.btnDownload.disabled = false;
+      toast("Added");
+    });
+
+    els.btnDelete.addEventListener("click", ()=>{
+      if(state.selected < 0) return;
+      state.games.splice(state.selected, 1);
+      if(state.games.length === 0){
+        state.selected = -1;
+        setEditorEnabled(false);
+      } else {
+        state.selected = Math.min(state.selected, state.games.length-1);
+        setEditorEnabled(true);
+      }
+      renderList();
+      renderEditor();
+      renderPreview();
+      renderCode();
+      els.btnDownload.disabled = state.games.length === 0;
+      toast("Deleted");
+    });
+
+    els.btnDownload.addEventListener("click", ()=>{
+      if(state.games.length === 0) return;
+      const out = buildIndexHtml();
+      downloadFile(out, timestampName("index", "html"));
+      toast("Downloaded");
+    });
+
+    els.btnCopy.addEventListener("click", async ()=>{
+      const txt = buildIndexHtml();
+      try{
+        await navigator.clipboard.writeText(txt);
+        toast("Copied");
+      }catch{
+        const ta = document.createElement("textarea");
+        ta.value = txt;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try{ document.execCommand("copy"); toast("Copied"); }
+        catch{ toast("Copy failed"); }
+        ta.remove();
+      }
+    });
+
+    // ----- COMMENTS TAB (multi-file comment editor + ZIP export) -----
+
+    function countLinesUpTo(text, idx){
+      let n = 1;
+      for(let i=0;i<idx && i<text.length;i++) if(text.charCodeAt(i) === 10) n++;
+      return n;
+    }
+
+    function findTagRanges(text){
+      const lower = text.toLowerCase();
+      const ranges = [];
+      let i = 0;
+      while(true){
+        const s = lower.indexOf("<script", i);
+        if(s === -1) break;
+        const gt = lower.indexOf(">", s+7);
+        if(gt === -1) break;
+        // IMPORTANT: avoid literal </scr" + "ipt> inside a script tag in THIS tool file.
+        const e = lower.indexOf("</scr" + "ipt>", gt+1);
+        if(e === -1) break;
+        ranges.push({tag:"script", start:s, bodyStart:gt+1, bodyEnd:e, end:e+9});
+        i = e+9;
+      }
+      i = 0;
+      while(true){
+        const s = lower.indexOf("<style", i);
+        if(s === -1) break;
+        const gt = lower.indexOf(">", s+6);
+        if(gt === -1) break;
+        const e = lower.indexOf("</sty" + "le>", gt+1);
+        if(e === -1) break;
+        ranges.push({tag:"style", start:s, bodyStart:gt+1, bodyEnd:e, end:e+8});
+        i = e+8;
+      }
+      ranges.sort((a,b)=>a.start-b.start);
+      return ranges;
+    }
+
+    function whichTagAt(ranges, pos){
+      for(const r of ranges){
+        if(pos >= r.bodyStart && pos < r.bodyEnd) return r.tag;
+        if(pos < r.start) break;
+      }
+      return "html";
+    }
+
+    function guessInsideTag(htmlText, pos){
+      let i = Math.max(0, pos);
+      const maxBack = 5000;
+      const start = Math.max(0, i - maxBack);
+      const slice = htmlText.slice(start, i);
+      let inQuote = false;
+      let q = "";
+      for(let k = slice.length - 1; k >= 0; k--){
+        const ch = slice[k];
+        if(inQuote){
+          if(ch === q) inQuote = false;
+          continue;
+        }
+        if(ch === '"' || ch === "'"){
+          inQuote = true;
+          q = ch;
+          continue;
+        }
+        if(ch === "<"){
+          const rest = slice.slice(k+1);
+          if(rest.startsWith("!--")) continue;
+          if(rest.startsWith("/")) continue;
+          const m = rest.match(/^([a-zA-Z][a-zA-Z0-9:_-]*)\b/);
+          if(m) return m[1].toLowerCase();
+        }
+      }
+      return "";
+    }
+
+    function scanHtmlComments(text, ranges){
+      const out = [];
+      let i = 0;
+      while(true){
+        const s = text.indexOf("<!--", i);
+        if(s === -1) break;
+        const e = text.indexOf("-->", s+4);
+        if(e === -1) break;
+        const end = e+3;
+        const tag = whichTagAt(ranges, s);
+        out.push({
+          kind:"html",
+          tag,
+          insideTag: guessInsideTag(text, s),
+          start:s,
+          end:end,
+          bodyStart:s+4,
+          bodyEnd:e,
+          body:text.slice(s+4, e),
+          line: countLinesUpTo(text, s)
+        });
+        i = end;
+      }
+      return out;
+    }
+
+    function scanCssBlockComments(text, startBase){
+      const out = [];
+      let i = 0;
+      while(true){
+        const s = text.indexOf("/*", i);
+        if(s === -1) break;
+        const e = text.indexOf("*/", s+2);
+        if(e === -1) break;
+        const end = e+2;
+        out.push({
+          kind:"css-block",
+          tag:"style",
+          insideTag:"",
+          start: startBase + s,
+          end: startBase + end,
+          bodyStart: startBase + (s+2),
+          bodyEnd: startBase + e,
+          body: text.slice(s+2, e),
+          line: null
+        });
+        i = end;
+      }
+      return out;
+    }
+
+    function scanJsComments(text, startBase){
+      const out = [];
+      let i = 0;
+      let inS = false, inD = false, inT = false;
+      let esc = false;
+      while(i < text.length){
+        const ch = text[i];
+        const nx = i+1 < text.length ? text[i+1] : "";
+
+        if(esc){
+          esc = false;
+          i++;
+          continue;
+        }
+
+        if(inS){
+          if(ch === "\\") { esc = true; i++; continue; }
+          if(ch === "'") inS = false;
+          i++;
+          continue;
+        }
+        if(inD){
+          if(ch === "\\") { esc = true; i++; continue; }
+          if(ch === '"') inD = false;
+          i++;
+          continue;
+        }
+        if(inT){
+          if(ch === "\\") { esc = true; i++; continue; }
+          if(ch === "`") inT = false;
+          i++;
+          continue;
+        }
+
+        if(ch === "'"){ inS = true; i++; continue; }
+        if(ch === '"'){ inD = true; i++; continue; }
+        if(ch === "`"){ inT = true; i++; continue; }
+
+        if(ch === "/" && nx === "/"){
+          const s = i;
+          let e = text.indexOf("\n", i+2);
+          if(e === -1) e = text.length;
+          out.push({
+            kind:"js-line",
+            tag:"script",
+            insideTag:"",
+            start: startBase + s,
+            end: startBase + e,
+            bodyStart: startBase + (s+2),
+            bodyEnd: startBase + e,
+            body: text.slice(s+2, e),
+            line: null
+          });
+          i = e;
+          continue;
+        }
+
+        if(ch === "/" && nx === "*"){
+          const s = i;
+          const e0 = text.indexOf("*/", i+2);
+          if(e0 === -1){ i += 2; continue; }
+          const end = e0 + 2;
+          out.push({
+            kind:"js-block",
+            tag:"script",
+            insideTag:"",
+            start: startBase + s,
+            end: startBase + end,
+            bodyStart: startBase + (s+2),
+            bodyEnd: startBase + e0,
+            body: text.slice(s+2, e0),
+            line: null
+          });
+          i = end;
+          continue;
+        }
+
+        i++;
+      }
+      return out;
+    }
+
+    function looksNonIntegral(c){
+      const body = (c.body || "").trim();
+      if(!body) return true;
+      const low = body.toLowerCase();
+
+      if(c.kind === "html") return true;
+
+      if(low.includes("@license") || low.includes("spdx-license-identifier") || low.includes("copyright")) return false;
+      if(low.includes("sourcemappingurl")) return false;
+      if(low.includes("eslint") || low.includes("prettier")) return false;
+      if(low.includes("jshint") || low.includes("jslint")) return false;
+      if(low.includes("istanbul") || low.includes("v8 ignore")) return false;
+      if(low.includes("global") || low.includes("externs")) return false;
+
+      return true;
+    }
+
+    function normalizeCommentLineNumbers(fileText, comments){
+      for(const c of comments) c.line = countLinesUpTo(fileText, c.start);
+    }
+
+    function scanAllComments(fileText){
+      const ranges = findTagRanges(fileText);
+      let out = [];
+      out = out.concat(scanHtmlComments(fileText, ranges));
+
+      for(const r of ranges){
+        const body = fileText.slice(r.bodyStart, r.bodyEnd);
+        if(r.tag === "style"){
+          out = out.concat(scanCssBlockComments(body, r.bodyStart));
+        } else if(r.tag === "script"){
+          out = out.concat(scanJsComments(body, r.bodyStart));
+        }
+      }
+
+      normalizeCommentLineNumbers(fileText, out);
+
+      out.forEach(c=>{
+        c.originalBody = c.body;
+        c.deleted = false;
+        c.keep = false;
+        c.nonIntegral = looksNonIntegral(c);
+      });
+
+      out.sort((a,b)=>a.start-b.start);
+      return out;
+    }
+
+    function currentFile(){
+      if(batchState.selectedFile >= 0) return batchState.files[batchState.selectedFile] || null;
+      return null;
+    }
+
+    function visibleCommentsForFile(f){
+      const list = f.comments.filter(c=>!c.deleted);
+      if(batchState.filter === "all") return list;
+      return list.filter(c=>!c.keep && c.nonIntegral);
+    }
+
+    function visibleCommentEntries(){
+      const out = [];
+      const wantAll = batchState.selectedFile === -1;
+
+      if(wantAll){
+        batchState.files.forEach((f, fi)=>{
+          const list = visibleCommentsForFile(f);
+          for(const c of list){
+            out.push({ key: c._key, fileIndex: fi, fileName: f.name, c });
+          }
+        });
+      } else {
+        const f = currentFile();
+        if(!f) return out;
+        const list = visibleCommentsForFile(f);
+        for(const c of list){
+          out.push({ key: c._key, fileIndex: batchState.selectedFile, fileName: f.name, c });
+        }
+      }
+      return out;
+    }
+
+    function pruneSelected(visible){
+      const set = new Set(visible.map(v=>v.key));
+      for(const k of Array.from(batchState.selectedComments)){
+        if(!set.has(k)) batchState.selectedComments.delete(k);
+      }
+    }
+
+    function renderCommentsUI(){
+      els.filesList.innerHTML = "";
+      els.commentsList.innerHTML = "";
+
+      els.btnDownloadOne.disabled = true;
+      els.btnDownloadZip.disabled = true;
+      els.btnClearBatch.disabled = true;
+
+      els.btnSelectAllComments.disabled = true;
+      els.btnKeepComment.disabled = true;
+      els.btnDeleteComment.disabled = true;
+      els.btnApplyComment.disabled = true;
+      els.commentLoc.value = "";
+      els.commentCtx.value = "";
+      els.commentInside.value = "";
+      els.commentText.value = "";
+      els.commentText.disabled = true;
+
+      // file picker options
+      els.filePick.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "__ALL__";
+      optAll.textContent = "All loaded files";
+      els.filePick.appendChild(optAll);
+
+      if(batchState.files.length === 0){
+        els.commentsPill.textContent = "Comments Editor";
+        els.countsPill.textContent = "0";
+        return;
+      }
+
+      batchState.files.forEach((f, idx)=>{
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = f.name;
+        els.filePick.appendChild(opt);
+      });
+
+      // default selection
+      if(batchState.selectedFile === -2) batchState.selectedFile = -1;
+      if(batchState.selectedFile >= batchState.files.length) batchState.selectedFile = -1;
+
+      els.filePick.value = batchState.selectedFile === -1 ? "__ALL__" : String(batchState.selectedFile);
+
+      els.btnDownloadZip.disabled = false;
+      els.btnClearBatch.disabled = false;
+      els.btnDownloadOne.disabled = !(batchState.selectedFile >= 0);
+
+      // file list (clickable) — still useful for quick switching + showing counts
+      batchState.files.forEach((f, idx)=>{
+        const div = document.createElement("div");
+        div.className = "fileItem";
+        div.setAttribute("aria-selected", (idx === batchState.selectedFile) ? "true" : "false");
+
+        const top = document.createElement("div");
+        top.className = "fileNameRow";
+
+        const nm = document.createElement("div");
+        nm.className = "fileNm";
+        nm.textContent = f.name;
+
+        const bdg = document.createElement("div");
+        bdg.className = "badge";
+        bdg.textContent = String(visibleCommentsForFile(f).length);
+
+        top.appendChild(nm);
+        top.appendChild(bdg);
+
+        const meta = document.createElement("div");
+        meta.className = "fileMeta";
+        meta.textContent = f.dirty ? "modified" : "unchanged";
+
+        div.appendChild(top);
+        div.appendChild(meta);
+
+        div.addEventListener("click", ()=>{
+          batchState.selectedFile = idx;
+          batchState.selectedComments.clear();
+          renderCommentsUI();
+        });
+
+        els.filesList.appendChild(div);
+      });
+
+      const pill = batchState.selectedFile === -1 ? "Comments Editor — ALL FILES" : `Comments Editor — ${currentFile()?.name || ""}`;
+      els.commentsPill.textContent = pill.trim();
+      renderCommentsList();
+      renderCommentEditor();
+    }
+
+    function renderCommentsList(){
+      els.commentsList.innerHTML = "";
+      const entries = visibleCommentEntries();
+      pruneSelected(entries);
+      els.countsPill.textContent = String(entries.length);
+
+      els.btnSelectAllComments.disabled = entries.length === 0;
+      els.btnSelectAllComments.textContent = (entries.length && batchState.selectedComments.size === entries.length) ? "Clear" : "Select all";
+
+      const wantAll = batchState.selectedFile === -1;
+
+      entries.forEach((e)=>{
+        const c = e.c;
+        const div = document.createElement("div");
+        div.className = "commentItem";
+        div.setAttribute("aria-selected", batchState.selectedComments.has(e.key) ? "true" : "false");
+
+        const row = document.createElement("div");
+        row.style.display = "grid";
+        row.style.gridTemplateColumns = "22px 1fr";
+        row.style.gap = "10px";
+        row.style.alignItems = "start";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = batchState.selectedComments.has(e.key);
+        cb.style.marginTop = "4px";
+
+        const content = document.createElement("div");
+
+        const sn = document.createElement("div");
+        sn.className = "commentSnippet";
+        const clean = (c.body || "").replace(/\s+/g," ").trim();
+        const prefix = wantAll ? `[${e.fileName}] ` : "";
+        sn.textContent = prefix + (clean.length ? clean : "(empty comment)");
+
+        const loc = document.createElement("div");
+        loc.className = "commentLoc";
+
+        const lp = document.createElement("span");
+        lp.textContent = `line ${c.line}`;
+
+        const t1 = document.createElement("span");
+        t1.className = "tagpill";
+        t1.textContent = c.tag;
+
+        const t2 = document.createElement("span");
+        t2.className = "tagpill";
+        t2.textContent = c.kind.replace("js-","js ").replace("css-","css ").replace("html","html");
+
+        loc.appendChild(lp);
+        loc.appendChild(t1);
+        loc.appendChild(t2);
+
+        if(c.insideTag){
+          const t3 = document.createElement("span");
+          t3.className = "tagpill";
+          t3.textContent = `<${c.insideTag}>`;
+          loc.appendChild(t3);
+        }
+
+        content.appendChild(sn);
+        content.appendChild(loc);
+
+        row.appendChild(cb);
+        row.appendChild(content);
+        div.appendChild(row);
+
+        const toggle = (exclusive)=>{
+          if(exclusive) batchState.selectedComments.clear();
+          if(batchState.selectedComments.has(e.key)) batchState.selectedComments.delete(e.key);
+          else batchState.selectedComments.add(e.key);
+          renderCommentsList();
+          renderCommentEditor();
+        };
+
+        cb.addEventListener("click", (ev)=>{
+          ev.stopPropagation();
+          toggle(false);
+        });
+
+        div.addEventListener("click", (ev)=>{
+          const multi = ev.ctrlKey || ev.metaKey;
+          toggle(!multi);
+        });
+
+        els.commentsList.appendChild(div);
+      });
+
+      if(entries.length === 0){
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = "No comments matching this filter.";
+        els.commentsList.appendChild(hint);
+      }
+    }
+
+    function selectedEntries(){
+      const entries = visibleCommentEntries();
+      const map = new Map(entries.map(e=>[e.key, e]));
+      const out = [];
+      for(const k of batchState.selectedComments){
+        const e = map.get(k);
+        if(e) out.push(e);
+      }
+      return out;
+    }
+
+    function renderCommentEditor(){
+      const sel = selectedEntries();
+      const n = sel.length;
+
+      els.btnKeepComment.disabled = n === 0;
+      els.btnDeleteComment.disabled = n === 0;
+      els.btnApplyComment.disabled = n === 0;
+      els.commentText.disabled = n === 0;
+
+      els.btnKeepComment.textContent = n > 1 ? `Keep (${n})` : "Keep";
+      els.btnDeleteComment.textContent = n > 1 ? `Delete (${n})` : "Delete";
+      els.btnApplyComment.textContent = n > 1 ? `Apply (${n})` : "Apply";
+
+      if(n === 0){
+        els.commentLoc.value = "";
+        els.commentCtx.value = "";
+        els.commentInside.value = "";
+        els.commentText.value = "";
+        return;
+      }
+
+      if(n === 1){
+        const e = sel[0];
+        const c = e.c;
+        els.commentLoc.value = `${e.fileName} — line ${c.line}`;
+        els.commentCtx.value = `${c.tag} / ${c.kind}`;
+        els.commentInside.value = c.insideTag || "";
+        els.commentText.value = c.body ?? "";
+        els.btnApplyComment.disabled = true;
+        return;
+      }
+
+      // multi
+      els.commentLoc.value = `${n} comments selected`;
+      els.commentCtx.value = "(multiple files / locations)";
+      els.commentInside.value = "";
+      els.commentText.value = "";
+      els.btnApplyComment.disabled = true;
+    }
+
+    function applyCommentEdits(){
+      const sel = selectedEntries();
+      if(sel.length === 0) return;
+      const val = els.commentText.value ?? "";
+      for(const e of sel){
+        e.c.body = val;
+        batchState.files[e.fileIndex].dirty = true;
+      }
+      renderCommentsUI();
+      toast("Applied");
+    }
+
+    function deleteSelectedComment(){
+      const sel = selectedEntries();
+      if(sel.length === 0) return;
+      for(const e of sel){
+        e.c.deleted = true;
+        batchState.files[e.fileIndex].dirty = true;
+      }
+      batchState.selectedComments.clear();
+      renderCommentsUI();
+      toast("Deleted");
+    }
+
+    function keepSelectedComment(){
+      const sel = selectedEntries();
+      if(sel.length === 0) return;
+      for(const e of sel){
+        e.c.keep = true;
+        batchState.files[e.fileIndex].dirty = true;
+      }
+      batchState.selectedComments.clear();
+      renderCommentsUI();
+      toast("Kept");
+    }
+
+    function buildUpdatedFileText(fileObj){
+      let out = fileObj.text;
+      const comments = fileObj.comments.slice().sort((a,b)=>b.start - a.start);
+      for(const c of comments){
+        if(c.deleted){
+          out = out.slice(0, c.start) + out.slice(c.end);
+        } else if(c.body !== c.originalBody){
+          if(c.kind === "html"){
+            out = out.slice(0, c.start) + "<!--" + c.body + "-->" + out.slice(c.end);
+          } else if(c.kind === "js-line"){
+            out = out.slice(0, c.start) + "//" + c.body + out.slice(c.end);
+          } else if(c.kind === "js-block"){
+            out = out.slice(0, c.start) + "/*" + c.body + "*/" + out.slice(c.end);
+          } else if(c.kind === "css-block"){
+            out = out.slice(0, c.start) + "/*" + c.body + "*/" + out.slice(c.end);
+          }
+        }
+      }
+      return out;
+    }
+
+    function downloadBatchFile(fileObj){
+      const out = buildUpdatedFileText(fileObj);
+      const base = (fileObj.name || "file.html").replace(/\.html?$/i,"");
+      downloadFile(out, timestampName(base + "_clean", "html"));
+    }
+
+    // --- Minimal ZIP (store-only) writer ---
+    function crc32Table(){
+      const tbl = new Uint32Array(256);
+      for(let i=0;i<256;i++){
+        let c = i;
+        for(let k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        tbl[i] = c >>> 0;
+      }
+      return tbl;
+    }
+    const _crcTbl = crc32Table();
+
+    function crc32(bytes){
+      let c = 0xFFFFFFFF;
+      for(let i=0;i<bytes.length;i++){
+        c = _crcTbl[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+      }
+      return (c ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    function u16(n){ return new Uint8Array([n & 255, (n>>>8)&255]); }
+    function u32(n){ return new Uint8Array([n & 255, (n>>>8)&255, (n>>>16)&255, (n>>>24)&255]); }
+
+    function strBytes(s){
+      return new TextEncoder().encode(s);
+    }
+
+    function dosDateTime(d=new Date()){
+      let year = d.getFullYear();
+      if(year < 1980) year = 1980;
+      const dosTime = ((d.getHours() & 31) << 11) | ((d.getMinutes() & 63) << 5) | ((Math.floor(d.getSeconds()/2)) & 31);
+      const dosDate = (((year - 1980) & 127) << 9) | (((d.getMonth()+1) & 15) << 5) | (d.getDate() & 31);
+      return {dosTime, dosDate};
+    }
+
+    function zipStore(fileEntries){
+      // fileEntries: [{name, bytes}]
+      const chunks = [];
+      const central = [];
+      let offset = 0;
+      const now = dosDateTime();
+
+      for(const fe of fileEntries){
+        const name = fe.name.replace(/\\/g, "/");
+        const nameB = strBytes(name);
+        const data = fe.bytes;
+        const crc = crc32(data);
+        const size = data.length;
+
+        // local file header
+        const lh = [];
+        lh.push(u32(0x04034b50));
+        lh.push(u16(20)); // version needed
+        lh.push(u16(0));  // flags
+        lh.push(u16(0));  // method: store
+        lh.push(u16(now.dosTime));
+        lh.push(u16(now.dosDate));
+        lh.push(u32(crc));
+        lh.push(u32(size));
+        lh.push(u32(size));
+        lh.push(u16(nameB.length));
+        lh.push(u16(0)); // extra len
+        chunks.push(...lh, nameB, data);
+
+        // central directory header
+        const ch = [];
+        ch.push(u32(0x02014b50));
+        ch.push(u16(20)); // version made by
+        ch.push(u16(20)); // version needed
+        ch.push(u16(0));  // flags
+        ch.push(u16(0));  // method
+        ch.push(u16(now.dosTime));
+        ch.push(u16(now.dosDate));
+        ch.push(u32(crc));
+        ch.push(u32(size));
+        ch.push(u32(size));
+        ch.push(u16(nameB.length));
+        ch.push(u16(0)); // extra
+        ch.push(u16(0)); // comment
+        ch.push(u16(0)); // disk start
+        ch.push(u16(0)); // int attrs
+        ch.push(u32(0)); // ext attrs
+        ch.push(u32(offset));
+        central.push(...ch, nameB);
+
+        offset += 30 + nameB.length + size;
+      }
+
+      const centralStart = offset;
+      for(const c of central){
+        chunks.push(c);
+        offset += c.length;
+      }
+      const centralSize = offset - centralStart;
+
+      // end of central dir
+      const eocd = [];
+      eocd.push(u32(0x06054b50));
+      eocd.push(u16(0)); // disk
+      eocd.push(u16(0)); // disk start
+      eocd.push(u16(fileEntries.length));
+      eocd.push(u16(fileEntries.length));
+      eocd.push(u32(centralSize));
+      eocd.push(u32(centralStart));
+      eocd.push(u16(0)); // comment len
+      chunks.push(...eocd);
+
+      // concat
+      let total = 0;
+      for(const ch of chunks) total += ch.length;
+      const out = new Uint8Array(total);
+      let p = 0;
+      for(const ch of chunks){ out.set(ch, p); p += ch.length; }
+      return out;
+    }
+
+    function cleanedFilename(originalName){
+      const name = (originalName || "file.html").replace(/\\/g, "/").split("/").pop();
+      const m = name.match(/^(.*?)(\.(html?|xhtml))$/i);
+      if(m) return `${m[1]}_cleaned${m[2]}`;
+      // If no extension, assume .html
+      return `${name}_cleaned.html`;
+    }
+
+    function downloadChangedFiles(){
+      if(batchState.files.length === 0) return {count:0, total:0};
+      let count = 0;
+      for(const f of batchState.files){
+        const updated = buildUpdatedFileText(f);
+        if(updated === f.text) continue;
+        const outName = cleanedFilename(f.name);
+        const blob = new Blob([updated], {type:"text/html"});
+        downloadBlob(blob, outName);
+        count++;
+      }
+      return {count, total: batchState.files.length};
+    }
+
+    els.batchInput.addEventListener("change", async (e)=>{
+      const files = Array.from(e.target.files || []).filter(f=>/\.html?$/i.test(f.name) || f.type === "text/html" || f.type === "");
+      if(files.length === 0) return;
+
+      batchState.files = [];
+      batchState.selectedFile = -1;
+      batchState.selectedComments.clear();
+
+      let fi = 0;
+      for(const f of files){
+        const text = await f.text();
+        const comments = scanAllComments(text);
+        comments.forEach((c, ci)=>{
+          c._fileIndex = fi;
+          c._commentIndex = ci;
+          c._key = `${fi}:${ci}`;
+        });
+        batchState.files.push({ name: f.name, text, comments, dirty: false });
+        fi++;
+      }
+
+      // default to ALL so you can clean up in one pass
+      batchState.selectedFile = -1;
+      renderCommentsUI();
+      toast("Loaded");
+    });
+
+    els.commentFilter.addEventListener("change", ()=>{
+      batchState.filter = els.commentFilter.value;
+      batchState.selectedComments.clear();
+      renderCommentsUI();
+    });
+
+    els.filePick.addEventListener("change", ()=>{
+      const v = els.filePick.value;
+      batchState.selectedFile = (v === "__ALL__") ? -1 : Math.max(0, parseInt(v,10));
+      batchState.selectedComments.clear();
+      renderCommentsUI();
+    });
+
+    els.btnSelectAllComments.addEventListener("click", ()=>{
+      const entries = visibleCommentEntries();
+      if(entries.length === 0) return;
+      if(batchState.selectedComments.size === entries.length){
+        batchState.selectedComments.clear();
+      } else {
+        batchState.selectedComments.clear();
+        for(const e of entries) batchState.selectedComments.add(e.key);
+      }
+      renderCommentsList();
+      renderCommentEditor();
+    });
+
+    els.btnApplyComment.addEventListener("click", applyCommentEdits);
+    els.btnDeleteComment.addEventListener("click", deleteSelectedComment);
+    els.btnKeepComment.addEventListener("click", keepSelectedComment);
+
+    els.commentText.addEventListener("input", ()=>{
+      if(batchState.selectedComments.size === 0) return;
+      els.btnApplyComment.disabled = false;
+    });
+
+    els.btnDownloadOne.addEventListener("click", ()=>{
+      const f = currentFile();
+      if(!f) return;
+      downloadBatchFile(f);
+      toast("Downloaded");
+    });
+
+    els.btnDownloadZip.addEventListener("click", ()=>{
+      const r = downloadChangedFiles();
+      if(r.count === 0){
+        toast("No changes to download");
+      } else {
+        toast(`Downloaded ${r.count} file${r.count===1?"":"s"}`);
+      }
+    });
+
+    els.btnClearBatch.addEventListener("click", ()=>{
+      batchState.files = [];
+      batchState.selectedFile = -2;
+      batchState.selectedComments.clear();
+      els.batchInput.value = "";
+      renderCommentsUI();
+      toast("Cleared");
+    });
+
+    // boot
+    bindEditor();
+    renderPreview();
+    renderCode();
+    updateSyncPill();
+  
+    // ----------------------------
+    // Reconcile cleaned files (folder-based)
+    // ----------------------------
+    function fsSupported(){
+      return !!window.showDirectoryPicker;
+    }
+
+    function fmtTS(d=new Date()){
+      const pad = (n)=>String(n).padStart(2,"0");
+      const y = d.getFullYear();
+      const mo = pad(d.getMonth()+1);
+      const da = pad(d.getDate());
+      const h = pad(d.getHours());
+      const mi = pad(d.getMinutes());
+      const s = pad(d.getSeconds());
+      return `${y}${mo}${da}_${h}${mi}${s}`;
+    }
+
+    async function ensurePermission(handle, mode="readwrite"){
+      if(!handle) return false;
+      try{
+        const opts = { mode };
+        const q = await handle.queryPermission(opts);
+        if(q === "granted") return true;
+        const r = await handle.requestPermission(opts);
+        return r === "granted";
+      }catch(e){
+        return false;
+      }
+    }
+
+    function splitNameExt(filename){
+      const name = String(filename || "");
+      const idx = name.lastIndexOf(".");
+      if(idx <= 0) return { base:name, ext:"" };
+      return { base:name.slice(0, idx), ext:name.slice(idx) };
+    }
+
+    function deriveOriginalFromCleaned(cleanedName){
+      const { base, ext } = splitNameExt(cleanedName);
+      if(!base.toLowerCase().endsWith("_cleaned")) return null;
+      const origBase = base.slice(0, -("_cleaned".length));
+      return origBase + ext;
+    }
+
+    async function scanReconcileFolder(dirHandle){
+      const entries = new Map(); // name -> handle
+      for await (const [name, handle] of dirHandle.entries()){
+        if(handle.kind === "file") entries.set(name, handle);
+      }
+
+      const pairs = [];
+      for(const [name, handle] of entries.entries()){
+        const orig = deriveOriginalFromCleaned(name);
+        if(!orig) continue;
+        const origHandle = entries.get(orig) || null;
+        pairs.push({
+          cleanedName: name,
+          origName: orig,
+          cleanedHandle: handle,
+          origHandle,
+          status: origHandle ? "ready" : "missing"
+        });
+      }
+
+      pairs.sort((a,b)=>a.origName.localeCompare(b.origName));
+      return pairs;
+    }
+
+    function renderReconcileUI(){
+      if(!fsSupported()){
+        els.folderHint.innerHTML = `This tab requires the <span class="pill" style="padding:2px 8px;">File System Access API</span> (Chrome/Edge).`;
+        els.btnPickFolder.disabled = true;
+        return;
+      }
+      // no-op; actual scan is on folder pick
+    }
+
+    function reconcileRowHTML(pair, idx){
+      const ok = pair.status === "ready";
+      const badge = ok ? `<span class="badge ok">ready</span>` : `<span class="badge warn">missing original</span>`;
+      const sel = batchState.selectedReconcile.has(idx) ? " sel" : "";
+      const chk = batchState.selectedReconcile.has(idx) ? "checked" : "";
+      const sub = ok
+        ? `original: ${escapeHtml(pair.origName)} • cleaned: ${escapeHtml(pair.cleanedName)}`
+        : `cleaned: ${escapeHtml(pair.cleanedName)} • original not found (${escapeHtml(pair.origName)})`;
+      return `
+        <div class="recrow${sel}" data-idx="${idx}">
+          <input type="checkbox" class="recck" data-idx="${idx}" ${chk} />
+          <div class="recmeta">
+            <div class="recname">${escapeHtml(pair.origName)}</div>
+            <div class="recsub">${sub}</div>
+          </div>
+          ${badge}
+        </div>
+      `;
+    }
+
+    function updateReconcileButtons(){
+      const any = batchState.reconcilePairs.length > 0;
+      const anySel = batchState.selectedReconcile.size > 0;
+      els.btnReconcileSelectAll.disabled = !any;
+      els.btnReconcileClear.disabled = !anySel;
+      // Replace selected enabled only if at least one selected is ready
+      const hasReadySelected = Array.from(batchState.selectedReconcile).some(i => batchState.reconcilePairs[i] && batchState.reconcilePairs[i].status === "ready");
+      els.btnReplaceSelected.disabled = !hasReadySelected;
+      // Replace all enabled only if there's at least one ready
+      const anyReady = batchState.reconcilePairs.some(p=>p.status === "ready");
+      els.btnReplaceAll.disabled = !anyReady;
+    }
+
+    function setReconcileSummary(){
+      const total = batchState.reconcilePairs.length;
+      const ready = batchState.reconcilePairs.filter(p=>p.status==="ready").length;
+      const missing = total - ready;
+      if(!batchState.reconcileDir){
+        els.reconcileSummary.textContent = "No folder selected.";
+        return;
+      }
+      els.reconcileSummary.textContent = `${ready} ready / ${missing} missing (out of ${total} cleaned files found)`;
+    }
+
+	    function renderReconcileList(){
+      if(!batchState.reconcileDir){
+        els.reconcileList.innerHTML = `<div class="hint">Pick a folder to scan.</div>`;
+        updateReconcileButtons();
+        setReconcileSummary();
+        return;
+      }
+      if(!batchState.reconcilePairs.length){
+        els.reconcileList.innerHTML = `<div class="hint">No *_cleaned files found in the selected folder.</div>`;
+        updateReconcileButtons();
+        setReconcileSummary();
+        return;
+      }
+      els.reconcileList.innerHTML = batchState.reconcilePairs.map((p,i)=>reconcileRowHTML(p,i)).join("");
+      updateReconcileButtons();
+      setReconcileSummary();
+
+      // click handlers (single + ctrl/cmd multi)
+      els.reconcileList.querySelectorAll(".recrow").forEach(row=>{
+        row.addEventListener("click", (e)=>{
+          const idx = Number(row.getAttribute("data-idx"));
+          if(Number.isNaN(idx)) return;
+          const isCheckbox = e.target && (e.target.classList && e.target.classList.contains("recck"));
+          const multi = e.ctrlKey || e.metaKey;
+          if(!multi && !isCheckbox){
+            batchState.selectedReconcile.clear();
+          }
+          if(batchState.selectedReconcile.has(idx)){
+            if(multi || isCheckbox){
+              batchState.selectedReconcile.delete(idx);
+            }else{
+              batchState.selectedReconcile.add(idx);
+            }
+          }else{
+            batchState.selectedReconcile.add(idx);
+          }
+          renderReconcileList();
+        });
+      });
+
+      // checkbox handlers
+      els.reconcileList.querySelectorAll(".recck").forEach(ck=>{
+        ck.addEventListener("click", (e)=>{
+          e.stopPropagation();
+          const idx = Number(ck.getAttribute("data-idx"));
+          if(Number.isNaN(idx)) return;
+          if(ck.checked) batchState.selectedReconcile.add(idx);
+          else batchState.selectedReconcile.delete(idx);
+          renderReconcileList();
+        });
+      });
+    }
+
+    els.btnPickFolder?.addEventListener("click", async ()=>{
+      // Folder picker + scan. We set batchState.reconcileDir immediately so the UI updates even if scan fails.
+      let dirHandle = null;
+      try{
+        dirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+      }catch(e){
+        // User cancelled (AbortError) or API not available.
+        if(e && (e.name === "AbortError" || e.code === 20)) return;
+        toast("Folder picker failed");
+        console.error(e);
+        return;
+      }
+
+      if(!dirHandle){
+        // Defensive; shouldn't happen, but keeps UX sane.
+        batchState.reconcileDir = null;
+        batchState.reconcilePairs = [];
+        batchState.selectedReconcile.clear();
+        renderReconcileList();
+        return;
+      }
+
+      batchState.reconcileDir = dirHandle;
+      batchState.reconcilePairs = [];
+      batchState.selectedReconcile.clear();
+	      if(els.reconcileFeedback) els.reconcileFeedback.textContent = "";
+      renderReconcileList();
+
+      const ok = await ensurePermission(dirHandle, "readwrite");
+      if(!ok){
+        toast("Folder permission denied");
+        return;
+      }
+
+      try{
+        batchState.reconcilePairs = await scanReconcileFolder(dirHandle);
+        toast(batchState.reconcilePairs.length ? "Folder scanned" : "No *_cleaned files found");
+        renderReconcileList();
+      }catch(e){
+        toast("Scan failed");
+        console.error(e);
+        renderReconcileList();
+      }
+    });
+
+    els.btnReconcileSelectAll?.addEventListener("click", ()=>{
+      batchState.selectedReconcile.clear();
+      for(let i=0;i<batchState.reconcilePairs.length;i++){
+        if(batchState.reconcilePairs[i].status==="ready") batchState.selectedReconcile.add(i);
+      }
+      renderReconcileList();
+    });
+
+    els.btnReconcileClear?.addEventListener("click", ()=>{
+      batchState.selectedReconcile.clear();
+      renderReconcileList();
+    });
+
+    async function replaceOnePair(pair){
+      if(pair.status !== "ready") return { ok:false, msg:"missing original" };
+      const dir = batchState.reconcileDir;
+      if(!dir) return { ok:false, msg:"no folder" };
+
+      const ts = fmtTS();
+      const archiveDir = await dir.getDirectoryHandle("archive", { create:true });
+
+      // read files
+      const origFile = await pair.origHandle.getFile();
+      const origText = await origFile.text();
+
+      const cleanedFile = await pair.cleanedHandle.getFile();
+      const cleanedText = await cleanedFile.text();
+
+      // write archive copy
+      const { base, ext } = splitNameExt(pair.origName);
+      const archivedName = `${base}_${ts}${ext || ""}`;
+      const archFileHandle = await archiveDir.getFileHandle(archivedName, { create:true });
+      {
+        const w = await archFileHandle.createWritable();
+        await w.write(origText);
+        await w.close();
+      }
+
+	      // overwrite original with cleaned
+      {
+        const w = await pair.origHandle.createWritable();
+        await w.write(cleanedText);
+        await w.close();
+      }
+
+	      // remove the _cleaned file so the folder ends up with only original names
+	      try{
+	        await dir.removeEntry(pair.cleanedName);
+	      }catch(e){
+	        // If removal fails (permissions / locks), we still consider the replacement successful.
+	        console.warn("Could not remove cleaned file:", pair.cleanedName, e);
+	      }
+
+	      return { ok:true, msg:"replaced" };
+    }
+
+    async function replacePairs(indices){
+      const targets = indices
+        .map(i=>batchState.reconcilePairs[i])
+        .filter(p=>p && p.status==="ready");
+
+      if(!targets.length){
+        toast("Nothing to replace");
+	        if(els.reconcileFeedback) els.reconcileFeedback.textContent = "Nothing to replace.";
+        return;
+      }
+
+      // disable buttons while running
+      const prev = {
+        a: els.btnReplaceAll.disabled,
+        s: els.btnReplaceSelected.disabled,
+        p: els.btnPickFolder.disabled
+      };
+      els.btnReplaceAll.disabled = true;
+      els.btnReplaceSelected.disabled = true;
+      els.btnPickFolder.disabled = true;
+
+      let okCount = 0;
+      let failCount = 0;
+	      const changedNames = [];
+      for(const pair of targets){
+        try{
+          const res = await replaceOnePair(pair);
+	          if(res.ok){
+	            okCount++;
+	            changedNames.push(pair.origName);
+	          }
+          else failCount++;
+        }catch(e){
+          failCount++;
+        }
+      }
+
+      // rescan folder so statuses reflect reality (originals updated; cleaned still exists)
+      try{
+        batchState.reconcilePairs = await scanReconcileFolder(batchState.reconcileDir);
+        batchState.selectedReconcile.clear();
+      }catch(e){}
+
+	      const msg = `Replaced ${okCount}${failCount?` (${failCount} failed)`:""}`;
+	      toast(msg);
+	      if(els.reconcileFeedback){
+	        const list = changedNames.length ? ` ${changedNames.slice(0,6).join(", ")}${changedNames.length>6?"…":""}` : "";
+	        els.reconcileFeedback.textContent = msg + (list ? ` — ${list}` : "");
+	      }
+      renderReconcileList();
+
+      els.btnPickFolder.disabled = prev.p;
+      // buttons will be recalculated by renderReconcileList
+    }
+
+    els.btnReplaceSelected?.addEventListener("click", async ()=>{
+      await replacePairs(Array.from(batchState.selectedReconcile));
+    });
+
+    els.btnReplaceAll?.addEventListener("click", async ()=>{
+      const allReady = [];
+      for(let i=0;i<batchState.reconcilePairs.length;i++){
+        if(batchState.reconcilePairs[i].status==="ready") allReady.push(i);
+      }
+      await replacePairs(allReady);
+    });
+
+</script>
+</body>
+</html>
