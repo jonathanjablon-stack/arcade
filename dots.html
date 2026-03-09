@@ -72,7 +72,7 @@
         
         
         
-        #global-settings-btn{
+        #global-settings-btn{ display:none !important; 
             position: fixed;
             top: calc(env(safe-area-inset-top, 0px) + 10px);
             right: calc(env(safe-area-inset-right, 0px) + 10px);
@@ -80,10 +80,10 @@
             padding: 8px 10px;
             min-width: 44px;
         }
-        body.swap-corners #global-settings-btn{ right: auto; left: 10px; }
+        body.swap-corners #global-settings-btn{ display:none !important;  right: auto; left: 10px; }
         body.swap-corners .back-btn{ left: auto !important; right: 10px !important; }
 
-        #global-settings-modal{
+        #global-settings-modal{ display:none !important; 
             position: fixed; inset: 0;
             display: none;
             align-items: center;
@@ -469,10 +469,107 @@
         #g-dots .grid-options { display: flex; flex-direction: column; gap: 10px; width: 220px; }
         #g-dots .grid-btn { padding: 14px; font-size: 16px; background: #222; border: 1px solid #555; color: #ddd; }
 
-        #g-dots .dots-mode-row, #g-dots .dots-ai-row { display:flex; gap:10px; width: 240px; justify-content:center; }
-        #g-dots .dots-mode-btn { flex: 1; font-size: 14px; padding: 12px; }
-        #g-dots .dots-ai-btn { flex: 1; font-size: 14px; padding: 10px; }
+        #g-dots .dots-mode-row, #g-dots .dots-ai-row, #g-dots .dots-player-row { display:flex; gap:8px; width: 100%; justify-content:center; flex-wrap:nowrap; }
+        #g-dots .dots-mode-btn, #g-dots .dots-player-btn { flex: 1; font-size: 14px; padding: 10px; }
+        #g-dots .dots-ai-btn { flex: 1; font-size: 13px; padding: 9px 0; }
         #g-dots .dots-sel { border-color:#ffd700 !important; color:#ffd700 !important; box-shadow: 0 0 0 2px rgba(255,215,0,0.35) inset; }
+        #g-dots .dots-menu-card{
+            width: min(720px, calc(100% - 8px));
+            max-width: 720px;
+            background: rgba(12,12,12,0.82);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 18px;
+            box-shadow: 0 16px 42px rgba(0,0,0,0.45);
+            padding: 12px;
+            display:flex;
+            flex-direction:column;
+            gap: 10px;
+            box-sizing:border-box;
+        }
+        #g-dots .dots-menu-head{
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap: 4px;
+            text-align:center;
+        }
+        #g-dots .dots-settings-grid{
+            display:grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+        #g-dots .dots-section-card{
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 14px;
+            padding: 10px;
+            display:flex;
+            flex-direction:column;
+            gap: 8px;
+            min-width: 0;
+        }
+        #g-dots .dots-mode, #g-dots #dotsPlayerCountWrap, #g-dots #dotsAiWrap, #g-dots .dots-section-card.dots-colors, #g-dots .dots-section-card.dots-grid-card { grid-column: 1 / -1; }
+
+        #g-dots .dots-subtle{ font-size:11px; color:#9a9a9a; text-align:center; line-height:1.2; }
+        #g-dots .dots-name-grid, #g-dots .dots-team-grid, #g-dots .dots-team-name-grid{
+            display:grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            width:100%;
+        }
+        #g-dots .dots-name-field, #g-dots .dots-team-field, #g-dots .dots-team-name-field{
+            display:flex;
+            flex-direction:column;
+            gap: 5px;
+            min-width:0;
+        }
+        #g-dots .dots-mini-label{ font-size:11px; color:#bbb; font-weight:800; letter-spacing:0.3px; }
+        #g-dots .dots-name-input, #g-dots .dots-team-select{
+            width:100%;
+            box-sizing:border-box;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.08);
+            color:#fff;
+            padding: 9px 10px;
+            font-size: 14px;
+            font-weight:700;
+            outline:none;
+        }
+        #g-dots .dots-name-input::placeholder{ color:#9a9a9a; }
+        #g-dots .dots-toggles-row{ display:flex; gap:8px; flex-wrap:wrap; }
+        #g-dots .dots-toggle-pill{
+            display:flex; align-items:center; gap:8px;
+            padding: 9px 12px; border-radius: 999px;
+            background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+            color:#eee; font-size:13px; font-weight:800;
+        }
+        #g-dots .dots-toggle-pill input{ accent-color:#ffd700; }
+        #g-dots .dots-team-options.hidden, #g-dots .dots-team-name-field.is-hidden, #g-dots .dots-team-field.is-hidden, #g-dots .dots-name-field.is-hidden{ display:none !important; }
+        #g-dots #turnSplashOverlay{ z-index: 30; background: rgba(0,0,0,0.96); }
+        #g-dots .turn-splash-panel{ display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; }
+        #g-dots .turn-splash-kicker{ font-size:14px; color:#bbb; font-weight:800; letter-spacing:1px; }
+        #g-dots .turn-splash-name{ font-size: clamp(2rem, 8vw, 3rem); font-weight:1000; color:#fff; text-shadow:0 0 16px rgba(255,255,255,0.15); }
+        #g-dots .turn-splash-team{ font-size:14px; color:#ffd700; font-weight:900; }
+        @media (max-width: 640px){
+            #g-dots .dots-name-grid, #g-dots .dots-team-grid, #g-dots .dots-team-name-grid{ grid-template-columns: 1fr; }
+            #g-dots .dots-toggles-row{ flex-direction:column; }
+        }
+        #g-dots .dots-section-card.dots-colors { margin-top: 0; }
+        #g-dots .dots-grid-card .grid-options{
+            display:grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            width:100%;
+        }
+        #g-dots .dots-grid-card .grid-btn{
+            width:100%;
+            padding: 12px 8px;
+            font-size: 15px;
+            line-height: 1.15;
+        }
+        #g-dots .dots-color-item.is-hidden { display:none !important; }
         #g-dots canvas { display: block; touch-action: none; border-radius: 8px; }
         #g-dots #dots-confetti-canvas { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 25; }
         
@@ -1071,7 +1168,7 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
   cursor: grab;
 }
 .back-btn.dragging{ cursor: grabbing; }
-#global-settings-btn{
+#global-settings-btn{ display:none !important; 
   top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
   right: calc(env(safe-area-inset-right, 0px) + 10px) !important;
   touch-action: none;
@@ -1092,7 +1189,7 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
 }
 
         .back-btn.dragging, #global-settings-btn.dragging{ cursor: grabbing; }
-        .back-btn, #global-settings-btn{ cursor: grab; touch-action: none; }
+        .back-btn, #global-settings-btn{ display:none !important;  cursor: grab; touch-action: none; }
         .modal-screen{ max-height: calc(100vh - 120px); overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)); }
         #global-settings-modal .settings-panel{ max-height: calc(100vh - 28px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
@@ -1122,14 +1219,22 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
         #g-dots .turn-label{ font-size:10px; color:#888; font-weight:700; letter-spacing:0.5px; }
         #g-dots #turnText{ font-weight:900; font-size:12px; letter-spacing:0.3px; }
         #g-dots #statusText{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
-        #g-dots .menu-sub{ font-size:13px; color: rgba(255,255,255,0.75); max-width: 340px; text-align:center; line-height:1.25; margin-top:-6px; }
-        #g-dots .dots-sec-title{ font-size:12px; color:#aaa; font-weight:700; margin-bottom:6px; letter-spacing:0.5px; }
+        #g-dots #menuOverlay{ padding: 12px; box-sizing:border-box; gap: 10px; }
+        #g-dots .splash-title{ font-size: clamp(2rem, 7vw, 2.5rem); margin-bottom: 0; }
+        #g-dots .menu-sub{ font-size:12px; color: rgba(255,255,255,0.75); max-width: 420px; text-align:center; line-height:1.2; margin-top:0; }
+        #g-dots .dots-sec-title{ font-size:11px; color:#aaa; font-weight:700; margin-bottom:2px; letter-spacing:0.5px; }
         
         #g-dots .dots-colors{ margin-top: 4px; }
-        #g-dots .dots-color-row{ display:flex; gap:14px; justify-content:center; flex-wrap: wrap; }
-        #g-dots .dots-color-item{ display:flex; flex-direction:column; align-items:center; gap:6px; }
-        #g-dots .dots-color-name{ font-size:12px; color:#ddd; font-weight:800; }
-        #g-dots .dots-color-hint{ margin-top: 8px; font-size:11px; color:#9a9a9a; text-align:center; }
+        #g-dots .dots-color-row{
+            display:grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap:10px;
+            justify-content:center;
+            width:100%;
+        }
+        #g-dots .dots-color-item{ display:flex; flex-direction:column; align-items:center; gap:5px; min-width:0; }
+        #g-dots .dots-color-name{ font-size:11px; color:#ddd; font-weight:800; }
+        #g-dots .dots-color-hint{ margin-top: 2px; font-size:10px; color:#9a9a9a; text-align:center; line-height:1.15; }
         #g-dots .dots-swatch-btn{
             display:flex; align-items:center; gap:10px;
             border-radius: 12px;
@@ -1138,7 +1243,8 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
             color: #fff;
             padding: 8px 10px;
             cursor: pointer;
-            min-width: 140px;
+            min-width: 0;
+            width:100%;
             justify-content:center;
             -webkit-tap-highlight-color: transparent;
         }
@@ -1278,6 +1384,46 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
             width: min(320px, 92vw) !important;
         }
 
+
+        /* dots menu compact and always reachable */
+        #g-dots #menuOverlay{
+            align-items:flex-start;
+            justify-content:center;
+            overflow-y:auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 8px;
+            box-sizing:border-box;
+        }
+        #g-dots .dots-menu-card{
+            width:min(760px, calc(100% - 8px));
+            max-height: calc(100vh - 16px);
+            overflow-y:auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px;
+            gap: 8px;
+            margin: auto 0;
+        }
+        #g-dots .dots-settings-grid{ gap:8px; }
+        #g-dots .dots-section-card{ padding:8px; gap:6px; }
+        #g-dots .dots-sec-title{ margin-bottom: 0; }
+        #g-dots .dots-mini-label{ font-size:10px; }
+        #g-dots .dots-mode-btn, #g-dots .dots-player-btn{ padding: 9px 6px; }
+        #g-dots .dots-ai-btn{ padding:8px 0; }
+        #g-dots .dots-name-input, #g-dots .dots-team-select{ padding: 8px 9px; font-size:13px; }
+        #g-dots .dots-toggle-pill{ padding:8px 10px; font-size:12px; }
+        #g-dots .dots-subtle{ font-size:10px; }
+        #g-dots .dots-color-row{ gap:6px; }
+        #g-dots .dots-color-item{ min-width: 0; }
+        #g-dots .dots-grid-card .grid-btn{ padding: 10px 6px; font-size:14px; }
+        @media (max-width: 640px){
+            #g-dots .dots-settings-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            #g-dots .dots-name-grid, #g-dots .dots-team-grid, #g-dots .dots-team-name-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            #g-dots .dots-toggles-row{ flex-direction:row; }
+            #g-dots .dots-menu-head{ gap: 2px; }
+            #g-dots .splash-title{ margin:0; font-size: clamp(1.7rem, 6vw, 2.2rem); }
+            #g-dots .menu-sub{ font-size:11px; line-height:1.1; }
+        }
+
 </style>
 </head>
 <body>
@@ -1287,54 +1433,7 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
         <canvas id="feedback-confetti" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
     </div>
 
-    <button id="global-settings-btn" class="ui-btn" onclick="ArcadeSettings.openModal()" title="Settings" aria-label="Settings">⚙️</button>
-
-    <div id="global-settings-modal" role="dialog" aria-modal="true" aria-label="Arcade settings">
-        <div class="settings-panel">
-            <div class="settings-head">
-                <div class="settings-title">SETTINGS</div>
-                <button class="ui-btn settings-close" onclick="ArcadeSettings.closeModal()">✕</button>
-            </div>
-
-            <div class="settings-row">
-                <div class="label">
-                    <div class="name">Sound</div>
-                    <div class="desc">Mute all game sounds</div>
-                </div>
-                <input id="set-sound" type="checkbox" />
-            </div>
-
-            <div class="settings-row">
-                <div class="label">
-                    <div class="name">Reduced motion</div>
-                    <div class="desc">Turns off most UI animations and win confetti.</div>
-                </div>
-                <input id="set-motion" type="checkbox" />
-            </div>
-
-            <div class="settings-row">
-                <div class="label">
-                    <div class="name">High contrast</div>
-                    <div class="desc">Stronger borders + clearer UI. Also syncs Dots contrast.</div>
-                </div>
-                <input id="set-contrast" type="checkbox" />
-            </div>
-
-            <div class="settings-row">
-                <div class="label">
-                    <div class="name">Left-handed mode</div>
-                    <div class="desc">Swaps the corner buttons (Menu + Settings).</div>
-                </div>
-                <input id="set-handed" type="checkbox" />
-            </div>
-
-            <div class="settings-actions">
-                <button class="ui-btn" onclick="ArcadeSettings.reset()">Reset</button>
-                <button class="ui-btn" onclick="ArcadeSettings.closeModal()">Done</button>
-            </div>
-        </div>
-    </div>
-
+        
     <div id="g-dots" class="game-view">
         <div class="wrap">
             <div class="top">
@@ -1367,51 +1466,162 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
                 <canvas id="dots-confetti-canvas"></canvas>
                 <div id="combo-text">COMBO!</div>
                 <div id="menuOverlay" class="overlay">
-                    <h1 class="splash-title">DOTS</h1>
-                    <div class="menu-sub">Pick a mode, choose colors, then pick a grid.</div>
+                    <div class="dots-menu-card">
+                        <div class="dots-menu-head">
+                            <h1 class="splash-title">DOTS</h1>
+                            <div class="menu-sub">Pick a mode, choose colors, then pick a grid.</div>
+                        </div>
 
-                    <div class="dots-mode">
-                        <div class="dots-sec-title">MODE</div>
-                        <div class="dots-mode-row">
-                            <button class="grid-btn dots-mode-btn" id="dotsModePvp" onclick="DotsGame.setMode('pvp')">2 Players</button>
-                            <button class="grid-btn dots-mode-btn" id="dotsModeCpu" onclick="DotsGame.setMode('cpu')">vs. CPU</button>
+                        <div class="dots-settings-grid">
+                            <div class="dots-mode dots-section-card">
+                                <div class="dots-sec-title">MODE</div>
+                                <div class="dots-mode-row">
+                                    <button class="grid-btn dots-mode-btn" id="dotsModePvp" onclick="DotsGame.setMode('pvp')">Pass & Play</button>
+                                    <button class="grid-btn dots-mode-btn" id="dotsModeCpu" onclick="DotsGame.setMode('cpu')">vs. CPU</button>
+                                </div>
+                            </div>
+
+                            <div id="dotsPlayerCountWrap" class="dots-players dots-section-card">
+                                <div class="dots-sec-title">PLAYERS</div>
+                                <div class="dots-player-row">
+                                    <button class="grid-btn dots-player-btn" id="dotsPlayers2" onclick="DotsGame.setPlayerCount(2)">2</button>
+                                    <button class="grid-btn dots-player-btn" id="dotsPlayers3" onclick="DotsGame.setPlayerCount(3)">3</button>
+                                    <button class="grid-btn dots-player-btn" id="dotsPlayers4" onclick="DotsGame.setPlayerCount(4)">4</button>
+                                </div>
+                            </div>
+
+
+
+                            <div class="dots-section-card dots-player-names">
+                                <div class="dots-sec-title">NAMES</div>
+                                <div class="dots-name-grid">
+                                    <div class="dots-name-field" id="dotsNameField1">
+                                        <div class="dots-mini-label">Player 1</div>
+                                        <input id="dotsName1" class="dots-name-input" maxlength="14" placeholder="Player 1" />
+                                    </div>
+                                    <div class="dots-name-field" id="dotsNameField2">
+                                        <div class="dots-mini-label">Player 2</div>
+                                        <input id="dotsName2" class="dots-name-input" maxlength="14" placeholder="Player 2" />
+                                    </div>
+                                    <div class="dots-name-field" id="dotsNameField3">
+                                        <div class="dots-mini-label">Player 3</div>
+                                        <input id="dotsName3" class="dots-name-input" maxlength="14" placeholder="Player 3" />
+                                    </div>
+                                    <div class="dots-name-field" id="dotsNameField4">
+                                        <div class="dots-mini-label">Player 4</div>
+                                        <input id="dotsName4" class="dots-name-input" maxlength="14" placeholder="Player 4" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dots-section-card dots-turn-options">
+                                <div class="dots-sec-title">TURN OPTIONS</div>
+                                <div class="dots-toggles-row">
+                                    <label class="dots-toggle-pill"><input id="dotsShowSplash" type="checkbox" checked /> Turn splash screen</label>
+                                    <label class="dots-toggle-pill"><input id="dotsEnableTeams" type="checkbox" /> Team play</label>
+                                </div>
+                                <div class="dots-subtle">Team play is available for 3 or 4 pass-and-play players.</div>
+                            </div>
+
+                            <div class="dots-section-card dots-team-options hidden" id="dotsTeamOptions">
+                                <div class="dots-sec-title">TEAMS</div>
+                                <div class="dots-team-grid">
+                                    <div class="dots-team-field" id="dotsTeamField1">
+                                        <div class="dots-mini-label">Player 1 team</div>
+                                        <select id="dotsTeam1" class="dots-team-select"><option value="1" selected>T1</option><option value="2">T2</option></select>
+                                    </div>
+                                    <div class="dots-team-field" id="dotsTeamField2">
+                                        <div class="dots-mini-label">Player 2 team</div>
+                                        <select id="dotsTeam2" class="dots-team-select"><option value="1">T1</option><option value="2" selected>T2</option></select>
+                                    </div>
+                                    <div class="dots-team-field" id="dotsTeamField3">
+                                        <div class="dots-mini-label">Player 3 team</div>
+                                        <select id="dotsTeam3" class="dots-team-select"><option value="1" selected>T1</option><option value="2">T2</option></select>
+                                    </div>
+                                    <div class="dots-team-field" id="dotsTeamField4">
+                                        <div class="dots-mini-label">Player 4 team</div>
+                                        <select id="dotsTeam4" class="dots-team-select"><option value="1">T1</option><option value="2" selected>T2</option></select>
+                                    </div>
+                                </div>
+                                <div class="dots-team-name-grid">
+                                    <div class="dots-team-name-field" id="dotsTeamNameField1">
+                                        <div class="dots-mini-label">Team 1 name</div>
+                                        <input id="dotsTeamName1" class="dots-name-input" maxlength="18" placeholder="Team 1" />
+                                    </div>
+                                    <div class="dots-team-name-field" id="dotsTeamNameField2">
+                                        <div class="dots-mini-label">Team 2 name</div>
+                                        <input id="dotsTeamName2" class="dots-name-input" maxlength="18" placeholder="Team 2" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="dotsAiWrap" class="dots-ai dots-section-card" style="display:none;">
+                                <div class="dots-sec-title">CPU DIFFICULTY</div>
+                                <div class="dots-ai-row">
+                                    <button class="grid-btn dots-ai-btn" id="dotsAi1" onclick="DotsGame.setCpuLevel(1)">1</button>
+                                    <button class="grid-btn dots-ai-btn" id="dotsAi2" onclick="DotsGame.setCpuLevel(2)">2</button>
+                                    <button class="grid-btn dots-ai-btn" id="dotsAi3" onclick="DotsGame.setCpuLevel(3)">3</button>
+                                    <button class="grid-btn dots-ai-btn" id="dotsAi4" onclick="DotsGame.setCpuLevel(4)">4</button>
+                                    <button class="grid-btn dots-ai-btn" id="dotsAi5" onclick="DotsGame.setCpuLevel(5)">5</button>
+                                </div>
+                                <div style="font-size:10px;color:#888;max-width:260px;text-align:center;line-height:1.15;">1 = easy kid-level. 5 = tough adult-level.</div>
+                            </div>
+
+                            <div class="dots-colors dots-section-card">
+                                <div class="dots-sec-title">COLORS</div>
+                                <div class="dots-color-row">
+                                    <div class="dots-color-item" id="dotsP1ColorItem">
+                                        <div class="dots-color-name" id="dotsP1Name">P1</div>
+                                        <button type="button" class="dots-swatch-btn" id="dotsP1Swatch" aria-label="Pick Player 1 color">
+                                            <span class="dots-swatch-chip" id="dotsP1Chip"></span>
+                                            <span class="dots-swatch-hex" id="dotsP1HexText">#FF3333</span>
+                                        </button>
+                                    </div>
+                                    <div class="dots-color-item" id="dotsP2ColorItem">
+                                        <div class="dots-color-name" id="dotsP2Name">P2</div>
+                                        <button type="button" class="dots-swatch-btn" id="dotsP2Swatch" aria-label="Pick Player 2 color">
+                                            <span class="dots-swatch-chip" id="dotsP2Chip"></span>
+                                            <span class="dots-swatch-hex" id="dotsP2HexText">#3388FF</span>
+                                        </button>
+                                    </div>
+                                    <div class="dots-color-item" id="dotsP3ColorItem">
+                                        <div class="dots-color-name" id="dotsP3Name">P3</div>
+                                        <button type="button" class="dots-swatch-btn" id="dotsP3Swatch" aria-label="Pick Player 3 color">
+                                            <span class="dots-swatch-chip" id="dotsP3Chip"></span>
+                                            <span class="dots-swatch-hex" id="dotsP3HexText">#19E68C</span>
+                                        </button>
+                                    </div>
+                                    <div class="dots-color-item" id="dotsP4ColorItem">
+                                        <div class="dots-color-name" id="dotsP4Name">P4</div>
+                                        <button type="button" class="dots-swatch-btn" id="dotsP4Swatch" aria-label="Pick Player 4 color">
+                                            <span class="dots-swatch-chip" id="dotsP4Chip"></span>
+                                            <span class="dots-swatch-hex" id="dotsP4HexText">#FFD400</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="dots-color-hint">Tap a swatch to pick a color.</div>
+                            </div>
+
+                            <div class="dots-section-card dots-grid-card">
+                                <div class="dots-sec-title">GRID</div>
+                                <div class="grid-options">
+                                    <button class="grid-btn" onclick="DotsGame.startGame(5,5)">5 x 5 (Quick)</button>
+                                    <button class="grid-btn" onclick="DotsGame.startGame(8,8)">8 x 8 (Standard)</button>
+                                    <button class="grid-btn" onclick="DotsGame.startGame(10,10)">10 x 10 (Large)</button>
+                                    <button class="grid-btn" onclick="DotsGame.startGame(13,8)">8 x 13 (Full Screen)</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="dotsAiWrap" class="dots-ai" style="display:none;">
-                        <div class="dots-sec-title">CPU DIFFICULTY</div>
-                        <div class="dots-ai-row">
-                            <button class="grid-btn dots-ai-btn" id="dotsAi1" onclick="DotsGame.setCpuLevel(1)">1</button>
-                            <button class="grid-btn dots-ai-btn" id="dotsAi2" onclick="DotsGame.setCpuLevel(2)">2</button>
-                            <button class="grid-btn dots-ai-btn" id="dotsAi3" onclick="DotsGame.setCpuLevel(3)">3</button>
-                            <button class="grid-btn dots-ai-btn" id="dotsAi4" onclick="DotsGame.setCpuLevel(4)">4</button>
-                            <button class="grid-btn dots-ai-btn" id="dotsAi5" onclick="DotsGame.setCpuLevel(5)">5</button>
-                        </div>
-                        <div style="font-size:11px;color:#888;margin-top:6px;max-width:260px;text-align:center;">1 = easy kid-level. 5 = tough adult-level.</div>
-                    </div>
 
-                    
 
-                    
-                    <div class="dots-colors">
-                        <div class="dots-sec-title">COLORS</div>
-                        <div class="dots-color-row">
-                            <div class="dots-color-item">
-                                <div class="dots-color-name" id="dotsP1Name">P1</div>
-                                <button type="button" class="dots-swatch-btn" id="dotsP1Swatch" aria-label="Pick Player 1 color">
-                                    <span class="dots-swatch-chip" id="dotsP1Chip"></span>
-                                    <span class="dots-swatch-hex" id="dotsP1HexText">#FF3333</span>
-                                </button>
-                            </div>
-                            <div class="dots-color-item">
-                                <div class="dots-color-name" id="dotsP2Name">P2</div>
-                                <button type="button" class="dots-swatch-btn" id="dotsP2Swatch" aria-label="Pick Player 2 color">
-                                    <span class="dots-swatch-chip" id="dotsP2Chip"></span>
-                                    <span class="dots-swatch-hex" id="dotsP2HexText">#3388FF</span>
-                                </button>
-                            </div>
+                    <div id="turnSplashOverlay" class="overlay" style="display:none;">
+                        <div class="turn-splash-panel">
+                            <div class="turn-splash-kicker">NEXT TURN</div>
+                            <div class="turn-splash-name" id="turnSplashName">Player 1</div>
+                            <div class="turn-splash-team" id="turnSplashTeam"></div>
                         </div>
-                        <div class="dots-color-hint">Tap a swatch to pick a color (works in WebView too).</div>
                     </div>
 
                     <div id="dotsColorModal" class="dots-color-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Pick a color">
@@ -1457,17 +1667,6 @@ body.reduce-motion.unicorn-mega #g-balloons, body.reduce-motion.unicorn-mega #g-
                                 <button class="ui-btn" type="button" id="dotsColorApplyBtn">Apply</button>
                             </div>
                         </div>
-                    </div>
-
-                    <div style="height:10px;"></div>
-
-                    <div class="dots-sec-title">GRID</div>
-
-                    <div class="grid-options">
-                        <button class="grid-btn" onclick="DotsGame.startGame(5,5)">5 x 5 (Quick)</button>
-                        <button class="grid-btn" onclick="DotsGame.startGame(8,8)">8 x 8 (Standard)</button>
-                        <button class="grid-btn" onclick="DotsGame.startGame(10,10)">10 x 10 (Large)</button>
-                        <button class="grid-btn" onclick="DotsGame.startGame(13,8)">8 x 13 (Full Screen)</button>
                     </div>
                 </div>
                 <div id="winnerOverlay" class="overlay" style="display:none">
@@ -1855,34 +2054,63 @@ const FeedbackSys = (function(){
 
     const DotsGame = (function(){
         let DR = 8, DC = 8, BR = 7, BC = 7, TOTAL = 49;
-        let C_P1 = "#FF3333", C_P2 = "#3388FF";
+        const DEFAULT_COLORS = [null, "#FF3333", "#3388FF", "#19E68C", "#FFD400"];
+        let playerColors = DEFAULT_COLORS.slice();
         const C_GRID = "#444444", C_DOT = "#FFFFFF", C_SEL = "#FFD700";
-        let HO, VO, boxOwner, turn, s1, s2, claimed, history, sel, lastMove;
+        let HO, VO, boxOwner, turn, scores, claimed, history, sel, lastMove;
         let boxAnim = [], particles = [];
         let PAD, DOT_R, DOT_HIT, LINE_W, STEP, OX, OY;
-        let highContrast = false; 
+        let highContrast = false;
         function syncGlobalContrast(){
-            
             highContrast = document.body.classList.contains('high-contrast');
         }
-let mode = 'pvp';
+        let mode = 'pvp';
+        let playerCount = 2;
         let cpuLevel = 3;
         let cpuThinking = false;
         let cpuTimer = null;
-        
+        let playerNames = [null, 'Player 1', 'Player 2', 'Player 3', 'Player 4'];
+        let showTurnSplash = true;
+        let teamPlay = false;
+        let teams = [null, 1, 2, 1, 2];
+        let teamNames = [null, 'Team 1', 'Team 2'];
+        let splashTimer = null;
+
         const canvas = document.getElementById("c");
         const ctx = canvas.getContext("2d");
         const boardContainer = document.getElementById("boardContainer");
         const statusText = document.getElementById("statusText");
         const turnText = document.getElementById("turnText");
-        const p1NameEl = document.getElementById("dotsP1Name");
-        const p2NameEl = document.getElementById("dotsP2Name");
-        const p1SwatchBtn = document.getElementById("dotsP1Swatch");
-        const p2SwatchBtn = document.getElementById("dotsP2Swatch");
-        const p1Chip = document.getElementById("dotsP1Chip");
-        const p2Chip = document.getElementById("dotsP2Chip");
-        const p1HexText = document.getElementById("dotsP1HexText");
-        const p2HexText = document.getElementById("dotsP2HexText");
+        const playerNameEls = [null,
+            document.getElementById("dotsP1Name"),
+            document.getElementById("dotsP2Name"),
+            document.getElementById("dotsP3Name"),
+            document.getElementById("dotsP4Name")
+        ];
+        const playerSwatchBtns = [null,
+            document.getElementById("dotsP1Swatch"),
+            document.getElementById("dotsP2Swatch"),
+            document.getElementById("dotsP3Swatch"),
+            document.getElementById("dotsP4Swatch")
+        ];
+        const playerChips = [null,
+            document.getElementById("dotsP1Chip"),
+            document.getElementById("dotsP2Chip"),
+            document.getElementById("dotsP3Chip"),
+            document.getElementById("dotsP4Chip")
+        ];
+        const playerHexTexts = [null,
+            document.getElementById("dotsP1HexText"),
+            document.getElementById("dotsP2HexText"),
+            document.getElementById("dotsP3HexText"),
+            document.getElementById("dotsP4HexText")
+        ];
+        const playerColorItems = [null,
+            document.getElementById("dotsP1ColorItem"),
+            document.getElementById("dotsP2ColorItem"),
+            document.getElementById("dotsP3ColorItem"),
+            document.getElementById("dotsP4ColorItem")
+        ];
 
         const colorModal = document.getElementById("dotsColorModal");
         const colorPalette = document.getElementById("dotsColorPalette");
@@ -1898,14 +2126,79 @@ let mode = 'pvp';
         const gVal = document.getElementById("dotsGVal");
         const bVal = document.getElementById("dotsBVal");
 
+        const turnDot = document.getElementById("turnDot");
+        const scoreEl = document.getElementById("scoreDisp");
+        const undoBtn = document.getElementById("undoBtn");
+        const menuOverlay = document.getElementById("menuOverlay");
+        const winnerOverlay = document.getElementById("winnerOverlay");
+        const winnerText = document.getElementById("winnerText");
+        const openBoxCount = document.getElementById("open-box-count");
+        const modePvpBtn = document.getElementById("dotsModePvp");
+        const modeCpuBtn = document.getElementById("dotsModeCpu");
+        const aiWrap = document.getElementById("dotsAiWrap");
+        const aiBtns = [1,2,3,4,5].map(function(n){ return document.getElementById("dotsAi" + n); });
+        const playerCountWrap = document.getElementById("dotsPlayerCountWrap");
+        const playerBtns = [2,3,4].map(function(n){ return document.getElementById("dotsPlayers" + n); });
+        const nameInputs = [null, document.getElementById("dotsName1"), document.getElementById("dotsName2"), document.getElementById("dotsName3"), document.getElementById("dotsName4")];
+        const nameFields = [null, document.getElementById("dotsNameField1"), document.getElementById("dotsNameField2"), document.getElementById("dotsNameField3"), document.getElementById("dotsNameField4")];
+        const showSplashInput = document.getElementById("dotsShowSplash");
+        const teamPlayInput = document.getElementById("dotsEnableTeams");
+        const teamOptions = document.getElementById("dotsTeamOptions");
+        const teamSelects = [null, document.getElementById("dotsTeam1"), document.getElementById("dotsTeam2"), document.getElementById("dotsTeam3"), document.getElementById("dotsTeam4")];
+        const teamFields = [null, document.getElementById("dotsTeamField1"), document.getElementById("dotsTeamField2"), document.getElementById("dotsTeamField3"), document.getElementById("dotsTeamField4")];
+        const teamNameInputs = [null, document.getElementById("dotsTeamName1"), document.getElementById("dotsTeamName2")];
+        const turnSplashOverlay = document.getElementById("turnSplashOverlay");
+        const turnSplashName = document.getElementById("turnSplashName");
+        const turnSplashTeam = document.getElementById("turnSplashTeam");
+
+        function mk2(r,c,val){ let a=[]; for(let i=0;i<r;i++){ let row=[]; for(let j=0;j<c;j++) row.push(val); a.push(row); } return a; }
+        function copy2(a){ return a.map(function(r){ return r.slice(); }); }
+        function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
+        function activePlayers(){ return mode === 'cpu' ? 2 : playerCount; }
+        function teamModeActive(){ return mode === 'pvp' && activePlayers() > 2 && !!teamPlay; }
+        function getPlayerColor(p){ return playerColors[p] || DEFAULT_COLORS[p] || "#FFFFFF"; }
+        function getPlayerName(p){
+            if(mode === 'cpu') return p === 1 ? 'You' : 'CPU';
+            const v = playerNames[p];
+            return (typeof v === 'string' && v.trim()) ? v.trim() : ('Player ' + p);
+        }
+        function getPlayerLabel(p){
+            if(mode === 'cpu') return p === 1 ? 'YOU' : 'CPU';
+            const nm = getPlayerName(p);
+            return nm.length <= 14 ? nm : nm.slice(0,14);
+        }
+        function getTeamNoForPlayer(p){ return Math.max(1, Math.min(2, parseInt(teams[p], 10) || ((p % 2) ? 1 : 2))); }
+        function getTeamName(teamNo){
+            const v = teamNames[teamNo];
+            return (typeof v === 'string' && v.trim()) ? v.trim() : ('Team ' + teamNo);
+        }
+        function getTeamTotals(){
+            const totals = { 1: 0, 2: 0 };
+            const sc = currentScores();
+            for(let i=1;i<=activePlayers();i++) totals[getTeamNoForPlayer(i)] += (sc[i] || 0);
+            return totals;
+        }
+        function teamMembersLabel(teamNo){
+            const names = [];
+            for(let i=1;i<=activePlayers();i++) if(getTeamNoForPlayer(i) === teamNo) names.push(getPlayerName(i));
+            return names.join(', ');
+        }
+        function nextPlayer(p, total){
+            const n = total || activePlayers();
+            return (p % n) + 1;
+        }
+        function currentScores(){
+            if(scores && scores.length) return scores;
+            const n = activePlayers();
+            const arr = new Array(n + 1).fill(0);
+            return arr;
+        }
+
         function normColor(v, fallback){
             if(typeof v !== "string") return fallback;
             const s = v.trim();
             return /^#[0-9a-fA-F]{6}$/.test(s) ? s.toUpperCase() : fallback;
         }
-
-        
-
         function hexToRgb(hex){
             const m = /^#?([0-9a-fA-F]{6})$/.exec(String(hex||""));
             if(!m) return {r:255,g:255,b:255};
@@ -1913,19 +2206,17 @@ let mode = 'pvp';
             return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
         }
         function relLum(hex){
-            const {r,g,b} = hexToRgb(hex);
-            const sr = r/255, sg = g/255, sb = b/255;
-            const f = (c)=> (c<=0.03928) ? (c/12.92) : Math.pow((c+0.055)/1.055, 2.4);
+            const rgb = hexToRgb(hex);
+            const sr = rgb.r/255, sg = rgb.g/255, sb = rgb.b/255;
+            const f = function(c){ return (c<=0.03928) ? (c/12.92) : Math.pow((c+0.055)/1.055, 2.4); };
             const R=f(sr), G=f(sg), B=f(sb);
             return 0.2126*R + 0.7152*G + 0.0722*B;
         }
         function dashOverlayColor(baseHex){
-            const L = relLum(baseHex);
-            return (L > 0.55) ? '#000000' : '#FFFFFF';
+            return relLum(baseHex) > 0.55 ? '#000000' : '#FFFFFF';
         }
-
         function rgbToHex(r,g,b){
-            const to2 = (n)=> ("0" + Math.max(0, Math.min(255, n|0)).toString(16)).slice(-2);
+            const to2 = function(n){ return ("0" + Math.max(0, Math.min(255, n|0)).toString(16)).slice(-2); };
             return "#" + to2(r) + to2(g) + to2(b);
         }
 
@@ -1937,161 +2228,191 @@ let mode = 'pvp';
             "#FF4DF2","#4D7DFF","#E6FF4D","#FF9A4D","#4DFF88","#FF4D9A"
         ];
 
-        let _colorTarget = 1; 
-        let _temp = { r:255, g:51, b:51 };
+        let _colorTarget = 1;
 
         function setModalFromHex(hex){
             const h = normColor(hex, "#FFFFFF");
-            const {r,g,b} = hexToRgb(h);
-            _temp = {r,g,b};
-            if(rSlider) rSlider.value = String(r);
-            if(gSlider) gSlider.value = String(g);
-            if(bSlider) bSlider.value = String(b);
-            if(rVal) rVal.textContent = String(r);
-            if(gVal) gVal.textContent = String(g);
-            if(bVal) bVal.textContent = String(b);
-            const hx = rgbToHex(r,g,b);
+            const rgb = hexToRgb(h);
+            if(rSlider) rSlider.value = String(rgb.r);
+            if(gSlider) gSlider.value = String(rgb.g);
+            if(bSlider) bSlider.value = String(rgb.b);
+            if(rVal) rVal.textContent = String(rgb.r);
+            if(gVal) gVal.textContent = String(rgb.g);
+            if(bVal) bVal.textContent = String(rgb.b);
+            const hx = rgbToHex(rgb.r, rgb.g, rgb.b);
             if(colorHex) colorHex.value = hx;
             if(colorPreview) colorPreview.style.background = hx;
         }
 
         function applyModalFromSliders(){
-            const r = parseInt(rSlider?.value || "0", 10) || 0;
-            const g = parseInt(gSlider?.value || "0", 10) || 0;
-            const b = parseInt(bSlider?.value || "0", 10) || 0;
+            const r = parseInt(rSlider && rSlider.value ? rSlider.value : "0", 10) || 0;
+            const g = parseInt(gSlider && gSlider.value ? gSlider.value : "0", 10) || 0;
+            const b = parseInt(bSlider && bSlider.value ? bSlider.value : "0", 10) || 0;
             if(rVal) rVal.textContent = String(r);
             if(gVal) gVal.textContent = String(g);
             if(bVal) bVal.textContent = String(b);
             const hx = rgbToHex(r,g,b);
             if(colorHex) colorHex.value = hx;
             if(colorPreview) colorPreview.style.background = hx;
-            _temp = {r,g,b};
         }
 
         function openColorModal(which){
-            _colorTarget = (which===2) ? 2 : 1;
+            _colorTarget = Math.max(1, Math.min(4, which|0));
             if(!colorModal) return;
-            const current = (_colorTarget===1) ? C_P1 : C_P2;
-            setModalFromHex(current);
+            setModalFromHex(getPlayerColor(_colorTarget));
             colorModal.style.display = "flex";
         }
-
-        function closeColorModal(){
-            if(!colorModal) return;
-            colorModal.style.display = "none";
-        }
-
+        function closeColorModal(){ if(colorModal) colorModal.style.display = "none"; }
         function applyColorModal(){
-            const h = normColor(colorHex?.value || "", (_colorTarget===1)?C_P1:C_P2);
+            const h = normColor(colorHex && colorHex.value ? colorHex.value : "", getPlayerColor(_colorTarget));
             setPlayerColor(_colorTarget, h, true);
             closeColorModal();
         }
-
         function buildPalette(){
             if(!colorPalette) return;
             colorPalette.innerHTML = "";
-            PALETTE.forEach(hex => {
+            PALETTE.forEach(function(hex){
                 const b = document.createElement("button");
                 b.type = "button";
                 b.className = "dots-pal";
                 b.style.background = hex;
                 b.setAttribute("aria-label", "Pick " + hex);
-                b.addEventListener("click", () => setModalFromHex(hex));
+                b.addEventListener("click", function(){ setModalFromHex(hex); });
                 colorPalette.appendChild(b);
             });
         }
 
+        function syncColorVisibility(){
+            const shown = activePlayers();
+            for(let i=1;i<=4;i++){
+                if(playerColorItems[i]){
+                    playerColorItems[i].classList.toggle('is-hidden', i > shown);
+                }
+            }
+        }
+        function syncColorLabels(){
+            for(let i=1;i<=4;i++){
+                if(playerNameEls[i]) playerNameEls[i].textContent = getPlayerName(i);
+            }
+            syncColorVisibility();
+        }
+        function syncSettingsVisibility(){
+            const shown = activePlayers();
+            for(let i=1;i<=4;i++){
+                if(nameFields[i]) nameFields[i].classList.toggle('is-hidden', i > shown);
+                if(teamFields[i]) teamFields[i].classList.toggle('is-hidden', i > shown || !teamModeActive());
+            }
+            if(teamOptions) teamOptions.classList.toggle('hidden', !teamModeActive());
+            if(teamPlayInput){
+                teamPlayInput.disabled = !(mode === 'pvp' && playerCount > 2);
+                if(teamPlayInput.disabled) teamPlayInput.checked = false;
+            }
+        }
+        function readMenuSettings(){
+            for(let i=1;i<=4;i++){
+                if(nameInputs[i]){
+                    const v = String(nameInputs[i].value || '').trim();
+                    playerNames[i] = v || ('Player ' + i);
+                }
+            }
+            showTurnSplash = !!(showSplashInput && showSplashInput.checked);
+            teamPlay = !!(teamPlayInput && teamPlayInput.checked && mode === 'pvp' && playerCount > 2);
+            for(let i=1;i<=4;i++){
+                if(teamSelects[i]) teams[i] = Math.max(1, Math.min(2, parseInt(teamSelects[i].value, 10) || ((i % 2) ? 1 : 2)));
+            }
+            for(let t=1;t<=2;t++){
+                if(teamNameInputs[t]){
+                    const v = String(teamNameInputs[t].value || '').trim();
+                    teamNames[t] = v || ('Team ' + t);
+                }
+            }
+            syncColorLabels();
+            syncSettingsVisibility();
+        }
+        function hydrateMenuSettings(){
+            for(let i=1;i<=4;i++) if(nameInputs[i]) nameInputs[i].value = playerNames[i] && !/^Player \d+$/.test(playerNames[i]) ? playerNames[i] : '';
+            if(showSplashInput) showSplashInput.checked = !!showTurnSplash;
+            if(teamPlayInput) teamPlayInput.checked = !!teamPlay;
+            for(let i=1;i<=4;i++) if(teamSelects[i]) teamSelects[i].value = String(getTeamNoForPlayer(i));
+            for(let t=1;t<=2;t++) if(teamNameInputs[t]) teamNameInputs[t].value = teamNames[t] && !/^Team \d+$/.test(teamNames[t]) ? teamNames[t] : '';
+            syncSettingsVisibility();
+            syncColorLabels();
+        }
+        function clearTurnSplash(){
+            if(splashTimer){ clearTimeout(splashTimer); splashTimer = null; }
+            if(turnSplashOverlay) turnSplashOverlay.style.display = 'none';
+        }
+        function maybeShowTurnSplash(){
+            clearTurnSplash();
+            if(!showTurnSplash || mode !== 'pvp' || claimed === TOTAL || !turnSplashOverlay) return;
+            if(turnSplashName) turnSplashName.textContent = getPlayerName(turn || 1);
+            if(turnSplashTeam){
+                turnSplashTeam.textContent = teamModeActive() ? getTeamName(getTeamNoForPlayer(turn || 1)) : '';
+            }
+            turnSplashOverlay.style.display = 'flex';
+            splashTimer = setTimeout(function(){ if(turnSplashOverlay) turnSplashOverlay.style.display = 'none'; splashTimer = null; }, 950);
+        }
+        function syncPickedColors(){
+            for(let i=1;i<=4;i++){
+                const el = playerHexTexts[i];
+                const current = el && el.textContent ? el.textContent : getPlayerColor(i);
+                setPlayerColor(i, normColor(current, getPlayerColor(i)), false);
+            }
+        }
+        function setPlayerColor(which, hex, redraw){
+            const idx = Math.max(1, Math.min(4, which|0));
+            const c = normColor(hex, getPlayerColor(idx));
+            playerColors[idx] = c;
+            if(playerChips[idx]) playerChips[idx].style.background = c;
+            if(playerHexTexts[idx]) playerHexTexts[idx].textContent = c;
+            try{
+                ArcadeStore.setJSON('dots_colors', { p1: playerColors[1], p2: playerColors[2], p3: playerColors[3], p4: playerColors[4] });
+            }catch(e){}
+            try{ updateUI(); }catch(e){}
+            if(redraw !== false) requestAnimationFrame(draw);
+        }
+
         function initColorPickerUI(){
             buildPalette();
-
-            if(p1SwatchBtn) p1SwatchBtn.addEventListener("click", () => openColorModal(1));
-            if(p2SwatchBtn) p2SwatchBtn.addEventListener("click", () => openColorModal(2));
-
-            const onSlider = ()=> applyModalFromSliders();
+            for(let i=1;i<=4;i++){
+                if(playerSwatchBtns[i]){
+                    playerSwatchBtns[i].addEventListener("click", function(){ openColorModal(i); });
+                }
+            }
+            const onSlider = function(){ applyModalFromSliders(); };
             if(rSlider) rSlider.addEventListener("input", onSlider);
             if(gSlider) gSlider.addEventListener("input", onSlider);
             if(bSlider) bSlider.addEventListener("input", onSlider);
-
-            if(colorHex) colorHex.addEventListener("input", () => {
-                const v = String(colorHex.value || "").trim();
-                if(/^#?[0-9a-fA-F]{6}$/.test(v)){
-                    const h = v.startsWith("#") ? v : ("#" + v);
-                    setModalFromHex(h);
-                }
-            });
-
+            if(colorHex){
+                colorHex.addEventListener("input", function(){
+                    const v = String(colorHex.value || "").trim();
+                    if(/^#?[0-9a-fA-F]{6}$/.test(v)) setModalFromHex(v.startsWith("#") ? v : ("#" + v));
+                });
+            }
             if(colorCloseBtn) colorCloseBtn.addEventListener("click", closeColorModal);
             if(colorCancelBtn) colorCancelBtn.addEventListener("click", closeColorModal);
             if(colorApplyBtn) colorApplyBtn.addEventListener("click", applyColorModal);
-
             if(colorModal){
-                colorModal.addEventListener("click", (e) => {
-                    if(e.target === colorModal) closeColorModal();
-                });
+                colorModal.addEventListener("click", function(e){ if(e.target === colorModal) closeColorModal(); });
             }
-
-            window.addEventListener("keydown", (e) => {
-                if(e.key === "Escape" && colorModal && colorModal.style.display !== "none") closeColorModal();
-            }, { passive: true });
-
-            
+            window.addEventListener("keydown", function(e){ if(e.key === "Escape" && colorModal && colorModal.style.display !== "none") closeColorModal(); }, { passive: true });
+            nameInputs.forEach(function(el){ if(el) el.addEventListener('input', readMenuSettings); });
+            teamSelects.forEach(function(el){ if(el) el.addEventListener('change', readMenuSettings); });
+            teamNameInputs.forEach(function(el){ if(el) el.addEventListener('input', readMenuSettings); });
+            if(showSplashInput) showSplashInput.addEventListener('change', readMenuSettings);
+            if(teamPlayInput) teamPlayInput.addEventListener('change', function(){ readMenuSettings(); syncSettingsVisibility(); });
+            if(turnSplashOverlay) turnSplashOverlay.addEventListener('click', clearTurnSplash);
             try{
                 const saved = ArcadeStore.getJSON('dots_colors', null);
                 if(saved && typeof saved === 'object'){
-                    if(saved.p1) C_P1 = normColor(saved.p1, C_P1);
-                    if(saved.p2) C_P2 = normColor(saved.p2, C_P2);
+                    if(saved.p1) playerColors[1] = normColor(saved.p1, playerColors[1]);
+                    if(saved.p2) playerColors[2] = normColor(saved.p2, playerColors[2]);
+                    if(saved.p3) playerColors[3] = normColor(saved.p3, playerColors[3]);
+                    if(saved.p4) playerColors[4] = normColor(saved.p4, playerColors[4]);
                 }
             }catch(e){}
-
-            
-            setPlayerColor(1, C_P1, false);
-            setPlayerColor(2, C_P2, false);
+            for(let i=1;i<=4;i++) setPlayerColor(i, playerColors[i], false);
         }
-
-function syncColorLabels(){
-            if(p1NameEl) p1NameEl.textContent = (mode==='cpu') ? 'YOU' : 'P1';
-            if(p2NameEl) p2NameEl.textContent = (mode==='cpu') ? 'CPU' : 'P2';
-        }
-
-        function syncPickedColors(){
-            const p1 = normColor((p1HexText && p1HexText.textContent) ? p1HexText.textContent : C_P1, C_P1);
-            const p2 = normColor((p2HexText && p2HexText.textContent) ? p2HexText.textContent : C_P2, C_P2);
-            setPlayerColor(1, p1, false);
-            setPlayerColor(2, p2, false);
-        }
-
-        function setPlayerColor(which, hex, redraw=true){
-            const c = normColor(hex, which===1 ? C_P1 : C_P2);
-            if(which === 1){
-                C_P1 = c;
-                if(p1Chip) p1Chip.style.background = c;
-                if(p1HexText) p1HexText.textContent = c;
-            }else{
-                C_P2 = c;
-                if(p2Chip) p2Chip.style.background = c;
-                if(p2HexText) p2HexText.textContent = c;
-            }
-            try{
-                ArcadeStore.setJSON('dots_colors', { p1: C_P1, p2: C_P2 });
-            }catch(e){}
-            try{ updateUI(); }catch(e){}
-            if(redraw) requestAnimationFrame(draw);
-        }
-        const turnDot = document.getElementById("turnDot");
-        const scoreEl = document.getElementById("scoreDisp");
-        const undoBtn = document.getElementById("undoBtn");
-        const menuOverlay = document.getElementById("menuOverlay");
-        const winnerOverlay = document.getElementById("winnerOverlay");
-        const winnerText = document.getElementById("winnerText");
-        const openBoxCount = document.getElementById("open-box-count");
-        const modePvpBtn = document.getElementById("dotsModePvp");
-        const modeCpuBtn = document.getElementById("dotsModeCpu");
-        const aiWrap = document.getElementById("dotsAiWrap");
-        const aiBtns = [1,2,3,4,5].map(n => document.getElementById(`dotsAi${n}`));
-        
-        function mk2(r,c,val){ let a=[]; for(let i=0;i<r;i++){ let row=[]; for(let j=0;j<c;j++) row.push(val); a.push(row); } return a; }
-        function copy2(a){ return a.map(r => r.slice()); }
-        function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
 
         function toggleContrast() {
             const next = !document.body.classList.contains('high-contrast');
@@ -2100,33 +2421,38 @@ function syncColorLabels(){
             try{ if(window.ArcadeSettings) ArcadeSettings.set({ highContrast: next }); }catch(e){}
             requestAnimationFrame(draw);
         }
-
         function stopCpu(){
             if(cpuTimer){ clearTimeout(cpuTimer); cpuTimer = null; }
             cpuThinking = false;
         }
-
         function syncMenuUI(){
-            if(!modePvpBtn || !modeCpuBtn) return;
-            modePvpBtn.classList.toggle('dots-sel', mode==='pvp');
-            modeCpuBtn.classList.toggle('dots-sel', mode==='cpu');
+            if(modePvpBtn) modePvpBtn.classList.toggle('dots-sel', mode==='pvp');
+            if(modeCpuBtn) modeCpuBtn.classList.toggle('dots-sel', mode==='cpu');
             if(aiWrap) aiWrap.style.display = (mode==='cpu') ? 'block' : 'none';
-            aiBtns.forEach((b, idx) => { if(b) b.classList.toggle('dots-sel', cpuLevel === (idx+1)); });
+            if(playerCountWrap) playerCountWrap.style.display = (mode==='pvp') ? 'block' : 'none';
+            playerBtns.forEach(function(btn, idx){ if(btn) btn.classList.toggle('dots-sel', playerCount === (idx + 2)); });
+            aiBtns.forEach(function(btn, idx){ if(btn) btn.classList.toggle('dots-sel', cpuLevel === (idx + 1)); });
+            hydrateMenuSettings();
             syncColorLabels();
         }
-
         function setMode(m){
             mode = (m === 'cpu') ? 'cpu' : 'pvp';
+            if(mode === 'cpu'){ playerCount = 2; teamPlay = false; }
             syncMenuUI();
         }
-
+        function setPlayerCount(n){
+            playerCount = Math.max(2, Math.min(4, n|0));
+            if(mode === 'cpu') mode = 'pvp';
+            if(playerCount <= 2) teamPlay = false;
+            syncMenuUI();
+        }
         function setCpuLevel(l){
             cpuLevel = Math.max(1, Math.min(5, l|0));
             syncMenuUI();
         }
-
         function openNewGameMenu(){
             stopCpu();
+            clearTurnSplash();
             syncGlobalContrast();
             syncPickedColors();
             menuOverlay.style.display = 'flex';
@@ -2134,189 +2460,214 @@ function syncColorLabels(){
             syncMenuUI();
             status("Pick a mode, choose colors, then pick a grid");
         }
-
         function startGame(rows, cols){
             stopCpu();
+            clearTurnSplash();
             syncGlobalContrast();
             syncPickedColors();
+            readMenuSettings();
             DR = rows; DC = cols; BR = rows - 1; BC = cols - 1; TOTAL = BR * BC;
             HO = mk2(DR, BC, 0); VO = mk2(BR, DC, 0);
             boxOwner = mk2(BR, BC, 0); boxAnim = mk2(BR, BC, 0);
-            turn = 1; s1 = 0; s2 = 0; claimed = 0; history = []; sel = null; lastMove = null; particles = [];
+            turn = 1;
+            scores = new Array(activePlayers() + 1).fill(0);
+            claimed = 0; history = []; sel = null; lastMove = null; particles = [];
             menuOverlay.style.display = 'none'; winnerOverlay.style.display = 'none';
             syncMenuUI();
-            status(mode === 'cpu' ? "Your move." : "Start!");
+            status(mode === 'cpu' ? "Your move." : ('Start with ' + getPlayerName(1)));
             updateUI(); fitCanvas();
+            maybeShowTurnSplash();
         }
-
         function quit() {
             stopCpu();
+            clearTurnSplash();
             syncGlobalContrast();
             menuOverlay.style.display = 'flex';
             winnerOverlay.style.display = 'none';
-            HO = null; VO = null; boxOwner = null;
+            HO = null; VO = null; boxOwner = null; scores = null;
             syncMenuUI();
             status("Pick a mode, choose colors, then pick a grid");
         }
-
         function saveStateHistory(){
             if(history.length > 50) history.shift();
-            history.push({ HO: copy2(HO), VO: copy2(VO), boxOwner: copy2(boxOwner), boxAnim: copy2(boxAnim), turn: turn, s1: s1, s2: s2, claimed: claimed, lastMove: lastMove ? {...lastMove} : null });
+            history.push({
+                HO: copy2(HO), VO: copy2(VO), boxOwner: copy2(boxOwner), boxAnim: copy2(boxAnim),
+                turn: turn, scores: currentScores().slice(), claimed: claimed, lastMove: lastMove ? Object.assign({}, lastMove) : null,
+                mode: mode, playerCount: playerCount, playerNames: playerNames.slice(), showTurnSplash: showTurnSplash, teamPlay: teamPlay, teams: teams.slice(), teamNames: teamNames.slice()
+            });
             updateUI();
         }
-
         function undo(){
             if(!history.length) return;
             stopCpu();
-            let s = history.pop();
-            HO=copy2(s.HO); VO=copy2(s.VO); boxOwner=copy2(s.boxOwner); boxAnim=copy2(s.boxAnim);
-            turn=s.turn; s1=s.s1; s2=s.s2; claimed=s.claimed; lastMove=s.lastMove; sel=null;
-            winnerOverlay.style.display = 'none'; updateUI(); status("Undid last move"); fitCanvas();
+            const s = history.pop();
+            HO = copy2(s.HO); VO = copy2(s.VO); boxOwner = copy2(s.boxOwner); boxAnim = copy2(s.boxAnim);
+            turn = s.turn; scores = s.scores.slice(); claimed = s.claimed; lastMove = s.lastMove; sel = null;
+            mode = s.mode || mode; playerCount = s.playerCount || playerCount;
+            if(s.playerNames) playerNames = s.playerNames.slice();
+            if(typeof s.showTurnSplash === 'boolean') showTurnSplash = s.showTurnSplash;
+            if(typeof s.teamPlay === 'boolean') teamPlay = s.teamPlay;
+            if(s.teams) teams = s.teams.slice();
+            if(s.teamNames) teamNames = s.teamNames.slice();
+            winnerOverlay.style.display = 'none';
+            syncMenuUI(); updateUI(); status("Undid last move"); fitCanvas();
             if(mode === 'cpu' && turn === 2 && claimed !== TOTAL){ maybeCpu(); }
         }
-
         function updateUI(){
-            const p1n = (mode==='cpu') ? 'YOU' : 'P1';
-            const p2n = (mode==='cpu') ? 'CPU' : 'P2';
-            scoreEl.innerHTML = `<span style='color:${C_P1}'>${p1n}: ${s1}</span> | <span style='color:${C_P2}'>${p2n}: ${s2}</span>`;
-            undoBtn.disabled = (history.length === 0);
-            let color = (turn === 1) ? C_P1 : C_P2;
-            turnDot.style.background = color; turnDot.style.boxShadow = "0 0 8px " + color;
-            if(turnText) turnText.textContent = (turn===1)?p1n:p2n;
-            openBoxCount.textContent = `${TOTAL - claimed} / ${TOTAL}`;
+            const sc = currentScores();
+            const parts = [];
+            if(teamModeActive()){
+                const totals = getTeamTotals();
+                for(let t=1;t<=2;t++){
+                    parts.push("<span style='color:" + (t===1 ? '#7cd6ff' : '#ffd86b') + "'>" + getTeamName(t) + ": " + (totals[t] || 0) + "</span>");
+                }
+            } else {
+                for(let i=1;i<=activePlayers();i++){
+                    parts.push("<span style='color:" + getPlayerColor(i) + "'>" + getPlayerLabel(i) + ": " + (sc[i] || 0) + "</span>");
+                }
+            }
+            scoreEl.innerHTML = parts.join(" <span style='color:#777'>|</span> ");
+            undoBtn.disabled = !history || history.length === 0;
+            const color = getPlayerColor(turn || 1);
+            turnDot.style.background = color;
+            turnDot.style.boxShadow = "0 0 8px " + color;
+            if(turnText) turnText.textContent = getPlayerName(turn || 1);
+            if(openBoxCount) openBoxCount.textContent = (TOTAL - claimed) + " / " + TOTAL;
         }
-        function status(msg){ statusText.textContent = msg; }
+        function status(msg){ if(statusText) statusText.textContent = msg; }
 
         function fitCanvas(){
-            if(currentGameId !== 'dots') return;
-            let dpr = window.devicePixelRatio || 1;
-            let w = boardContainer.clientWidth; let h = boardContainer.clientHeight;
-            let stepX = (w*0.95) / (DC - 1); let stepY = (h*0.95) / (DR - 1);
-            let rawStep = Math.min(stepX, stepY);
-            let pad = rawStep * 0.7;
-            canvas.style.width = Math.floor(rawStep*(DC-1)+pad*2)+"px";
-            canvas.style.height = Math.floor(rawStep*(DR-1)+pad*2)+"px";
-            canvas.width = Math.floor((rawStep*(DC-1)+pad*2) * dpr);
-            canvas.height = Math.floor((rawStep*(DR-1)+pad*2) * dpr);
+            if(currentGameId !== 'dots' || !DR || !DC) return;
+            const dpr = window.devicePixelRatio || 1;
+            const w = boardContainer.clientWidth;
+            const h = boardContainer.clientHeight;
+            const stepX = (w * 0.95) / (DC - 1);
+            const stepY = (h * 0.95) / (DR - 1);
+            const rawStep = Math.min(stepX, stepY);
+            const pad = rawStep * 0.7;
+            canvas.style.width = Math.floor(rawStep * (DC - 1) + pad * 2) + "px";
+            canvas.style.height = Math.floor(rawStep * (DR - 1) + pad * 2) + "px";
+            canvas.width = Math.floor((rawStep * (DC - 1) + pad * 2) * dpr);
+            canvas.height = Math.floor((rawStep * (DR - 1) + pad * 2) * dpr);
             STEP = rawStep * dpr; PAD = pad * dpr; OX = PAD; OY = PAD;
-            DOT_R = STEP * 0.15; DOT_HIT = STEP * 0.45; LINE_W = STEP * 0.18; 
+            DOT_R = STEP * 0.15; DOT_HIT = STEP * 0.45; LINE_W = STEP * 0.18;
             const cc = document.getElementById('dots-confetti-canvas');
             cc.width = w * dpr; cc.height = h * dpr;
         }
-
-        function getXY(r, c){ return { x: OX + c*STEP, y: OY + r*STEP }; }
+        function getXY(r, c){ return { x: OX + c * STEP, y: OY + r * STEP }; }
         function pickDot(ex, ey){
-            let rect = canvas.getBoundingClientRect();
-            let x = (ex - rect.left) * (canvas.width / rect.width);
-            let y = (ey - rect.top) * (canvas.height / rect.height);
+            const rect = canvas.getBoundingClientRect();
+            const x = (ex - rect.left) * (canvas.width / rect.width);
+            const y = (ey - rect.top) * (canvas.height / rect.height);
             let best = null, minD2 = DOT_HIT * DOT_HIT;
             for(let r=0; r<DR; r++){
                 for(let c=0; c<DC; c++){
-                    let p = getXY(r,c); let d2 = (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y);
+                    const p = getXY(r,c);
+                    const d2 = (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y);
                     if(d2 < minD2){ minD2 = d2; best = {r:r, c:c}; }
                 }
             }
             return best;
         }
-
         function isNeighbor(d1, d2){ return (Math.abs(d1.r - d2.r) + Math.abs(d1.c - d2.c) === 1); }
-
+        function checkClaimAt(br, bc, owner){
+            if(br < 0 || bc < 0 || br >= BR || bc >= BC) return 0;
+            if(boxOwner[br][bc] !== 0) return 0;
+            if(HO[br][bc] && HO[br+1][bc] && VO[br][bc] && VO[br][bc+1]){
+                boxOwner[br][bc] = owner;
+                boxAnim[br][bc] = Date.now();
+                return 1;
+            }
+            return 0;
+        }
+        function finishGame(){
+            setTimeout(function(){
+                if(teamModeActive()){
+                    const totals = getTeamTotals();
+                    const a = totals[1] || 0, b = totals[2] || 0;
+                    if(a === b){
+                        winnerText.textContent = 'TIE GAME';
+                        winnerText.style.color = '#FFF';
+                    } else {
+                        const t = a > b ? 1 : 2;
+                        winnerText.textContent = getTeamName(t) + ' WINS!';
+                        winnerText.style.color = t === 1 ? '#7cd6ff' : '#ffd86b';
+                    }
+                } else {
+                    const sc = currentScores();
+                    let best = -1;
+                    let winners = [];
+                    for(let i=1;i<=activePlayers();i++){
+                        if(sc[i] > best){ best = sc[i]; winners = [i]; }
+                        else if(sc[i] === best){ winners.push(i); }
+                    }
+                    if(winners.length === 1){
+                        winnerText.textContent = getPlayerLabel(winners[0]) + ' WINS!';
+                        winnerText.style.color = getPlayerColor(winners[0]);
+                    } else {
+                        winnerText.textContent = 'TIE GAME';
+                        winnerText.style.color = '#FFF';
+                    }
+                }
+                winnerOverlay.style.display = 'flex';
+                lastMove = null;
+                spawnConfetti();
+            }, 500);
+        }
         function makeMove(d1, d2){
-            let type = (d1.r === d2.r) ? 'H' : 'V';
-            let r = (type==='H') ? d1.r : Math.min(d1.r, d2.r);
-            let c = (type==='H') ? Math.min(d1.c, d2.c) : d1.c;
-            if( (type==='H' ? HO[r][c] : VO[r][c]) !== 0 ) return false;
-            saveStateHistory(); 
-            let p = turn;
-            if(type==='H') HO[r][c] = p; else VO[r][c] = p;
+            const type = (d1.r === d2.r) ? 'H' : 'V';
+            const r = (type === 'H') ? d1.r : Math.min(d1.r, d2.r);
+            const c = (type === 'H') ? Math.min(d1.c, d2.c) : d1.c;
+            if((type === 'H' ? HO[r][c] : VO[r][c]) !== 0) return false;
+            saveStateHistory();
+            const p = turn;
+            if(type === 'H') HO[r][c] = p; else VO[r][c] = p;
             lastMove = {type:type, r:r, c:c};
             let points = 0;
-            function check(br, bc){
-                if(br<0||bc<0||br>=BR||bc>=BC) return 0;
-                if(boxOwner[br][bc]!==0) return 0;
-                if(HO[br][bc] && HO[br+1][bc] && VO[br][bc] && VO[br][bc+1]){
-                    boxOwner[br][bc] = p; boxAnim[br][bc] = Date.now(); return 1;
-                }
-                return 0;
-            }
-            if(type === 'H'){ points += check(r-1, c); points += check(r, c); }
-            else { points += check(r, c-1); points += check(r, c); }
+            if(type === 'H'){ points += checkClaimAt(r - 1, c, p); points += checkClaimAt(r, c, p); }
+            else { points += checkClaimAt(r, c - 1, p); points += checkClaimAt(r, c, p); }
             if(points > 0){
-                if(p===1) s1 += points; else s2 += points;
-                const p1n = (mode==='cpu') ? 'YOU' : 'P1';
-                const p2n = (mode==='cpu') ? 'CPU' : 'P2';
-                claimed += points; status((p===1?p1n:p2n) + ' scored!'); vibrate(50);
-                
-                if(points > 1) {
+                scores[p] += points;
+                claimed += points;
+                status((teamModeActive() ? getTeamName(getTeamNoForPlayer(p)) : getPlayerName(p)) + ' scored!');
+                vibrate(50);
+                if(points > 1){
                     const ct = document.getElementById('combo-text');
                     ct.classList.remove('combo-anim');
-                    void ct.offsetWidth; 
+                    void ct.offsetWidth;
                     ct.classList.add('combo-anim');
                 }
             } else {
-                turn = (turn===1) ? 2 : 1; status("Make a move"); vibrate(10); 
+                turn = nextPlayer(turn);
+                status(mode === 'cpu' && turn === 2 ? "CPU's turn" : ('Turn: ' + getPlayerName(turn)));
+                vibrate(10);
+                maybeShowTurnSplash();
             }
-            if(claimed === TOTAL){
-                setTimeout(()=>{
-                    const p1n = (mode==='cpu') ? 'YOU' : 'P1';
-                    const p2n = (mode==='cpu') ? 'CPU' : 'P2';
-                    let winner = (s1>s2) ? `${p1n} WINS!` : (s2>s1) ? `${p2n} WINS!` : 'TIE GAME';
-                    winnerText.textContent = winner;
-                    winnerText.style.color = (s1>s2)?C_P1 : (s2>s1)?C_P2 : "#FFF";
-                    winnerOverlay.style.display = 'flex'; lastMove = null; spawnConfetti();
-                }, 500);
-            }
+            if(claimed === TOTAL) finishGame();
             updateUI();
-            if(mode === 'cpu' && turn === 2 && claimed !== TOTAL){ maybeCpu(); }
+            if(mode === 'cpu' && turn === 2 && claimed !== TOTAL) maybeCpu();
             return true;
         }
 
         function listMoves(state){
             const moves = [];
             for(let r=0; r<DR; r++){
-                for(let c=0; c<BC; c++){
-                    if(state.HO[r][c] === 0) moves.push({type:'H', r, c});
-                }
+                for(let c=0; c<BC; c++) if(state.HO[r][c] === 0) moves.push({type:'H', r:r, c:c});
             }
             for(let r=0; r<BR; r++){
-                for(let c=0; c<DC; c++){
-                    if(state.VO[r][c] === 0) moves.push({type:'V', r, c});
-                }
+                for(let c=0; c<DC; c++) if(state.VO[r][c] === 0) moves.push({type:'V', r:r, c:c});
             }
             return moves;
         }
-
         function cloneState(s){
-            return {
-                HO: copy2(s.HO),
-                VO: copy2(s.VO),
-                boxOwner: copy2(s.boxOwner),
-                turn: s.turn,
-                s1: s.s1,
-                s2: s.s2,
-                claimed: s.claimed
-            };
+            return { HO: copy2(s.HO), VO: copy2(s.VO), boxOwner: copy2(s.boxOwner), turn: s.turn, scores: s.scores.slice(), claimed: s.claimed };
         }
-
         function globalsToState(){
-            return {
-                HO: copy2(HO),
-                VO: copy2(VO),
-                boxOwner: copy2(boxOwner),
-                turn: turn,
-                s1: s1,
-                s2: s2,
-                claimed: claimed
-            };
+            return { HO: copy2(HO), VO: copy2(VO), boxOwner: copy2(boxOwner), turn: turn, scores: currentScores().slice(), claimed: claimed };
         }
-
         function boxSides(s, br, bc){
-            return (s.HO[br][bc] ? 1 : 0)
-                + (s.HO[br+1][bc] ? 1 : 0)
-                + (s.VO[br][bc] ? 1 : 0)
-                + (s.VO[br][bc+1] ? 1 : 0);
+            return (s.HO[br][bc] ? 1 : 0) + (s.HO[br+1][bc] ? 1 : 0) + (s.VO[br][bc] ? 1 : 0) + (s.VO[br][bc+1] ? 1 : 0);
         }
-
         function countThree(s){
             let n = 0;
             for(let r=0; r<BR; r++){
@@ -2327,36 +2678,24 @@ function syncColorLabels(){
             }
             return n;
         }
-
         function applyMoveInPlace(s, mv){
             const p = s.turn;
-            if(mv.type === 'H') s.HO[mv.r][mv.c] = p;
-            else s.VO[mv.r][mv.c] = p;
-
+            if(mv.type === 'H') s.HO[mv.r][mv.c] = p; else s.VO[mv.r][mv.c] = p;
             let points = 0;
             function check(br, bc){
                 if(br < 0 || bc < 0 || br >= BR || bc >= BC) return 0;
                 if(s.boxOwner[br][bc] !== 0) return 0;
-                if(s.HO[br][bc] && s.HO[br+1][bc] && s.VO[br][bc] && s.VO[br][bc+1]){
-                    s.boxOwner[br][bc] = p;
-                    return 1;
-                }
+                if(s.HO[br][bc] && s.HO[br+1][bc] && s.VO[br][bc] && s.VO[br][bc+1]){ s.boxOwner[br][bc] = p; return 1; }
                 return 0;
             }
-            if(mv.type === 'H'){ points += check(mv.r-1, mv.c); points += check(mv.r, mv.c); }
-            else { points += check(mv.r, mv.c-1); points += check(mv.r, mv.c); }
-
-            if(points > 0){
-                if(p === 1) s.s1 += points; else s.s2 += points;
-                s.claimed += points;
-            } else {
-                s.turn = (p === 1) ? 2 : 1;
-            }
+            if(mv.type === 'H'){ points += check(mv.r - 1, mv.c); points += check(mv.r, mv.c); }
+            else { points += check(mv.r, mv.c - 1); points += check(mv.r, mv.c); }
+            if(points > 0){ s.scores[p] += points; s.claimed += points; }
+            else { s.turn = (p === 1) ? 2 : 1; }
             return points;
         }
-
         function evaluateState(s){
-            const diff = (s.s2 - s.s1);
+            const diff = (s.scores[2] || 0) - (s.scores[1] || 0);
             let v = diff * 100;
             if(s.claimed === TOTAL){
                 if(diff > 0) v += 1000000;
@@ -2366,76 +2705,57 @@ function syncColorLabels(){
             v += (s.turn === 2 ? three * 6 : -three * 6);
             return v;
         }
-
-        function pickRandom(arr){
-            return arr[(Math.random() * arr.length) | 0];
-        }
-
+        function pickRandom(arr){ return arr[(Math.random() * arr.length) | 0]; }
         function minimax(s, depth, alpha, beta, topK){
             if(depth <= 0 || s.claimed === TOTAL) return evaluateState(s);
-
             const moves = listMoves(s);
             if(!moves.length) return evaluateState(s);
-
-            
-            const scored = moves.map(mv => {
+            const scored = moves.map(function(mv){
                 const ns = cloneState(s);
                 const pts = applyMoveInPlace(ns, mv);
-                let v = evaluateState(ns) + pts * 500;
-                return { mv, v };
+                const v = evaluateState(ns) + pts * 500;
+                return { mv: mv, v: v };
             });
-
-            if(s.turn === 2) scored.sort((a,b)=>b.v-a.v);
-            else scored.sort((a,b)=>a.v-b.v);
-
+            if(s.turn === 2) scored.sort(function(a,b){ return b.v - a.v; });
+            else scored.sort(function(a,b){ return a.v - b.v; });
             const consider = scored.slice(0, Math.max(1, Math.min(topK, scored.length)));
-
             if(s.turn === 2){
                 let best = -Infinity;
                 for(const it of consider){
                     const ns = cloneState(s);
                     applyMoveInPlace(ns, it.mv);
-                    const val = minimax(ns, depth-1, alpha, beta, Math.max(6, Math.floor(topK*0.75)));
+                    const val = minimax(ns, depth - 1, alpha, beta, Math.max(6, Math.floor(topK * 0.75)));
                     best = Math.max(best, val);
                     alpha = Math.max(alpha, best);
                     if(beta <= alpha) break;
                 }
                 return best;
-            } else {
-                let best = Infinity;
-                for(const it of consider){
-                    const ns = cloneState(s);
-                    applyMoveInPlace(ns, it.mv);
-                    const val = minimax(ns, depth-1, alpha, beta, Math.max(6, Math.floor(topK*0.75)));
-                    best = Math.min(best, val);
-                    beta = Math.min(beta, best);
-                    if(beta <= alpha) break;
-                }
-                return best;
             }
+            let best = Infinity;
+            for(const it of consider){
+                const ns = cloneState(s);
+                applyMoveInPlace(ns, it.mv);
+                const val = minimax(ns, depth - 1, alpha, beta, Math.max(6, Math.floor(topK * 0.75)));
+                best = Math.min(best, val);
+                beta = Math.min(beta, best);
+                if(beta <= alpha) break;
+            }
+            return best;
         }
-
         function chooseCpuMove(level){
             const base = globalsToState();
             const moves = listMoves(base);
             if(!moves.length) return null;
-
-            if(level <= 1){
-                return pickRandom(moves);
-            }
-
+            if(level <= 1) return pickRandom(moves);
             if(level === 2){
                 const safe = [];
                 for(const mv of moves){
                     const ns = cloneState(base);
                     const pts = applyMoveInPlace(ns, mv);
-                    if(pts > 0) { safe.push(mv); continue; }
-                    if(countThree(ns) === 0) safe.push(mv);
+                    if(pts > 0 || countThree(ns) === 0) safe.push(mv);
                 }
                 return safe.length ? pickRandom(safe) : pickRandom(moves);
             }
-
-            
             if(level === 3){
                 let bestV = -Infinity;
                 let best = [];
@@ -2443,79 +2763,57 @@ function syncColorLabels(){
                     const ns = cloneState(base);
                     const pts = applyMoveInPlace(ns, mv);
                     const three = countThree(ns);
-                    let v = (ns.s2 - ns.s1) * 1000 + pts * 2000;
-                    
+                    let v = ((ns.scores[2] || 0) - (ns.scores[1] || 0)) * 1000 + pts * 2000;
                     if(ns.turn === 1) v -= three * 400;
                     if(v > bestV + 0.0001){ bestV = v; best = [mv]; }
-                    else if(Math.abs(v - bestV) < 0.0001){ best.push(mv); }
+                    else if(Math.abs(v - bestV) < 0.0001) best.push(mv);
                 }
                 return pickRandom(best.length ? best : moves);
             }
-
-            
             const remainingMoves = moves.length;
-            let depth = (level === 4) ? 2 : 2;
-            let topK = (level === 4) ? 14 : 16;
-
+            let depth = 2;
+            let topK = level === 4 ? 14 : 16;
             if(level === 5){
-                
-                if(remainingMoves <= 70) { depth = 3; topK = 10; }
-                if(remainingMoves <= 45) { depth = 4; topK = 10; }
-                if(remainingMoves > 120) { depth = 2; topK = 14; }
+                if(remainingMoves <= 70){ depth = 3; topK = 10; }
+                if(remainingMoves <= 45){ depth = 4; topK = 10; }
+                if(remainingMoves > 120){ depth = 2; topK = 14; }
             }
-
             let bestV = -Infinity;
             let best = [];
-            
-            const rootScored = moves.map(mv => {
+            const rootScored = moves.map(function(mv){
                 const ns = cloneState(base);
                 const pts = applyMoveInPlace(ns, mv);
                 let v = evaluateState(ns) + pts * 800;
-                
                 if(ns.turn === 1) v -= countThree(ns) * 120;
-                return { mv, v };
-            }).sort((a,b)=>b.v-a.v).slice(0, topK);
-
+                return { mv: mv, v: v };
+            }).sort(function(a,b){ return b.v - a.v; }).slice(0, topK);
             for(const it of rootScored){
                 const ns = cloneState(base);
                 applyMoveInPlace(ns, it.mv);
-                const val = minimax(ns, depth-1, -Infinity, Infinity, topK);
+                const val = minimax(ns, depth - 1, -Infinity, Infinity, topK);
                 if(val > bestV + 0.0001){ bestV = val; best = [it.mv]; }
-                else if(Math.abs(val - bestV) < 0.0001){ best.push(it.mv); }
+                else if(Math.abs(val - bestV) < 0.0001) best.push(it.mv);
             }
-
-            
             if(best.length > 1 && level === 4) best = best.slice(0, Math.min(3, best.length));
             if(best.length > 1 && level === 5) best = best.slice(0, Math.min(2, best.length));
-
             return pickRandom(best.length ? best : moves);
         }
-
         function cpuStep(){
-            if(currentGameId !== 'dots' || mode !== 'cpu' || turn !== 2 || claimed === TOTAL) { cpuThinking = false; return; }
+            if(currentGameId !== 'dots' || mode !== 'cpu' || turn !== 2 || claimed === TOTAL){ cpuThinking = false; return; }
             const mv = chooseCpuMove(cpuLevel);
             if(!mv){ cpuThinking = false; return; }
-
             const d1 = { r: mv.r, c: mv.c };
-            const d2 = (mv.type === 'H')
-                ? { r: mv.r, c: mv.c + 1 }
-                : { r: mv.r + 1, c: mv.c };
-
+            const d2 = (mv.type === 'H') ? { r: mv.r, c: mv.c + 1 } : { r: mv.r + 1, c: mv.c };
             cpuThinking = false;
             makeMove(d1, d2);
-
-            if(mode === 'cpu' && turn === 2 && claimed !== TOTAL){
-                maybeCpu(); 
-            } else if(mode === 'cpu' && claimed !== TOTAL){
-                status("Your turn");
-            }
+            if(mode === 'cpu' && turn === 2 && claimed !== TOTAL) maybeCpu();
+            else if(mode === 'cpu' && claimed !== TOTAL) status('Your turn');
         }
-
         function maybeCpu(){
             stopCpu();
             if(currentGameId !== 'dots' || mode !== 'cpu' || claimed === TOTAL || turn !== 2) return;
             cpuThinking = true;
-            status("CPU thinking…");
+            status('CPU thinking…');
             const delay = 240 + cpuLevel * 60;
             cpuTimer = setTimeout(cpuStep, delay);
         }
@@ -2528,101 +2826,140 @@ function syncColorLabels(){
         }
         function onDown(ev){
             if(claimed === TOTAL) return;
-            if(mode === 'cpu' && turn === 2) { status("CPU's turn"); return; }
+            if(mode === 'cpu' && turn === 2){ status("CPU's turn"); return; }
             if(cpuThinking) return;
-            ev.preventDefault(); isDrag = true;
-            let pos = getEventPos(ev); let hit = pickDot(pos.x, pos.y);
-            if(!hit){ if(sel){ sel=null; status("Cancelled"); } return; }
-            if(sel && isNeighbor(sel, hit)){ if(!makeMove(sel, hit)) status("Taken"); sel = null; isDrag = false; return; }
-            if(sel && sel.r===hit.r && sel.c===hit.c){ sel=null; status("Cleared"); return; }
-            sel = hit; status("Drag or Tap Neighbor");
+            ev.preventDefault();
+            isDrag = true;
+            const pos = getEventPos(ev);
+            const hit = pickDot(pos.x, pos.y);
+            if(!hit){ if(sel){ sel = null; status('Cancelled'); } return; }
+            if(sel && isNeighbor(sel, hit)){ if(!makeMove(sel, hit)) status('Taken'); sel = null; isDrag = false; return; }
+            if(sel && sel.r === hit.r && sel.c === hit.c){ sel = null; status('Cleared'); return; }
+            sel = hit; status('Drag or Tap Neighbor');
         }
         function onMove(ev){
             if(mode === 'cpu' && turn === 2) return;
             if(!isDrag || !sel) return;
-            ev.preventDefault(); let pos = getEventPos(ev); let hit = pickDot(pos.x, pos.y);
-            if(hit && isNeighbor(sel, hit)){ if(!makeMove(sel, hit)) status("Taken"); sel = null; isDrag = false; }
+            ev.preventDefault();
+            const pos = getEventPos(ev);
+            const hit = pickDot(pos.x, pos.y);
+            if(hit && isNeighbor(sel, hit)){ if(!makeMove(sel, hit)) status('Taken'); sel = null; isDrag = false; }
         }
         function onUp(){ isDrag = false; }
 
         function spawnConfetti(){
             particles = [];
             const cc = document.getElementById('dots-confetti-canvas');
-            let w = cc.width, h = cc.height;
-            for(let i=0; i<150; i++){
-                particles.push({ x: w/2, y: h/2, vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20 - 5, c: Math.random()>0.5 ? C_P1 : C_P2, life: 1.0, size: Math.random()*10 + 5 });
+            const w = cc.width, h = cc.height;
+            const active = [];
+            for(let i=1;i<=activePlayers();i++) active.push(getPlayerColor(i));
+            for(let i=0;i<150;i++){
+                particles.push({ x:w/2, y:h/2, vx:(Math.random()-0.5)*20, vy:(Math.random()-0.5)*20-5, c:active[(Math.random()*active.length)|0], life:1.0, size:Math.random()*10 + 5 });
             }
         }
-
+        function drawOwnerGlyph(cx, cy, owner, size){
+            const shape = ((owner - 1) % 4) + 1;
+            ctx.strokeStyle = '#000';
+            ctx.fillStyle = '#000';
+            ctx.lineWidth = Math.max(2, size * 0.18);
+            if(shape === 1){
+                ctx.beginPath();
+                ctx.moveTo(cx - size, cy - size);
+                ctx.lineTo(cx + size, cy + size);
+                ctx.moveTo(cx + size, cy - size);
+                ctx.lineTo(cx - size, cy + size);
+                ctx.stroke();
+            } else if(shape === 2){
+                ctx.beginPath();
+                ctx.arc(cx, cy, size, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if(shape === 3){
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - size * 1.1);
+                ctx.lineTo(cx + size, cy + size * 0.8);
+                ctx.lineTo(cx - size, cy + size * 0.8);
+                ctx.closePath();
+                ctx.stroke();
+            } else {
+                ctx.strokeRect(cx - size, cy - size, size * 2, size * 2);
+            }
+        }
         function draw(){
-            if(currentGameId !== 'dots' || !canvas.width || !boxOwner) { requestAnimationFrame(draw); return; }
-            let time = Date.now();
-            ctx.fillStyle = "#000"; ctx.fillRect(0,0,canvas.width, canvas.height);
-            
+            if(currentGameId !== 'dots' || !canvas.width || !boxOwner){ requestAnimationFrame(draw); return; }
+            const time = Date.now();
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const cc = document.getElementById('dots-confetti-canvas');
+            const ctxC = cc.getContext('2d');
+            ctxC.clearRect(0,0,cc.width,cc.height);
             if(particles.length){
-                const cc = document.getElementById('dots-confetti-canvas'); const ctxC = cc.getContext('2d');
-                ctxC.clearRect(0,0,cc.width,cc.height);
-                particles.forEach(p => {
+                particles.forEach(function(p){
                     p.x += p.vx; p.y += p.vy; p.vy += 0.5; p.life -= 0.01;
                     ctxC.fillStyle = p.c; ctxC.globalAlpha = Math.max(0, p.life);
                     ctxC.fillRect(p.x, p.y, p.size, p.size);
                 });
-                particles = particles.filter(p => p.life > 0);
+                ctxC.globalAlpha = 1;
+                particles = particles.filter(function(p){ return p.life > 0; });
             }
-
-            for(let r=0; r<BR; r++){
-                for(let c=0; c<BC; c++){
-                    let owner = boxOwner[r][c];
+            for(let r=0;r<BR;r++){
+                for(let c=0;c<BC;c++){
+                    const owner = boxOwner[r][c];
                     if(owner !== 0){
-                        let prog = Math.min(1, (time - boxAnim[r][c]) / 300);
-                        let scale = (prog < 1) ? prog * (1.5 - 0.5 * prog) : 1; 
-                        let p = getXY(r,c);
-                        ctx.fillStyle = (owner === 1) ? C_P1 : C_P2;
-                        ctx.beginPath(); ctx.arc(p.x+STEP/2, p.y+STEP/2, (DOT_R * 2.5) * scale, 0, Math.PI*2); ctx.fill();
-                        
-                        if(highContrast) {
-                            ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
-                            let cx = p.x+STEP/2, cy = p.y+STEP/2;
-                            if(owner === 1) { 
-                                ctx.beginPath(); ctx.moveTo(cx-5, cy-5); ctx.lineTo(cx+5, cy+5); ctx.moveTo(cx+5, cy-5); ctx.lineTo(cx-5, cy+5); ctx.stroke();
-                            } else { 
-                                ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2); ctx.stroke();
-                            }
-                        }
+                        const prog = Math.min(1, (time - boxAnim[r][c]) / 300);
+                        const scale = (prog < 1) ? prog * (1.5 - 0.5 * prog) : 1;
+                        const p = getXY(r,c);
+                        const cx = p.x + STEP/2, cy = p.y + STEP/2;
+                        ctx.fillStyle = getPlayerColor(owner);
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, (DOT_R * 2.5) * scale, 0, Math.PI * 2);
+                        ctx.fill();
+                        if(highContrast) drawOwnerGlyph(cx, cy, owner, 5 * scale);
                     }
                 }
             }
-
-            const gridCol = highContrast ? "#BBBBBB" : C_GRID;
-            ctx.lineWidth = highContrast ? 3 : 2; ctx.strokeStyle = gridCol; ctx.lineCap = "round"; ctx.setLineDash([]); 
+            const gridCol = highContrast ? '#BBBBBB' : C_GRID;
+            ctx.lineWidth = highContrast ? 3 : 2;
+            ctx.strokeStyle = gridCol;
+            ctx.lineCap = 'round';
+            ctx.setLineDash([]);
             ctx.beginPath();
-            for(let r=0; r<DR; r++){ let h1=getXY(r,0), h2=getXY(r,DC-1); ctx.moveTo(h1.x, h1.y); ctx.lineTo(h2.x, h2.y); }
-            for(let c=0; c<DC; c++){ let v1=getXY(0,c), v2=getXY(DR-1,c); ctx.moveTo(v1.x, v1.y); ctx.lineTo(v2.x, v2.y); }
+            for(let r=0;r<DR;r++){ const h1=getXY(r,0), h2=getXY(r,DC-1); ctx.moveTo(h1.x, h1.y); ctx.lineTo(h2.x, h2.y); }
+            for(let c=0;c<DC;c++){ const v1=getXY(0,c), v2=getXY(DR-1,c); ctx.moveTo(v1.x, v1.y); ctx.lineTo(v2.x, v2.y); }
             ctx.stroke();
-
             function drawLines(isVert){
-                let R = isVert ? BR : DR; let C = isVert ? DC : BC;
-                for(let r=0; r<R; r++){
-                    for(let c=0; c<C; c++){
-                        let p = isVert ? VO[r][c] : HO[r][c];
+                const R = isVert ? BR : DR;
+                const C = isVert ? DC : BC;
+                for(let r=0;r<R;r++){
+                    for(let c=0;c<C;c++){
+                        const p = isVert ? VO[r][c] : HO[r][c];
                         if(p !== 0){
-                            let isLast = (lastMove && lastMove.type===(isVert?'V':'H') && lastMove.r===r && lastMove.c===c);
-                            let start = getXY(r,c), end = isVert ? getXY(r+1,c) : getXY(r,c+1);
-                            ctx.strokeStyle = (p===1) ? C_P1 : C_P2; ctx.lineWidth = highContrast ? (LINE_W * 1.15) : LINE_W; ctx.setLineDash([]);
-                            if(highContrast){ ctx.shadowBlur = 8; ctx.shadowColor = "#000000"; } 
-                            if(isLast) { ctx.shadowBlur = 10; ctx.shadowColor = "#fff"; } else { ctx.shadowBlur=0; }
-                            
-                            ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke();
-                            ctx.shadowBlur=0; 
-                            
+                            const isLast = !!(lastMove && lastMove.type === (isVert ? 'V' : 'H') && lastMove.r === r && lastMove.c === c);
+                            const start = getXY(r,c), end = isVert ? getXY(r+1,c) : getXY(r,c+1);
+                            const baseCol = getPlayerColor(p);
+                            ctx.strokeStyle = baseCol;
+                            ctx.lineWidth = highContrast ? (LINE_W * 1.15) : LINE_W;
+                            ctx.setLineDash([]);
+                            if(highContrast){ ctx.shadowBlur = 8; ctx.shadowColor = '#000000'; }
+                            if(isLast){ ctx.shadowBlur = 10; ctx.shadowColor = '#fff'; }
+                            else ctx.shadowBlur = 0;
+                            ctx.beginPath();
+                            ctx.moveTo(start.x, start.y);
+                            ctx.lineTo(end.x, end.y);
+                            ctx.stroke();
+                            ctx.shadowBlur = 0;
                             if(isLast){
-                                const baseCol = (p===1) ? C_P1 : C_P2;
                                 const overlay = dashOverlayColor(baseCol);
-                                ctx.strokeStyle = overlay; ctx.lineWidth = LINE_W * 0.8; let dash = Math.max(6, LINE_W * 0.8);
-                                ctx.setLineDash([dash, dash]); ctx.lineDashOffset = -(time / 25) % (dash*2);
+                                const dash = Math.max(6, LINE_W * 0.8);
+                                ctx.strokeStyle = overlay;
+                                ctx.lineWidth = LINE_W * 0.8;
+                                ctx.setLineDash([dash, dash]);
+                                ctx.lineDashOffset = -(time / 25) % (dash * 2);
                                 ctx.shadowBlur = highContrast ? 10 : 6;
                                 ctx.shadowColor = (overlay === '#FFFFFF') ? '#000000' : '#FFFFFF';
-                                ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke();
+                                ctx.beginPath();
+                                ctx.moveTo(start.x, start.y);
+                                ctx.lineTo(end.x, end.y);
+                                ctx.stroke();
                                 ctx.shadowBlur = 0;
                                 ctx.setLineDash([]);
                             }
@@ -2631,39 +2968,40 @@ function syncColorLabels(){
                 }
             }
             drawLines(false); drawLines(true);
-
-            for(let r=0; r<DR; r++){
-                for(let c=0; c<DC; c++){
-                    let p = getXY(r,c);
-                    if(sel && sel.r===r && sel.c===c){ ctx.fillStyle = C_SEL; ctx.beginPath(); ctx.arc(p.x, p.y, DOT_R * 2.5, 0, Math.PI*2); ctx.fill(); }
-                    ctx.fillStyle = C_DOT; ctx.beginPath(); ctx.arc(p.x, p.y, DOT_R, 0, Math.PI*2); ctx.fill();
+            for(let r=0;r<DR;r++){
+                for(let c=0;c<DC;c++){
+                    const p = getXY(r,c);
+                    if(sel && sel.r === r && sel.c === c){
+                        ctx.fillStyle = C_SEL;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, DOT_R * 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.fillStyle = C_DOT;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, DOT_R, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             }
             requestAnimationFrame(draw);
         }
 
         initColorPickerUI();
+        hydrateMenuSettings();
         syncMenuUI();
-
-        canvas.addEventListener("pointerdown", onDown);
-        canvas.addEventListener("pointermove", onMove);
-        canvas.addEventListener("pointerup", onUp);
-        canvas.addEventListener("pointerleave", onUp);
-        document.getElementById('g-dots').querySelector('#undoBtn').addEventListener("click", undo);
-        document.getElementById('g-dots').querySelector('#menuBtn').addEventListener("click", openNewGameMenu);
-        document.getElementById('g-dots').querySelector('#playAgainBtn').addEventListener("click", openNewGameMenu);
-        window.addEventListener("resize", fitCanvas);
+        canvas.addEventListener('pointerdown', onDown);
+        canvas.addEventListener('pointermove', onMove);
+        canvas.addEventListener('pointerup', onUp);
+        canvas.addEventListener('pointerleave', onUp);
+        document.getElementById('g-dots').querySelector('#undoBtn').addEventListener('click', undo);
+        document.getElementById('g-dots').querySelector('#menuBtn').addEventListener('click', openNewGameMenu);
+        document.getElementById('g-dots').querySelector('#playAgainBtn').addEventListener('click', openNewGameMenu);
+        window.addEventListener('resize', fitCanvas);
         requestAnimationFrame(draw);
-
         syncMenuUI();
-        return { startGame, resize: fitCanvas, resume: () => requestAnimationFrame(draw), toggleContrast, quit, setMode, setCpuLevel, syncGlobalContrast };
+        return { startGame:startGame, resize:fitCanvas, resume:function(){ requestAnimationFrame(draw); }, toggleContrast:toggleContrast, quit:quit, setMode:setMode, setCpuLevel:setCpuLevel, setPlayerCount:setPlayerCount, syncGlobalContrast:syncGlobalContrast };
     })();
 
-    
-
-window.addEventListener('resize', () => {
-        try{ if(window.__arcadeSelfResize) window.__arcadeSelfResize(); }catch(e){}
-    });
 
 try{ window.DotsGame = DotsGame; }catch(e){}
 try{ window.FeedbackSys = FeedbackSys; }catch(e){}

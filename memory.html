@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Arcade! Hooray! — Memory Match</title>
+<style>
+
+        html, body { margin:0; padding:0; height:100%; background:#000; overflow:hidden; font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif; color:#fff; }
+        body{ background: radial-gradient(circle at 25% 20%, #222 0%, #000 70%); touch-action: manipulation; overscroll-behavior:none; }
+        :root{
+            --ui-bg: rgba(255,255,255,0.07);
+            --ui-bg2: rgba(0,0,0,0.32);
+            --ui-border: rgba(255,255,255,0.16);
+            --ui-border-strong: rgba(255,255,255,0.28);
+            --ui-accent: #00e5ff;
+            --ui-gold: #ffd700;
+            --ui-radius: 14px;
+            --danger:#ff5252;
+            --ok:#7CFF6B;
+            --purple:#E040FB;
+        }
+        .ui-btn{
+            display:inline-flex; align-items:center; justify-content:center; gap:8px;
+            padding: 8px 12px; border-radius: var(--ui-radius);
+            border: 1px solid var(--ui-border); background: var(--ui-bg); color:#fff;
+            font-weight: 900; letter-spacing: 0.2px; user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ui-btn:active{ transform: scale(0.98); border-color: var(--ui-border-strong); background: rgba(255,255,255,0.10); }
+        .topbar{
+  position:relative;
+  width:min(980px, 100%);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  pointer-events:none;
+  z-index:20;
+  flex:0 0 auto;
+}
+        .topbar .left, .topbar .right{ display:flex; gap:6px; align-items:flex-start; pointer-events:auto; min-width:0; }
+        .topbar .left{ flex:1 1 auto; overflow:hidden; }
+        .topbar .right{ flex:0 0 auto; }
+        .status-stack{ flex-direction:column; gap:4px !important; }
+        .menu-btn-small{ padding: 5px 8px; min-width: 34px; font-size: 12px; }
+        .pill{
+            display:inline-flex; align-items:center; gap:6px;
+            padding: 4px 8px; border-radius: 999px;
+            border: 1px solid var(--ui-border); background: var(--ui-bg2);
+            font-weight: 900; letter-spacing:0.1px; font-size:11px;
+            user-select:none;
+            line-height:1;
+            white-space:nowrap;
+            flex:0 0 auto;
+            max-width:100%;
+            overflow:hidden; text-overflow:ellipsis;
+        }
+        .overlay{
+            position:absolute; inset:0; z-index:50;
+            background: rgba(0,0,0,0.95);
+            display:flex; align-items:center; justify-content:center;
+            padding: 10px;
+        }
+        .panel{
+            width:min(600px, 96vw);
+            max-height: min(94vh, 760px);
+            overflow:auto;
+            border: 1px solid var(--ui-border);
+            background: rgba(255,255,255,0.06);
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+            padding: 10px 10px 8px;
+        }
+        .panel h1{
+            margin: 0 0 4px;
+            font-size: 21px;
+            color: var(--ui-gold);
+            text-shadow: 0 0 18px rgba(255,215,0,0.35);
+            letter-spacing: 0.8px;
+            text-align:center;
+            line-height:1.05;
+        }
+        .panel .sub{ display:none; }
+        .row{ display:grid; gap:6px; grid-template-columns: repeat(3, minmax(0,1fr)); align-items:start; }
+        .opt{
+            min-width: 0;
+            border: 1px solid var(--ui-border);
+            background: rgba(0,0,0,0.20);
+            border-radius: 14px;
+            padding: 7px;
+        }
+        .opt label{ display:block; font-weight: 900; margin-bottom: 4px; font-size:11px; line-height:1; }
+        select, input[type="range"]{
+            width:100%;
+            border-radius: 12px;
+            border: 1px solid var(--ui-border);
+            background: rgba(255,255,255,0.08);
+            color:#fff;
+            padding: 8px 10px;
+            font-weight: 900;
+            font-size: 13px;
+            outline:none;
+        }
+        select option{ background:#111; color:#fff; }
+        .btn-large{
+            display:block; width:100%;
+            border-radius: 16px;
+            border: 2px solid #555;
+            background:#333;
+            color:#fff;
+            padding: 12px 14px;
+            font-size: 17px;
+            font-weight: 1000;
+            letter-spacing: 0.4px;
+            text-align:center;
+            user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-large:active{ transform: scale(0.985); background:#3d3d3d; }
+        .small-note{ color: rgba(255,255,255,0.70); font-size: 12px; text-align:center; margin-top:8px; }
+        .hr{ height:1px; background: rgba(255,255,255,0.10); margin: 10px 0; }
+        .hidden{ display:none !important; }
+
+#scoreBar{ display:flex; gap:4px; align-items:center; flex-wrap:nowrap; min-width:0; overflow:hidden; }
+
+#game {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-start;
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 10px max(12px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+  box-sizing:border-box;
+}
+.topbar.compact .pill{ font-size:10px; padding:3px 6px; }
+.topbar.compact .chip{ font-size:9px; padding:2px 5px; }
+.topbar.compact .menu-btn-small{ padding:4px 7px; min-width:30px; }
+.topbar.regular .pill{ font-size:11px; }
+#board {
+  flex: 1 1 auto;
+  width:min(860px, 96vw);
+  max-height: 100%;
+  display:grid;
+  gap: 10px;
+  align-content:center;
+  justify-content:center;
+}
+.card {
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.07);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  display:flex; align-items:center; justify-content:center;
+  user-select:none;
+  -webkit-tap-highlight-color: transparent;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  padding: 0;
+  perspective: 900px;
+}
+.card:active{ transform: scale(0.985); }
+.card-inner{
+  position:absolute; inset:0;
+  transform-style: preserve-3d;
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+.card.revealed .card-inner, .card.matched .card-inner{ transform: rotateY(180deg); }
+.card-face{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  backface-visibility: hidden;
+}
+.card-back{
+  background: rgba(0,0,0,0.15);
+}
+.card-back .back-mark{
+  font-weight: 1000;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.75);
+  font-size: clamp(14px, 2.5vmin, 22px);
+}
+.card-front{
+  transform: rotateY(180deg);
+}
+.card-front .face{
+  font-size: clamp(40px, 7.5vmin, 112px);
+  line-height:1;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+}
+.card.matched {
+  border-color: rgba(124,255,107,0.55);
+  background: rgba(124,255,107,0.10);
+}
+
+/* Per-player match coloring */
+.card.matched.owner-1{ border-color: rgba(0,229,255,0.75); background: rgba(0,229,255,0.12); box-shadow: 0 0 0 3px rgba(0,229,255,0.18) inset, 0 10px 24px rgba(0,0,0,0.35); }
+.card.matched.owner-2{ border-color: rgba(224,64,251,0.75); background: rgba(224,64,251,0.12); box-shadow: 0 0 0 3px rgba(224,64,251,0.18) inset, 0 10px 24px rgba(0,0,0,0.35); }
+.card.matched.owner-3{ border-color: rgba(255,215,0,0.75); background: rgba(255,215,0,0.12); box-shadow: 0 0 0 3px rgba(255,215,0,0.18) inset, 0 10px 24px rgba(0,0,0,0.35); }
+.card.matched.owner-4{ border-color: rgba(255,82,82,0.78); background: rgba(255,82,82,0.12); box-shadow: 0 0 0 3px rgba(255,82,82,0.18) inset, 0 10px 24px rgba(0,0,0,0.35); }
+
+.card.free{ cursor: default; border-style: dashed; opacity: 0.85; }
+.card.free .card-inner{ transform: rotateY(180deg) !important; }
+.card.free .card-front .face{ filter: none; opacity: 0.95; }
+
+/* Status chips */
+.chip{
+  display:inline-flex; align-items:center; gap:4px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--ui-border);
+  background: rgba(0,0,0,0.38);
+  font-weight: 1000;
+  letter-spacing: 0.1px;
+  font-size: 10px;
+  line-height:1;
+  flex:1 1 0;
+  min-width:0;
+  justify-content:center;
+  overflow:hidden;
+}
+.dot{
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  box-shadow: 0 0 10px rgba(0,0,0,0.25);
+}
+.p1{ background: rgba(0,229,255,0.95); }
+.p2{ background: rgba(224,64,251,0.95); }
+.p3{ background: rgba(255,215,0,0.95); }
+.p4{ background: rgba(255,82,82,0.95); }
+.mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ui-gold); }
+.badge {
+  position:absolute; bottom:8px; right:8px;
+  font-size: 12px; font-weight: 1000;
+  padding: 4px 8px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  color: rgba(255,255,255,0.8);
+  pointer-events:none;
+}
+@media (max-height: 700px){
+  #board{ gap: 8px; }
+}
+@media (max-width: 700px){
+  .ui-btn{ padding: 5px 8px; font-size: 11px; }
+  .topbar{ gap:6px; }
+  .topbar .right{ gap:4px; }
+  .pill{ font-size: 10px; padding: 3px 6px; }
+  .chip{ font-size: 9px; padding: 3px 5px; }
+}
+@media (max-width: 520px){
+  .pill{ max-width: 100%; }
+  .chip{ font-size: 8px; }
+}
+
+.turn-panel{ width:min(460px, 94vw); text-align:center; }
+.turn-name{ font-size: clamp(34px, 6vw, 52px); color: var(--ui-gold); font-weight: 1000; letter-spacing: 1px; margin: 2px 0; text-shadow: 0 0 18px rgba(255,215,0,0.25); }
+.turn-sub{ color: rgba(255,255,255,0.82); font-size: 15px; margin-bottom: 14px; }
+.final-scores{ display:flex; flex-direction:column; gap:10px; margin-top: 12px; }
+.final-score-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 12px 14px; border-radius: 16px; border:1px solid var(--ui-border); background: rgba(255,255,255,0.06); font-weight: 900; }
+.final-score-name{ display:flex; align-items:center; gap:10px; min-width:0; }
+.final-score-dot{ width:14px; height:14px; border-radius:50%; box-shadow:0 0 10px rgba(255,255,255,0.18); flex:0 0 14px; }
+.final-score-points{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ui-gold); font-size: 20px; }
+.names-wrap{ margin-top:5px; }
+.names-label{ display:block; font-size:10px; font-weight:900; margin: 3px 0; line-height:1; }
+.name-input{ width:100%; border-radius: 10px; border: 1px solid var(--ui-border); background: rgba(255,255,255,0.08); color:#fff; padding: 6px 8px; font-weight: 900; font-size: 12px; outline:none; box-sizing:border-box; }
+.team-wrap{ margin-top: 6px; }
+.team-grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:5px; }
+.team-field{ display:flex; align-items:center; gap:5px; }
+.team-field input{ flex:1 1 auto; min-width:0; }
+.team-select{ width:50px; border-radius: 10px; border: 1px solid var(--ui-border); background: rgba(255,255,255,0.08); color:#fff; padding: 6px 2px; font-weight: 900; font-size:11px; outline:none; }
+.team-badge{ display:inline-flex; align-items:center; justify-content:center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; border:1px solid var(--ui-border); background: rgba(255,255,255,0.08); color: #fff; font-size: 9px; font-weight: 1000; letter-spacing: 0.3px; }
+.team-summary{ color: rgba(255,255,255,0.78); font-size: 10px; text-align:center; margin-top: 3px; line-height:1; }
+.team-names-grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:5px; margin-top: 5px; }
+.team-name-field input{ width:100%; }
+.panel-footer{ position: sticky; bottom: -8px; background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.45) 24%, rgba(0,0,0,0.45)); padding-top: 5px; margin-top: 6px; }
+@media (max-width: 760px){ .row{ grid-template-columns: 1fr; } }
+@media (max-width: 520px){ .team-grid{ grid-template-columns: 1fr; } .team-names-grid{ grid-template-columns: 1fr; } .panel{ width:min(520px, 96vw); padding: 8px 8px 6px; } .panel h1{ font-size:18px; } .btn-large{ padding: 11px 12px; font-size:16px; } }
+@media (max-height: 720px){ .overlay{ padding: 6px; } .panel{ max-height: 96vh; } .panel h1{ font-size:18px; margin-bottom: 2px; } .opt{ padding: 6px; } select{ padding: 7px 8px; font-size:12px; } .name-input{ padding: 5px 7px; font-size:11px; } .team-select{ padding: 5px 2px; font-size:10px; width:46px; } .panel-footer{ margin-top: 4px; } }
+
+/* Awards ceremony */
+.awards-list{ display:flex; flex-direction:column; gap:10px; margin-top: 10px; }
+.award-card{
+  display:flex; gap:12px; align-items:flex-start;
+  padding: 10px 10px;
+  border-radius: 16px;
+  border: 1px solid var(--ui-border);
+  background: rgba(255,255,255,0.06);
+}
+.award-icon{ font-size: 30px; line-height: 1; width: 44px; text-align:center; flex: 0 0 44px; }
+.award-text{ flex:1; min-width: 0; }
+.award-line{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.award-title{ font-weight: 1000; letter-spacing: 0.4px; color: var(--ui-gold); }
+.award-player{ font-weight: 1000; color:#fff; opacity: 0.95; }
+.award-desc{ margin-top: 4px; color: rgba(255,255,255,0.74); font-size: 13px; line-height: 1.25; }
+.awards-panel .row{ flex-wrap: wrap; }
+
+</style>
+</head>
+<body>
+  <div id="game" aria-label="Memory Match game">
+    <div class="topbar" id="topbar">
+    <div class="left status-stack">
+      <div class="pill" id="statusPill">Ready</div>
+      <div id="scoreBar" class="hidden" aria-label="Scores"></div>
+    </div>
+    <div class="right">
+      <button class="ui-btn menu-btn-small" id="menuBtn">☰</button>
+    </div>
+  </div>
+    <div id="board" aria-label="Card grid"></div>
+  </div>
+
+  <!-- Start Overlay -->
+  <div class="overlay" id="startOverlay">
+    <div class="panel">
+      <h1>Memory Match</h1>
+      
+
+      <div class="row">
+        <div class="opt">
+          <label>Players</label>
+          <select id="playersSel">
+            <option value="1" selected>1 Player</option>
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4">4 Players</option>
+          </select>
+          <div class="names-wrap hidden" id="namesWrap">
+            <label class="names-label">Names</label>
+            <div class="names-grid team-grid" id="namesGrid">
+              <div class="team-field" id="playerField1"><input id="name1" class="name-input" maxlength="14" placeholder="Player 1" /><select id="team1" class="team-select" aria-label="Player 1 team"><option value="1" selected>T1</option><option value="2">T2</option><option value="3">T3</option><option value="4">T4</option></select></div>
+              <div class="team-field" id="playerField2"><input id="name2" class="name-input" maxlength="14" placeholder="Player 2" /><select id="team2" class="team-select" aria-label="Player 2 team"><option value="1">T1</option><option value="2" selected>T2</option><option value="3">T3</option><option value="4">T4</option></select></div>
+              <div class="team-field" id="playerField3"><input id="name3" class="name-input" maxlength="14" placeholder="Player 3" /><select id="team3" class="team-select" aria-label="Player 3 team"><option value="1">T1</option><option value="2">T2</option><option value="3" selected>T3</option><option value="4">T4</option></select></div>
+              <div class="team-field" id="playerField4"><input id="name4" class="name-input" maxlength="14" placeholder="Player 4" /><select id="team4" class="team-select" aria-label="Player 4 team"><option value="1">T1</option><option value="2">T2</option><option value="3">T3</option><option value="4" selected>T4</option></select></div>
+            </div>
+            <div class="team-wrap hidden" id="teamWrap">
+              <label class="names-label">Teams</label>
+              <div class="team-summary">Team names</div>
+              <div class="team-names-grid" id="teamNamesGrid">
+                <div class="team-name-field" id="teamNameField1"><input id="teamName1" class="name-input" maxlength="18" placeholder="Team 1" /></div>
+                <div class="team-name-field" id="teamNameField2"><input id="teamName2" class="name-input" maxlength="18" placeholder="Team 2" /></div>
+                <div class="team-name-field" id="teamNameField3"><input id="teamName3" class="name-input" maxlength="18" placeholder="Team 3" /></div>
+                <div class="team-name-field" id="teamNameField4"><input id="teamName4" class="name-input" maxlength="18" placeholder="Team 4" /></div>
+              </div>
+            </div>
+          </div>
+</div>
+
+        <div class="opt">
+          <label>Board Size</label>
+          <select id="sizeSel">
+            <option value="3x3">3 × 3 (8 cards + free)</option>
+            <option value="3x4">3 × 4 (12 cards)</option>
+            <option value="4x4" selected>4 × 4 (16 cards)</option>
+            <option value="4x5">4 × 5 (20 cards)</option>
+            <option value="4x6">4 × 6 (24 cards)</option>
+            <option value="5x5">5 × 5 (24 cards + free)</option>
+            <option value="5x6">5 × 6 (30 cards)</option>
+            <option value="5x7">5 × 7 (34 cards + free)</option>
+            <option value="5x8">5 × 8 (40 cards)</option>
+          </select></div>
+
+        <div class="opt">
+          <label>Category</label>
+          <select id="themeSel">
+            <option value="classic" selected>Classic Mix</option>
+            <option value="animals">Animals</option>
+            <option value="faces">Faces</option>
+            <option value="food">Food</option>
+            <option value="science">Science</option>
+            <option value="ocean">Ocean</option>
+            <option value="weather">Weather</option>
+            <option value="sports">Sports</option>
+            <option value="vehicles">Vehicles</option>
+            <option value="weird">Weird</option>
+          </select></div>
+      </div>
+
+      <div class="panel-footer"><div class="hr"></div>
+      <button class="btn-large" id="startBtn">START</button></div></div>
+  </div>
+
+  <!-- Menu Overlay -->
+  <div class="overlay hidden" id="menuOverlay">
+    <div class="panel">
+      <h1>Menu</h1>
+      <div class="sub">Pause time — choose an option.</div>
+      <div class="row">
+        <button class="btn-large" id="resumeBtn">RESUME</button>
+                <button class="btn-large" id="backBtn">BACK TO ARCADE</button>
+      </div>
+      <div class="small-note">“Back” returns to index.html.</div>
+    </div>
+  </div>
+
+
+  <div class="overlay hidden" id="turnOverlay">
+    <div class="panel turn-panel">
+      <div class="turn-name" id="turnOverlayName">Next turn: Player 1</div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="awardsOverlay">
+    <div class="panel awards-panel">
+      <h1>Round Over!</h1>
+      <div class="sub" id="awardsSub">Winner goes here.</div>
+      <div class="final-scores" id="finalScores"></div>
+      <div class="hr"></div>
+      <div class="row">
+        <button class="btn-large" id="awardsAgain">PLAY AGAIN</button>
+        <button class="btn-large" id="awardsSettings">SETTINGS</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const board = $("board");
+  const startOverlay = $("startOverlay");
+  const menuOverlay = $("menuOverlay");
+  const awardsOverlay = $("awardsOverlay");
+  const awardsSub = $("awardsSub");
+  const finalScores = $("finalScores");
+  const awardsAgain = $("awardsAgain");
+  const awardsSettings = $("awardsSettings");
+  const turnOverlay = $("turnOverlay");
+  const turnOverlayName = $("turnOverlayName");
+  const statusPill = $("statusPill");
+
+  const playersSel = $("playersSel");
+  const namesWrap = $("namesWrap");
+  const name1 = $("name1");
+  const name2 = $("name2");
+  const name3 = $("name3");
+  const name4 = $("name4");
+  const team1 = $("team1");
+  const team2 = $("team2");
+  const team3 = $("team3");
+  const team4 = $("team4");
+  const teamWrap = $("teamWrap");
+  const teamName1 = $("teamName1");
+  const teamName2 = $("teamName2");
+  const teamName3 = $("teamName3");
+  const teamName4 = $("teamName4");
+  const sizeSel = $("sizeSel");
+  const themeSel = $("themeSel");
+
+  const scoreBar = $("scoreBar");
+  const topbar = $("topbar");
+  const teamNameField1 = $("teamNameField1");
+  const teamNameField2 = $("teamNameField2");
+  const teamNameField3 = $("teamNameField3");
+  const teamNameField4 = $("teamNameField4");
+
+  const startBtn = $("startBtn");
+  const menuBtn = $("menuBtn");
+  const resumeBtn = $("resumeBtn");
+  const backBtn = $("backBtn");
+
+  const THEMES = {
+    classic: ["🐶","🐱","🍕","⚽","🚗","🌈","🎈","🧸","🦄","🚀","🎲","⭐","🍉","🐸","🏰","🧩","🍩","🪁","🐼","🎯","🎧","🛝","🦊","🍟","🐙","🦁","🐰","🐯","🐮","🐵"],
+    animals: ["🐶","🐱","🦊","🐼","🐸","🐵","🦁","🐰","🐯","🐮","🐷","🐔","🦆","🦉","🦋","🐢","🐙","🦀","🦈","🐳","🐴","🦄","🦒","🦘","🦝","🦥","🦭","🦔","🦩","🐞"],
+    faces: ["😀","😎","🤩","🥳","😴","🤯","😇","🤠","🤖","👻","😺","🙈","😡","🥶","🥵","🤢","🤡","👽","💀","🫠","🫡","🫣","🫨","🤗","🤔","😬","😵","😌","😂","😍"],
+    food: ["🍕","🍔","🍟","🌮","🍿","🍎","🍉","🍓","🍇","🍌","🍪","🍩","🍦","🍫","🥨","🧀","🥞","🍣","🍜","🍙","🥑","🥕","🌽","🍄","🧁","🍰","🍭","🥤","🧃","🥪"],
+    science: ["🔭","🔬","🧪","🧬","🧲","⚗️","🌡️","🔋","💡","⚡","☀️","🌙","🪐","🌎","🌋","🦖","🦕","🦴","🧠","❤️","🫁","🪨","❄️","🌪️","🌈","☁️","🌧️","🌊","🔥","⭐"],
+    ocean: ["🐙","🦀","🦞","🦐","🦑","🐠","🐟","🐡","🦈","🐬","🐳","🐋","🪼","🐚","🌊","⛵","⚓","🏖️","🪸","🦭","🦆","🐢","🫧","🌴","🛟","🚤","🩴","☀️","🏝️","🍍"],
+    weather: ["☀️","🌤️","⛅","☁️","🌧️","⛈️","🌩️","🌨️","❄️","☔","🌈","🌪️","🌫️","💨","🔥","🌊","🌙","⭐","🌡️","🧊","🌀","🌥️","🌦️","🌬️","🌞","🌛","⚡","☃️","🫧","🌁"],
+    sports: ["⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎳","⛳","🏓","🏸","🥊","🥋","🏒","🏑","🥅","🏆","🥇","🎯","🛹","⛸️","🤿","🏊","🚴","🏃","🤸","🧗","🎽"],
+    vehicles: ["🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚜","🛻","🚚","🚲","🛴","🏍️","🚂","🚆","✈️","🚁","🚀","🛸","⛵","🚤","🛶","🚢","🛺","🚦","🛞","⛽","🗺️"],
+    weird: ["💩","🚽","🤡","👻","👽","🤖","🧌","🪱","🪰","🦠","🫠","😵","🤪","🥴","🫣","👀","👅","🦷","🧠","🦴","🍑","🍌","🧻","🪠","🧦","🩲","🛁","🧼","🪥","🫧"]
+  };
+
+  let state = null;
+
+  function beep(freq=520, dur=0.06, vol=0.02){
+    if(!state || !state.sound) return;
+    try {
+      const ctx = state.audio || (state.audio = new (window.AudioContext || window.webkitAudioContext)());
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.frequency.value = freq;
+      o.type = "sine";
+      g.gain.value = vol;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + dur);
+    } catch(e){}
+  }
+
+  function parseSize(val){
+    const [c,r] = val.split("x").map(n=>parseInt(n,10));
+    return { cols:c, rows:r };
+  }
+
+  function pickEmojis(themeKey, pairs){
+    const pool = THEMES[themeKey] || THEMES.classic;
+    // shuffle a copy
+    const arr = pool.slice();
+    for(let i=arr.length-1;i>0;i--) {
+      const j = (Math.random()*(i+1))|0;
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr.slice(0, pairs);
+  }
+
+  function makeDeck(themeKey, pairs, hasFree=false){
+    const picks = pickEmojis(themeKey, pairs);
+    const deck = [];
+    picks.forEach((e, idx)=> {
+      deck.push({ id: idx*2,  key: e, emoji: e });
+      deck.push({ id: idx*2+1,key: e, emoji: e });
+    });
+    if(hasFree){
+      deck.push({ id: "free", key: "__free__", emoji: "🟪", free: true });
+    }
+    // shuffle
+    for(let i=deck.length-1;i>0;i--) {
+      const j = (Math.random()*(i+1))|0;
+      [deck[i],deck[j]]=[deck[j],deck[i]];
+    }
+    return deck;
+  }
+
+  function setStatus(text){
+    statusPill.textContent = text;
+  }
+
+  function activeTeamNumbers(playersCount){
+    const vals = [team1?.value, team2?.value, team3?.value, team4?.value].map((v, i) => Math.max(1, Math.min(4, parseInt(v, 10) || (i+1))));
+    return Array.from(new Set(vals.slice(0, playersCount))).sort((a,b)=>a-b);
+  }
+
+  function refreshPlayerTeamUI(){
+    const n = Math.max(1, Math.min(4, parseInt(playersSel.value, 10) || 1));
+    if(namesWrap) namesWrap.classList.toggle("hidden", n <= 1);
+    if(teamWrap) teamWrap.classList.toggle("hidden", n <= 2);
+    const fields = [name1,name2,name3,name4];
+    const teamFields = [team1,team2,team3,team4];
+    fields.forEach((el, idx) => {
+      if(!el) return;
+      const wrap = el.parentElement;
+      if(wrap) wrap.style.display = (idx < n ? "flex" : "none");
+      if(teamFields[idx]) teamFields[idx].style.display = (n > 2 && idx < n ? "block" : "none");
+    });
+    const activeTeams = activeTeamNumbers(n);
+    [[teamNameField1,1],[teamNameField2,2],[teamNameField3,3],[teamNameField4,4]].forEach(([el,no]) => {
+      if(!el) return;
+      el.style.display = (n > 2 && activeTeams.includes(no)) ? "block" : "none";
+    });
+  }
+
+  function updateTopbarMode(){
+    if(!topbar || !state) return;
+    const compact = (state.rows >= 5 || state.cols >= 7 || (state.teamMode && state.uniqueTeams.length >= 3));
+    topbar.classList.toggle("compact", compact);
+    topbar.classList.toggle("regular", !compact);
+  }
+
+  function showOverlay(el, show){
+    el.classList.toggle("hidden", !show);
+  }
+
+  function startNewGame(){
+    const players = Math.max(1, Math.min(4, parseInt(playersSel.value, 10) || 1));
+    const rawNames = [name1?.value, name2?.value, name3?.value, name4?.value].map(v => (v||"").trim());
+    const names = rawNames.map((v, i) => v ? v : `Player ${i+1}`);
+    const rawTeams = [team1?.value, team2?.value, team3?.value, team4?.value].map((v, i) => Math.max(1, Math.min(4, parseInt(v, 10) || (i+1))));
+    const teams = rawTeams.slice(0, players);
+    const uniqueTeams = Array.from(new Set(teams));
+    const teamMode = players > 2 && uniqueTeams.length >= 2 && uniqueTeams.length < players;
+    const rawTeamNames = [teamName1?.value, teamName2?.value, teamName3?.value, teamName4?.value].map((v, i) => {
+      const clean = (v || "").trim();
+      return clean ? clean : `Team ${i+1}`;
+    });
+    const {cols, rows} = parseSize(sizeSel.value);
+    const total = cols*rows;
+
+    const hasFree = (total % 2 === 1);
+    const pairs = Math.floor((total - (hasFree ? 1 : 0)) / 2);
+
+    state = {
+      players,
+      names,
+      teams,
+      uniqueTeams,
+      teamMode,
+      teamNames: rawTeamNames,
+
+      cols, rows,
+      deck: makeDeck(themeSel.value, pairs, hasFree),
+      revealed: [],
+      matchedKeys: new Set(),
+      lock: false,
+      moves: 0,
+      startTime: performance.now(),
+      timer: null,
+      tElapsed: 0,
+      scores: [0,0,0,0],
+      turn: 1,
+      firstFlipAt: 0,
+      stats: [newStats(), newStats(), newStats(), newStats()],
+      sound: true,
+      audio: null,
+      awaitingTurn: players > 1
+    };
+
+    // grid + sizing (force true squares)
+    board.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+    board.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+
+    board.innerHTML = "";
+    state.deck.forEach((card, index)=> {
+      const div = document.createElement("button");
+      div.className = "card";
+      div.type = "button";
+      div.setAttribute("aria-label","card");
+      div.dataset.index = String(index);
+
+      const inner = document.createElement("div");
+      inner.className = "card-inner";
+
+      const back = document.createElement("div");
+      back.className = "card-face card-back";
+      const backMark = document.createElement("div");
+      backMark.className = "back-mark";
+      backMark.textContent = "★";
+      back.appendChild(backMark);
+
+      const front = document.createElement("div");
+      front.className = "card-face card-front";
+      const face = document.createElement("div");
+      face.className = "face";
+      face.textContent = card.emoji;
+      front.appendChild(face);
+
+      inner.appendChild(back);
+      inner.appendChild(front);
+      div.appendChild(inner);
+
+      // subtle badge for free spaces
+      if(card.free){
+        const badge = document.createElement("div");
+        badge.className = "badge";
+        badge.textContent = "free";
+        div.appendChild(badge);
+
+        div.classList.add("free");
+        div.setAttribute("aria-label","free space");
+        div.disabled = true;
+      }
+
+      bindPress(div, () => onCardTap(index));
+
+      board.appendChild(div);
+    });
+
+    showOverlay(startOverlay, false);
+    showOverlay(menuOverlay, false);
+
+    layoutBoardSquares();
+
+    if(state.timer) clearInterval(state.timer);
+    state.timer = setInterval(tick, 100);
+
+    updateTopbarMode();
+    renderScoreBar();
+    tick(true);
+    if(state.players > 1) showTurnSplash();
+  }
+
+  function layoutBoardSquares(){
+    if(!state) return;
+    const cols = state.cols, rows = state.rows;
+    const st = getComputedStyle(board);
+    const gap = parseFloat(st.gap || st.gridGap || "0") || 0;
+    // Use the board's box as the available rectangle.
+    const w = board.clientWidth;
+    const h = board.clientHeight;
+    const cellW = (w - gap * (cols - 1)) / cols;
+    const cellH = (h - gap * (rows - 1)) / rows;
+    const cell = Math.max(22, Math.floor(Math.min(cellW, cellH)));
+    board.style.gridTemplateColumns = `repeat(${cols}, ${cell}px)`;
+    board.style.gridTemplateRows = `repeat(${rows}, ${cell}px)`;
+  }
+
+
+  let lastPressAt = 0;
+  function bindPress(el, handler){
+    if(!el) return;
+    el.addEventListener("click", (e) => {
+      const now = Date.now();
+      if(now - lastPressAt < 120) return;
+      lastPressAt = now;
+      handler(e);
+    });
+  }
+
+  let turnSplashTimer = 0;
+  function showTurnSplash(){
+    if(!state || state.players <= 1) return;
+    state.awaitingTurn = true;
+    const name = state.names[state.turn-1] || `Player ${state.turn}`;
+    if(turnOverlayName) turnOverlayName.textContent = `Next turn: ${name}`;
+    showOverlay(turnOverlay, true);
+    tick(true);
+    clearTimeout(turnSplashTimer);
+    turnSplashTimer = setTimeout(() => {
+      if(!state) return;
+      state.awaitingTurn = false;
+      showOverlay(turnOverlay, false);
+      tick(true);
+    }, 1000);
+  }
+
+  function hideTurnSplash(){
+    if(!state) return;
+    clearTimeout(turnSplashTimer);
+    state.awaitingTurn = false;
+    showOverlay(turnOverlay, false);
+    tick(true);
+  }
+
+  function getTeamTotals(){
+    const totals = {};
+    if(!state) return totals;
+    for(let i=0; i<state.players; i++){
+      const team = state.teams[i];
+      if(!totals[team]) totals[team] = { score: 0, members: [], name: (state.teamNames && state.teamNames[team-1]) ? state.teamNames[team-1] : `Team ${team}` };
+      totals[team].score += state.scores[i] || 0;
+      totals[team].members.push(state.names[i] || `Player ${i+1}`);
+    }
+    return totals;
+  }
+
+  function renderFinalScores(){
+    if(!finalScores || !state) return;
+    finalScores.innerHTML = "";
+    if(state.teamMode){
+      const teamTotals = getTeamTotals();
+      Object.keys(teamTotals).sort((a,b)=>Number(a)-Number(b)).forEach((teamNo) => {
+        const row = document.createElement("div");
+        row.className = "final-score-row";
+        const members = teamTotals[teamNo].members.join(", ");
+        const teamName = teamTotals[teamNo].name || `Team ${teamNo}`;
+        row.innerHTML = `<div class="final-score-name"><div class="team-badge">T${teamNo}</div><div><div>${teamName}</div><div style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;">${members}</div></div></div><div class="final-score-points">${teamTotals[teamNo].score}</div>`;
+        finalScores.appendChild(row);
+      });
+      return;
+    }
+    for(let p=1; p<=state.players; p++){
+      const row = document.createElement("div");
+      row.className = "final-score-row";
+      const name = state.names[p-1] || `Player ${p}`;
+      const teamLabel = (state.players > 2 ? `<div class="team-badge">T${state.teams[p-1]}</div>` : '');
+      row.innerHTML = `<div class="final-score-name"><div class="final-score-dot p${p}"></div>${teamLabel}<div>${name}</div></div><div class="final-score-points">${state.scores[p-1]}</div>`;
+      finalScores.appendChild(row);
+    }
+  }
+
+  function tick(force=false){
+    if(!state) return;
+    if((menuOverlay && !menuOverlay.classList.contains("hidden")) || (turnOverlay && !turnOverlay.classList.contains("hidden")) || (awardsOverlay && !awardsOverlay.classList.contains("hidden"))) return;
+
+    const now = performance.now();
+    state.tElapsed = Math.max(0, now - state.startTime);
+    if(state.players === 1) {
+      const seconds = Math.floor(state.tElapsed/1000);
+      const mm = String(Math.floor(seconds/60)).padStart(2,"0");
+      const ss = String(seconds%60).padStart(2,"0");
+      const remaining = Math.floor((state.cols*state.rows - ((state.cols*state.rows)%2))/2) - state.matchedKeys.size;
+      setStatus(`Solo · ${remaining} left · ${mm}:${ss}`);
+    } else {
+      const currentName = state.names ? state.names[state.turn-1] : ('P'+state.turn);
+      const remaining = Math.floor((state.cols*state.rows - ((state.cols*state.rows)%2))/2) - state.matchedKeys.size;
+      setStatus(`Turn: ${currentName} · ${remaining} left`);
+    }
+  }
+
+  
+  function newStats(){
+    return {
+      matches: 0,
+      attempts: 0, // number of pairs tried
+      misses: 0,
+      flips: 0, // individual card flips
+      curStreak: 0,
+      longestStreak: 0,
+      totalDecision: 0, // ms between first+second pick
+      decisionCount: 0,
+      mismatchPairCounts: Object.create(null),
+      bestRepeat: 0
+    };
+  }
+
+  function awardCandidates(){
+    return [
+      {
+        key: "mostMatches",
+        icon: "🏆",
+        title: "Most Matches",
+        score: (s) => s.matches,
+        blurb: (name, s) => `${name} collected ${s.matches} match${s.matches===1?"":"es"}.`
+      },
+      {
+        key: "longestStreak",
+        icon: "🔥",
+        title: "Longest Streak",
+        score: (s) => s.longestStreak,
+        blurb: (name, s) => `${name} hit a streak of ${s.longestStreak}.`
+      },
+      {
+        key: "sharpShooter",
+        icon: "🎯",
+        title: "Best Accuracy",
+        score: (s) => (s.attempts ? (s.matches / s.attempts) : 0),
+        blurb: (name, s) => `${name} nailed ${(s.attempts ? Math.round((s.matches/s.attempts)*100) : 0)}% of attempts.`
+      },
+      {
+        key: "oopsRepeater",
+        icon: "🔁",
+        title: "Most Repeat Mistake",
+        score: (s) => s.bestRepeat,
+        require: (s) => s.bestRepeat >= 2,
+        blurb: (name, s) => `${name} repeated the same wrong pair ${s.bestRepeat} times.`
+      },
+      {
+        key: "worstMemory",
+        icon: "🧠‍💨",
+        title: "Worst Memory",
+        score: (s) => (s.attempts ? -(s.matches / s.attempts) : 0), // lower accuracy wins (negative)
+        blurb: (name, s) => `${name} is… still learning. Accuracy: ${(s.attempts ? Math.round((s.matches/s.attempts)*100) : 0)}%.`
+      },
+      {
+        key: "speedDemon",
+        icon: "⚡",
+        title: "Speed Demon",
+        score: (s) => (s.decisionCount ? -(s.totalDecision / s.decisionCount) : 0), // fastest avg (negative)
+        require: (s) => s.decisionCount >= 2,
+        blurb: (name, s) => `${name} averaged ${Math.round((s.decisionCount ? (s.totalDecision/s.decisionCount) : 0))}ms per pick.`
+      },
+      {
+        key: "carefulThinker",
+        icon: "🕵️",
+        title: "Most Careful",
+        score: (s) => (s.decisionCount ? (s.totalDecision / s.decisionCount) : 0), // slowest avg
+        require: (s) => s.decisionCount >= 2,
+        blurb: (name, s) => `${name} took their time (avg ${Math.round((s.decisionCount ? (s.totalDecision/s.decisionCount) : 0))}ms).`
+      },
+      {
+        key: "clicky",
+        icon: "👆",
+        title: "Most Flips",
+        score: (s) => s.flips,
+        blurb: (name, s) => `${name} flipped ${s.flips} cards.`
+      },
+      {
+        key: "doesntGetIt",
+        icon: "🤷",
+        title: "Doesn’t Seem To Understand The Game",
+        score: (s) => {
+          const acc = s.attempts ? (s.matches / s.attempts) : 0;
+          const avg = s.decisionCount ? (s.totalDecision / s.decisionCount) : 9999;
+          const rush = avg < 650 ? 1 : 0;
+          const lowAcc = acc < 0.25 ? 1 : 0;
+          return (s.misses * 2) + (s.bestRepeat * 3) + (rush * 6) + (lowAcc * 6);
+        },
+        require: (s) => (s.attempts >= 4),
+        blurb: (name, s) => `${name} may have been guessing… a lot.`
+      }
+    ];
+  }
+
+  function computeAwards(){
+    const n = state.players;
+    const stats = state.stats.slice(0, n);
+
+    const assignedPlayer = new Set();
+    const usedAwardKeys = new Set();
+    const out = [];
+
+    const candidates = awardCandidates();
+
+    // Priority order: make sure the big/obvious ones get assigned first
+    const priority = ["mostMatches","longestStreak","sharpShooter","oopsRepeater","doesntGetIt","speedDemon","carefulThinker","clicky","worstMemory"];
+
+    const pickBest = (award) => {
+      let bestIdx = -1;
+      let bestScore = -Infinity;
+      for(let i=0;i<n;i++){
+        if(assignedPlayer.has(i)) continue;
+        const s = stats[i];
+        if(award.require && !award.require(s)) continue;
+        const sc = award.score(s);
+        if(sc > bestScore){
+          bestScore = sc;
+          bestIdx = i;
+        }
+      }
+      return bestIdx;
+    };
+
+    for(const key of priority){
+      if(out.length >= n) break;
+      const award = candidates.find(a=>a.key===key);
+      if(!award || usedAwardKeys.has(award.key)) continue;
+      const idx = pickBest(award);
+      if(idx === -1) continue;
+      usedAwardKeys.add(award.key);
+      assignedPlayer.add(idx);
+      const name = state.names[idx] || `Player ${idx+1}`;
+      out.push({
+        playerIndex: idx,
+        playerName: name,
+        icon: award.icon,
+        title: award.title,
+        desc: award.blurb(name, stats[idx]),
+        key: award.key
+      });
+    }
+
+    // If we still don't have one award per player, hand out fun “fills” based on remaining metrics
+    const fillerPool = [
+      {icon:"🌟", title:"Most Improved (Probably)", desc:(name)=>`${name} showed unstoppable determination.`},
+      {icon:"🛡️", title:"Defense Winner", desc:(name)=>`${name} refused to be rattled.`},
+      {icon:"🎉", title:"Energy Award", desc:(name)=>`${name} brought the vibes.`},
+      {icon:"🧩", title:"Puzzle Spirit", desc:(name)=>`${name} kept at it until the end.`},
+      {icon:"😈", title:"Chaos Gremlin", desc:(name)=>`${name} made it exciting for everyone.`},
+    ];
+
+    let fillerIdx = 0;
+    for(let i=0;i<n && out.length < n;i++){
+      if(assignedPlayer.has(i)) continue;
+      const name = state.names[i] || `Player ${i+1}`;
+      const f = fillerPool[fillerIdx % fillerPool.length];
+      fillerIdx++;
+      out.push({playerIndex:i, playerName:name, icon:f.icon, title:f.title, desc:f.desc(name), key:"filler_"+fillerIdx});
+      assignedPlayer.add(i);
+    }
+
+    // Sort by player index so it feels fair and predictable for kids
+    out.sort((a,b)=>a.playerIndex-b.playerIndex);
+    return out;
+  }
+
+  // Human-friendly list joiner for names
+  function niceList(arr){
+    if(!arr || arr.length === 0) return "";
+    if(arr.length === 1) return arr[0];
+    if(arr.length === 2) return `${arr[0]} & ${arr[1]}`;
+    return `${arr.slice(0,-1).join(", ")} & ${arr[arr.length-1]}`;
+  }
+
+  function buildWinnerLine(){
+    if(state.teamMode){
+      const teamTotals = getTeamTotals();
+      const teams = Object.keys(teamTotals).map(Number);
+      const best = Math.max(...teams.map(t => teamTotals[t].score));
+      const winners = teams.filter(t => teamTotals[t].score === best);
+      const loserTeams = teams.filter(t => teamTotals[t].score !== best);
+      const winNames = winners.map(t => (teamTotals[t]?.name || `Team ${t}`));
+      const loseNames = loserTeams.map(t => (teamTotals[t]?.name || `Team ${t}`));
+      if(winners.length === teams.length) return "It’s a tie — all teams win!";
+      if(winners.length === 1) return `${winNames[0]} wins!`;
+      if(winners.length === teams.length - 1 && loserTeams.length === 1) return `Winners: ${niceList(winNames)} — and ${loseNames[0]} loses!`;
+      return `Winners: ${niceList(winNames)}!`;
+    }
+    const pairs = state.scores.slice(0, state.players);
+    const best = Math.max(...pairs);
+    const winners = [];
+    const losers = [];
+    for(let i=0;i<state.players;i++){
+      if(pairs[i] === best) winners.push(i);
+      else losers.push(i);
+    }
+    const winnerNames = winners.map(i => state.names[i] || `Player ${i+1}`);
+    const loserNames  = losers.map(i => state.names[i] || `Player ${i+1}`);
+
+    if(winners.length === state.players){
+      return "It’s a tie — everyone wins!";
+    }
+    if(winners.length === 1){
+      return `${winnerNames[0]} wins!`;
+    }
+    if(winners.length === state.players - 1 && losers.length === 1){
+      return `Winners: ${niceList(winnerNames)} — and ${loserNames[0]} is the loser!`;
+    }
+    return `Winners: ${niceList(winnerNames)}!`;
+  }
+
+
+function renderScoreBar(){
+    if(!state) return;
+    if(state.players <= 1){
+      scoreBar.classList.add("hidden");
+      scoreBar.innerHTML = "";
+      return;
+    }
+    scoreBar.classList.remove("hidden");
+    scoreBar.innerHTML = "";
+    if(state.teamMode){
+      const teamTotals = getTeamTotals();
+      Object.keys(teamTotals).map(Number).sort((a,b)=>a-b).forEach((teamNo) => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        if(state.teams[state.turn-1] === teamNo){
+          chip.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.16) inset";
+        }
+        const badge = document.createElement("div");
+        badge.className = "team-badge";
+        badge.textContent = `T${teamNo}`;
+        const label = document.createElement("div");
+        label.style.minWidth = "0";
+        label.style.overflow = "hidden";
+        label.style.textOverflow = "ellipsis";
+        label.textContent = teamTotals[teamNo].name || `Team ${teamNo}`;
+        const score = document.createElement("div");
+        score.className = "mono";
+        score.textContent = String(teamTotals[teamNo].score);
+        chip.appendChild(badge);
+        chip.appendChild(label);
+        chip.appendChild(score);
+        scoreBar.appendChild(chip);
+      });
+      return;
+    }
+    for(let p=1; p<=state.players; p++){
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      const dot = document.createElement("div");
+      dot.className = `dot p${p}`;
+      const label = document.createElement("div");
+      const baseName = (state.names && state.names[p-1]) ? state.names[p-1] : `P${p}`;
+      label.textContent = baseName;
+      const score = document.createElement("div");
+      score.className = "mono";
+      score.textContent = String(state.scores[p-1]);
+      chip.appendChild(dot);
+      chip.appendChild(label);
+      chip.appendChild(score);
+      if(p === state.turn){
+        chip.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.16) inset";
+      }
+      scoreBar.appendChild(chip);
+    }
+  }
+
+  function cardEl(i){
+    return board.querySelector(`.card[data-index="${i}"]`);
+  }
+
+  function reveal(i){
+    const el = cardEl(i);
+    if(!el) return;
+    el.classList.add("revealed");
+  }
+  function hide(i){
+    const el = cardEl(i);
+    if(!el) return;
+    el.classList.remove("revealed");
+  }
+  function markMatched(i){
+    const el = cardEl(i);
+    if(!el) return;
+    el.classList.add("matched");
+    el.classList.remove("revealed");
+  }
+
+  function setOwner(i, owner){
+    const el = cardEl(i);
+    if(!el) return;
+    for(let p=1;p<=4;p++) el.classList.remove(`owner-${p}`);
+    if(owner >= 1 && owner <= 4) el.classList.add(`owner-${owner}`);
+  }
+
+  function onCardTap(i){
+    if(!state || state.lock || state.awaitingTurn) return;
+
+    const el = cardEl(i);
+    if(!el) return;
+    if(el.classList.contains("matched") || el.classList.contains("revealed")) return;
+
+    if(state.deck[i]?.free) return;
+
+    // stats
+    const pIdx = (state.players > 1 ? (state.turn-1) : 0);
+    state.stats[pIdx].flips += 1;
+    if(state.revealed.length === 0) state.firstFlipAt = performance.now();
+
+    reveal(i);
+    beep(620, 0.05, 0.015);
+
+    state.revealed.push(i);
+
+    if(state.revealed.length === 2) {
+      state.lock = true;
+      state.moves += 1;
+      const pIdx2 = (state.players > 1 ? (state.turn-1) : 0);
+      const dt = Math.max(0, performance.now() - (state.firstFlipAt || performance.now()));
+      state.stats[pIdx2].attempts += 1;
+      state.stats[pIdx2].totalDecision += dt;
+      state.stats[pIdx2].decisionCount += 1;
+      const [a,b] = state.revealed;
+      const ca = state.deck[a], cb = state.deck[b];
+
+      const isMatch = (ca.key === cb.key);
+      setTimeout(() => {
+        if(isMatch) {
+          markMatched(a); markMatched(b);
+          if(state.players > 1){
+            setOwner(a, state.turn);
+            setOwner(b, state.turn);
+          }
+          state.matchedKeys.add(ca.key);
+          beep(820, 0.08, 0.02);
+          // stats
+          state.stats[pIdx2].matches += 1;
+          state.stats[pIdx2].curStreak += 1;
+          if(state.stats[pIdx2].curStreak > state.stats[pIdx2].longestStreak) state.stats[pIdx2].longestStreak = state.stats[pIdx2].curStreak;
+
+          if(state.players > 1){
+            state.scores[state.turn-1] += 1;
+            // match = keep turn
+          }
+        } else {
+          hide(a); hide(b);
+          // stats
+          state.stats[pIdx2].misses += 1;
+          state.stats[pIdx2].curStreak = 0;
+          // track repeated wrong pair
+          const k1 = ca.key, k2 = cb.key;
+          const mk = (k1 < k2) ? (k1 + "|" + k2) : (k2 + "|" + k1);
+          const mpc = state.stats[pIdx2].mismatchPairCounts;
+          mpc[mk] = (mpc[mk] || 0) + 1;
+          if(mpc[mk] > state.stats[pIdx2].bestRepeat) state.stats[pIdx2].bestRepeat = mpc[mk];
+
+          beep(220, 0.08, 0.02);
+          if(state.players > 1){
+            state.turn = (state.turn % state.players) + 1;
+            showTurnSplash();
+          }
+        }
+
+        state.revealed = [];
+        state.lock = false;
+        renderScoreBar();
+        tick(true);
+
+        const totalPairs = Math.floor((state.cols*state.rows - ((state.cols*state.rows)%2))/2);
+        if(state.matchedKeys.size === totalPairs) {
+          onWin();
+        }
+      }, isMatch ? 260 : 520);
+    }
+  }
+
+  function onWin(){
+    if(!state) return;
+    if(state.timer) clearInterval(state.timer);
+
+    setStatus("Finished!");
+
+    if(state.players >= 2){
+      if(awardsSub){
+        awardsSub.textContent = buildWinnerLine();
+      }
+      renderFinalScores();
+      showOverlay(awardsOverlay, true);
+      showOverlay(menuOverlay, false);
+      showOverlay(turnOverlay, false);
+      return;
+    }
+
+    // 1-player finish: keep simple
+    const seconds = Math.floor(state.tElapsed/1000);
+    const msg = `You did it!  Moves: ${state.moves}  Time: ${seconds}s`;
+
+    showOverlay(menuOverlay, true);
+    menuOverlay.querySelector("h1").textContent = "Nice!";
+    menuOverlay.querySelector(".sub").textContent = msg;
+    resumeBtn.textContent = "PLAY AGAIN";
+  }
+
+  function openMenu(){
+    if(!state) return;
+    showOverlay(turnOverlay, false);
+    showOverlay(menuOverlay, true);
+    menuOverlay.querySelector("h1").textContent = "Menu";
+    menuOverlay.querySelector(".sub").textContent = "Pause time — choose an option.";
+    resumeBtn.textContent = "RESUME";
+    tick(true);
+  }
+
+  function closeMenu(){
+    showOverlay(menuOverlay, false);
+    if(state && state.players > 1 && state.awaitingTurn) showTurnSplash();
+    tick(true);
+  }
+
+  playersSel.addEventListener("change", refreshPlayerTeamUI);
+  [team1, team2, team3, team4].forEach((el) => { if(el) el.addEventListener("change", refreshPlayerTeamUI); });
+  refreshPlayerTeamUI();
+
+  bindPress(startBtn, startNewGame);
+  bindPress(menuBtn, () => {
+    if(startOverlay && !startOverlay.classList.contains("hidden")) return;
+    openMenu();
+  });
+  bindPress(resumeBtn, () => {
+    if(resumeBtn.textContent === "PLAY AGAIN") {
+      clearTimeout(turnSplashTimer);
+      showOverlay(menuOverlay, false);
+      showOverlay(turnOverlay, false);
+      showOverlay(awardsOverlay, false);
+      showOverlay(startOverlay, true);
+      if(state) state.awaitingTurn = false;
+      setStatus("Ready");
+    } else {
+      closeMenu();
+    }
+  });
+  bindPress(backBtn, () => {
+    window.location.href = "index.html";
+  });
+
+  bindPress(awardsAgain, () => {
+    showOverlay(awardsOverlay, false);
+    startNewGame();
+  });
+  bindPress(awardsSettings, () => {
+    clearTimeout(turnSplashTimer);
+    showOverlay(awardsOverlay, false);
+    showOverlay(turnOverlay, false);
+    if(state) state.awaitingTurn = false;
+    showOverlay(startOverlay, true);
+    setStatus("Ready");
+    scoreBar.classList.add("hidden");
+  });
+
+  // keep squares on rotate / resize
+  let rAF = 0;
+  window.addEventListener("resize", () => {
+    if(!state) return;
+    cancelAnimationFrame(rAF);
+    rAF = requestAnimationFrame(() => {
+      try { layoutBoardSquares(); } catch(e){}
+    });
+  });
+
+  // initial
+  setStatus("Ready");
+
+
+})();
+</script>
+</body>
+</html>

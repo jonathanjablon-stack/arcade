@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Shuffleboard - Arcade Edition v1.3</title>
+<style>
+:root{
+  --bg:#0d1726;
+  --panel:#132238;
+  --panel-2:#0f1c30;
+  --text:#eef4ff;
+  --muted:#b8c6dc;
+  --stroke:rgba(255,255,255,.12);
+  --shadow:0 10px 28px rgba(0,0,0,.34);
+  --blue:#3b82f6;
+  --coral:#ef5f74;
+  --teal:#14b8a6;
+  --gold:#f59e0b;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 700px at 20% 0%, rgba(59,130,246,.16), transparent 60%),
+    radial-gradient(1000px 700px at 100% 100%, rgba(20,184,166,.10), transparent 60%),
+    linear-gradient(180deg, #0a1320, #122033 55%, #0b1421);
+  overflow:hidden;
+  touch-action:none;
+}
+button,input,select{font:inherit}
+button{
+  appearance:none;
+  border:1px solid var(--stroke);
+  background:#1a2b43;
+  color:var(--text);
+  border-radius:12px;
+  padding:8px 10px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.02em;
+  box-shadow:0 6px 14px rgba(0,0,0,.22);
+}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.45;transform:none}
+button.primary{background:#244670;border-color:rgba(98,167,255,.34)}
+button.danger{background:#44232a;border-color:rgba(239,95,116,.32)}
+.wrap{
+  height:100%;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  gap:8px;
+  padding:8px;
+  padding-top:max(8px, env(safe-area-inset-top));
+  padding-bottom:max(8px, env(safe-area-inset-bottom));
+}
+.topbar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:8px;
+  align-items:center;
+  min-height:52px;
+}
+.brand,
+.turnPill,
+.toolbar,
+.boardShell,
+.scoreStrip{
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+}
+.brand{
+  min-width:0;
+  background:linear-gradient(180deg,#192a42,#132238);
+  border-radius:14px;
+  padding:8px 10px;
+}
+.brandTitle{font-size:14px;font-weight:900;line-height:1}
+.brandSub{font-size:10px;color:var(--muted);margin-top:3px;line-height:1}
+.turnPill{
+  min-width:0;
+  background:linear-gradient(180deg,#1d304d,#16253c);
+  border-radius:16px;
+  padding:7px 12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  border-color:rgba(255,255,255,.14);
+}
+.turnBig{
+  font-size:15px;
+  font-weight:950;
+  line-height:1.05;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.turnSmall{
+  font-size:11px;
+  color:#f3f8ff;
+  opacity:.88;
+  line-height:1.05;
+  margin-top:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.toolbar{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  justify-content:flex-end;
+  background:linear-gradient(180deg,#192a42,#132238);
+  border-radius:14px;
+  padding:6px;
+}
+.boardShell{
+  position:relative;
+  min-height:0;
+  background:linear-gradient(180deg,#17273e,#101b2d);
+  border-radius:22px;
+  overflow:hidden;
+}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+.scoreStrip{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+  background:linear-gradient(180deg,#182840,#122033);
+  border-radius:18px;
+  padding:6px;
+  min-height:74px;
+}
+.scoreCard{
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;
+  background:rgba(255,255,255,.045);
+  padding:8px 8px 7px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
+}
+.scoreCard.active{
+  background:rgba(255,255,255,.11);
+  transform:translateY(-1px);
+}
+.scoreTop{display:flex;align-items:center;gap:6px;min-width:0}
+.dot{width:12px;height:12px;border-radius:999px;flex:0 0 12px;border:2px solid rgba(255,255,255,.7)}
+.scoreName{
+  font-size:12px;
+  font-weight:850;
+  line-height:1.05;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.scoreMeta{font-size:10px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scoreValue{font-size:22px;font-weight:950;line-height:1;margin-top:5px}
+.modalBack{
+  position:fixed;
+  inset:0;
+  background:rgba(4,10,18,.82);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+  z-index:50;
+}
+.modalBack.show{display:flex}
+.modal{
+  width:min(620px,100%);
+  max-height:calc(100% - 28px);
+  overflow:auto;
+  border-radius:22px;
+  background:#14243b;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 20px 64px rgba(0,0,0,.55);
+}
+.modalHeader{
+  position:sticky;
+  top:0;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 16px 12px;
+  background:#0f1c30;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.modalTitle{font-size:18px;font-weight:950}
+.modalBody{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
+input[type="text"],input[type="number"],select{
+  width:100%;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:#0f1b2c;
+  color:var(--text);
+  padding:10px 11px;
+  outline:none;
+}
+.namesGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nameRow{display:flex;flex-direction:column;gap:6px}
+.nameLabel{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:800}
+.colorChip{width:14px;height:14px;border-radius:999px;border:2px solid rgba(255,255,255,.7);flex:0 0 14px}
+.helper{font-size:12px;color:var(--muted);line-height:1.35}
+.footerActions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+@media (max-width:700px){
+  .grid2,.namesGrid{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .wrap{padding:6px;padding-top:max(6px, env(safe-area-inset-top));padding-bottom:max(6px, env(safe-area-inset-bottom));gap:6px}
+  .topbar{grid-template-columns:1fr auto;grid-template-areas:'brand tools' 'turn turn';gap:6px}
+  .brand{grid-area:brand;padding:7px 9px}
+  .toolbar{grid-area:tools}
+  .turnPill{grid-area:turn;padding:8px 10px}
+  .brandTitle{font-size:13px}
+  .turnBig{font-size:14px}
+  .turnSmall{font-size:10px}
+  .scoreStrip{min-height:68px;padding:5px;gap:5px}
+  .scoreCard{padding:7px 6px}
+  .scoreName{font-size:11px}
+  .scoreMeta{font-size:9px}
+  .scoreValue{font-size:20px}
+  button{padding:8px 9px;font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brandTitle">Shuffleboard</div>
+      <div class="brandSub">portrait arcade mode</div>
+    </div>
+    <div class="turnPill" id="turnPill">
+      <div class="turnBig" id="turnBig">Set up a game</div>
+      <div class="turnSmall" id="turnSmall">Choose settings to start</div>
+    </div>
+    <div class="toolbar">
+      <button id="btnUndo" title="Undo last shot" disabled>Undo</button>
+      <button id="btnSettings" title="Settings">Settings</button>
+      <button class="danger" id="btnReset" title="Reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="boardShell">
+    <canvas id="board"></canvas>
+  </div>
+
+  <div class="scoreStrip" id="scoreStrip"></div>
+</div>
+
+<div class="modalBack show" id="modalBack" aria-hidden="false">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Shuffleboard settings">
+    <div class="modalHeader">
+      <div class="modalTitle">Shuffleboard Settings</div>
+      <button id="btnCloseModal">Close</button>
+    </div>
+    <div class="modalBody">
+      <div class="grid2">
+        <label>Players
+          <select id="playerCount">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </label>
+        <label>Ends
+          <input type="number" id="ends" min="1" max="20" value="6">
+        </label>
+        <label>Pucks per player
+          <input type="number" id="pucksPer" min="1" max="8" value="4">
+        </label>
+        <label>Difficulty
+          <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <label>Puck size
+          <select id="puckSize">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="namesGrid" id="nameFields"></div>
+
+      <div class="helper">
+        Turns alternate automatically. The starting player rotates every end, so the last shot advantage rotates too. Top rail is live, side gutters score zero, and all pucks in scoring bands count.
+      </div>
+
+      <div class="footerActions">
+        <button class="primary" id="btnApply">Apply &amp; Start</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+
+  const scoreStrip = document.getElementById('scoreStrip');
+  const turnPill = document.getElementById('turnPill');
+  const turnBig = document.getElementById('turnBig');
+  const turnSmall = document.getElementById('turnSmall');
+
+  const btnUndo = document.getElementById('btnUndo');
+  const btnReset = document.getElementById('btnReset');
+  const btnSettings = document.getElementById('btnSettings');
+  const btnCloseModal = document.getElementById('btnCloseModal');
+  const btnApply = document.getElementById('btnApply');
+
+  const modalBack = document.getElementById('modalBack');
+  const playerCountSel = document.getElementById('playerCount');
+  const endsInp = document.getElementById('ends');
+  const pucksPerInp = document.getElementById('pucksPer');
+  const difficultySel = document.getElementById('difficulty');
+  const puckSizeSel = document.getElementById('puckSize');
+  const nameFields = document.getElementById('nameFields');
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+  const now = () => performance.now();
+
+  const PLAYER_COLORS = [
+    { name: 'Blue', fill: '#3b82f6', edge: '#1d4ed8', glow: 'rgba(59,130,246,.35)', card1: '#365b9d', card2: '#21385d' },
+    { name: 'Coral', fill: '#ef5f74', edge: '#be334f', glow: 'rgba(239,95,116,.35)', card1: '#9f4454', card2: '#5f2630' },
+    { name: 'Teal', fill: '#14b8a6', edge: '#0f8e80', glow: 'rgba(20,184,166,.35)', card1: '#1c7d73', card2: '#124943' },
+    { name: 'Gold', fill: '#f59e0b', edge: '#c97700', glow: 'rgba(245,158,11,.35)', card1: '#a36d14', card2: '#5c3f12' }
+  ];
+
+  const PUCK_RADII = { 1: 11, 2: 13, 3: 15, 4: 17, 5: 19 };
+
+  const state = {
+    running: false,
+    players: [],
+    endsTotal: 6,
+    pucksPer: 4,
+    puckSizeLevel: 3,
+    endIndex: 1,
+    startPlayer: 0,
+    currentPlayer: 0,
+    pucks: [],
+    puckQueues: [],
+    totalShotsPerEnd: 0,
+    shotsFiredInEnd: 0,
+    history: [],
+    board: null,
+    aiming: null,
+    resting: true,
+    autoPhase: 'ready',
+    settleTimer: 0,
+    friction: 0.985,
+    wallBounce: 0.90,
+    shotPower: 0.055,
+    maxPull: 160
+  };
+
+  function openModal() {
+    modalBack.classList.add('show');
+    modalBack.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal() {
+    modalBack.classList.remove('show');
+    modalBack.setAttribute('aria-hidden', 'true');
+  }
+
+  function buildNameFields() {
+    const n = parseInt(playerCountSel.value, 10);
+    nameFields.innerHTML = '';
+    for (let i = 0; i < n; i += 1) {
+      const row = document.createElement('div');
+      row.className = 'nameRow';
+
+      const lab = document.createElement('div');
+      lab.className = 'nameLabel';
+
+      const chip = document.createElement('span');
+      chip.className = 'colorChip';
+      chip.style.background = PLAYER_COLORS[i].fill;
+      chip.style.borderColor = 'rgba(255,255,255,.72)';
+
+      const text = document.createElement('span');
+      text.textContent = `Player ${i + 1} name`;
+      lab.appendChild(chip);
+      lab.appendChild(text);
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.maxLength = 18;
+      inp.value = state.players[i]?.name || `Player ${i + 1}`;
+
+      row.appendChild(lab);
+      row.appendChild(inp);
+      nameFields.appendChild(row);
+    }
+  }
+
+  function setTurnDisplay(mode) {
+    if (!state.running) {
+      turnPill.style.background = 'linear-gradient(180deg,#1d304d,#16253c)';
+      turnPill.style.boxShadow = 'var(--shadow)';
+      turnBig.textContent = 'Set up a game';
+      turnSmall.textContent = 'Choose settings to start';
+      return;
+    }
+
+    const player = state.players[state.currentPlayer];
+    const accent = player.color.fill;
+    const accentSoft = player.color.glow;
+    turnPill.style.background = `linear-gradient(180deg, ${player.color.card1}, ${player.color.card2})`;
+    turnPill.style.boxShadow = `0 10px 26px ${accentSoft}`;
+
+    if (mode === 'moving') {
+      turnBig.textContent = `${player.name}'s shot is sliding`;
+      turnSmall.textContent = `End ${state.endIndex}/${state.endsTotal}`;
+      return;
+    }
+
+    if (mode === 'scoring') {
+      turnBig.textContent = 'Scoring this end';
+      turnSmall.textContent = `End ${state.endIndex}/${state.endsTotal}`;
+      return;
+    }
+
+    if (mode === 'gameover') {
+      const max = Math.max(...state.players.map(p => p.score));
+      const winners = state.players.filter(p => p.score === max).map(p => p.name);
+      if (winners.length === 1) {
+        turnBig.textContent = `${winners[0]} wins`;
+      } else {
+        turnBig.textContent = `${winners.join(' & ')} tie`;
+      }
+      turnSmall.textContent = `Final score ${max}`;
+      return;
+    }
+
+    const isLastShot = state.currentPlayer === ((state.startPlayer + state.players.length - 1) % state.players.length);
+    const shotNo = state.players[state.currentPlayer].shotsTakenThisEnd + 1;
+    turnBig.textContent = `${player.name}'s turn`;
+    turnSmall.textContent = `End ${state.endIndex}/${state.endsTotal} • puck ${shotNo}/${state.pucksPer}${isLastShot ? ' • last shot' : ''}`;
+  }
+
+  function renderScores() {
+    scoreStrip.innerHTML = '';
+    state.players.forEach((player, idx) => {
+      const card = document.createElement('div');
+      card.className = 'scoreCard' + (state.running && state.currentPlayer === idx && state.autoPhase === 'ready' ? ' active' : '');
+      card.style.borderColor = `${player.color.fill}55`;
+      if (state.running && state.currentPlayer === idx && state.autoPhase === 'ready') {
+        card.style.boxShadow = `inset 0 0 0 1px ${player.color.fill}88, 0 0 0 1px ${player.color.fill}28`;
+      }
+
+      const top = document.createElement('div');
+      top.className = 'scoreTop';
+
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.background = player.color.fill;
+      dot.style.borderColor = player.color.edge;
+
+      const name = document.createElement('div');
+      name.className = 'scoreName';
+      name.textContent = player.name;
+
+      top.appendChild(dot);
+      top.appendChild(name);
+
+      const meta = document.createElement('div');
+      meta.className = 'scoreMeta';
+      meta.textContent = `End ${player.endPoints || 0} this round`;
+
+      const value = document.createElement('div');
+      value.className = 'scoreValue';
+      value.textContent = String(player.score);
+
+      card.appendChild(top);
+      card.appendChild(meta);
+      card.appendChild(value);
+      scoreStrip.appendChild(card);
+    });
+  }
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const w = rect.width;
+    const h = rect.height;
+    const pad = 8;
+    const boardW = Math.max(240, Math.min(w - pad * 2, 560));
+    const boardH = Math.max(320, h - pad * 2);
+    const bx = (w - boardW) / 2;
+    const by = (h - boardH) / 2;
+
+    const outerGutter = Math.max(16, Math.min(22, boardW * 0.055));
+    const zoneH = clamp(boardH * 0.085, 40, 62);
+    const puckR = Math.min(PUCK_RADII[state.puckSizeLevel], boardW * 0.09);
+    const spawn = { x: bx + boardW / 2, y: by + boardH - puckR - 38 };
+    const inner = {
+      x: bx + outerGutter,
+      y: by,
+      w: boardW - outerGutter * 2,
+      h: boardH
+    };
+
+    const zones = [
+      { pts: 10, label: '10', y: by, h: zoneH, fill: 'rgba(221,76,76,.34)' },
+      { pts: 8, label: '8', y: by + zoneH, h: zoneH, fill: 'rgba(237,138,37,.28)' },
+      { pts: 5, label: '5', y: by + zoneH * 2, h: zoneH, fill: 'rgba(244,202,74,.24)' },
+      { pts: 2, label: '2', y: by + zoneH * 3, h: zoneH, fill: 'rgba(54,179,126,.22)' }
+    ];
+
+    state.board = {
+      x: bx,
+      y: by,
+      w: boardW,
+      h: boardH,
+      inner,
+      gutter: outerGutter,
+      zoneH,
+      zones,
+      scoringBottom: by + zoneH * 4,
+      puckR,
+      spawn
+    };
+
+    for (const puck of state.pucks) {
+      puck.r = puckR;
+      if (puck.isCurrent && state.autoPhase === 'ready') {
+        puck.x = spawn.x;
+        puck.y = spawn.y;
+      }
+    }
+  }
+
+  function resetEnd() {
+    state.pucks = [];
+    state.puckQueues = [];
+    state.history = [];
+    state.shotsFiredInEnd = 0;
+    state.totalShotsPerEnd = state.players.length * state.pucksPer;
+    state.aiming = null;
+    state.resting = true;
+    state.autoPhase = 'ready';
+    state.settleTimer = 0;
+    state.currentPlayer = state.startPlayer;
+
+    for (let p = 0; p < state.players.length; p += 1) {
+      state.players[p].shotsTakenThisEnd = 0;
+      state.players[p].endPoints = 0;
+      const q = [];
+      for (let k = 0; k < state.pucksPer; k += 1) {
+        q.push({
+          id: `${p}-${k}`,
+          owner: p,
+          x: state.board.spawn.x,
+          y: state.board.spawn.y,
+          vx: 0,
+          vy: 0,
+          r: state.board.puckR,
+          active: false,
+          inGutter: false,
+          isCurrent: false
+        });
+      }
+      state.puckQueues.push(q);
+    }
+
+    ensureCurrentPuck();
+    renderScores();
+    setTurnDisplay();
+    updateButtons();
+  }
+
+  function ensureCurrentPuck() {
+    if (!state.running || state.autoPhase !== 'ready') return null;
+    const queue = state.puckQueues[state.currentPlayer];
+    if (!queue || queue.length === 0) return null;
+    const puck = queue[0];
+    const existing = state.pucks.find(p => p.id === puck.id);
+    if (existing) {
+      existing.isCurrent = true;
+      return existing;
+    }
+    for (const p of state.pucks) p.isCurrent = false;
+    puck.x = state.board.spawn.x;
+    puck.y = state.board.spawn.y;
+    puck.vx = 0;
+    puck.vy = 0;
+    puck.r = state.board.puckR;
+    puck.active = true;
+    puck.inGutter = false;
+    puck.isCurrent = true;
+    state.pucks.push(puck);
+    return puck;
+  }
+
+  function nextPlayerIndex() {
+    for (let step = 1; step <= state.players.length; step += 1) {
+      const idx = (state.currentPlayer + step) % state.players.length;
+      if (state.players[idx].shotsTakenThisEnd < state.pucksPer) return idx;
+    }
+    return state.currentPlayer;
+  }
+
+  function allPucksResting() {
+    return state.pucks.every(p => Math.hypot(p.vx, p.vy) < 0.03);
+  }
+
+  function snapshot() {
+    state.history.push({
+      players: state.players.map(p => ({
+        name: p.name,
+        score: p.score,
+        shotsTakenThisEnd: p.shotsTakenThisEnd,
+        endPoints: p.endPoints,
+        color: p.color
+      })),
+      endIndex: state.endIndex,
+      startPlayer: state.startPlayer,
+      currentPlayer: state.currentPlayer,
+      shotsFiredInEnd: state.shotsFiredInEnd,
+      totalShotsPerEnd: state.totalShotsPerEnd,
+      pucks: state.pucks.map(p => ({ ...p })),
+      puckQueues: state.puckQueues.map(queue => queue.map(p => ({ ...p })))
+    });
+    if (state.history.length > 20) state.history.shift();
+  }
+
+  function restoreSnapshot(snap) {
+    state.players = snap.players.map(p => ({ ...p }));
+    state.endIndex = snap.endIndex;
+    state.startPlayer = snap.startPlayer;
+    state.currentPlayer = snap.currentPlayer;
+    state.shotsFiredInEnd = snap.shotsFiredInEnd;
+    state.totalShotsPerEnd = snap.totalShotsPerEnd;
+    state.pucks = snap.pucks.map(p => ({ ...p, vx: 0, vy: 0 }));
+    state.puckQueues = snap.puckQueues.map(queue => queue.map(p => ({ ...p, vx: 0, vy: 0 })));
+    state.aiming = null;
+    state.resting = true;
+    state.autoPhase = 'ready';
+    state.settleTimer = 0;
+    for (const puck of state.pucks) puck.r = state.board.puckR;
+    ensureCurrentPuck();
+    renderScores();
+    setTurnDisplay();
+    updateButtons();
+  }
+
+  function updateButtons() {
+    btnUndo.disabled = !state.running || !state.resting || state.history.length === 0 || state.autoPhase !== 'ready';
+  }
+
+  function scoreForPuck(puck) {
+    if (puck.inGutter) return 0;
+    const b = state.board;
+    for (const zone of b.zones) {
+      const insideY = (puck.y - puck.r) >= zone.y && (puck.y + puck.r) <= (zone.y + zone.h);
+      const insideX = (puck.x - puck.r) >= b.inner.x && (puck.x + puck.r) <= (b.inner.x + b.inner.w);
+      if (insideX && insideY) return zone.pts;
+    }
+    return 0;
+  }
+
+  function finishEnd() {
+    state.autoPhase = 'scoring';
+    setTurnDisplay('scoring');
+    const add = new Array(state.players.length).fill(0);
+    for (const puck of state.pucks) add[puck.owner] += scoreForPuck(puck);
+    for (let i = 0; i < state.players.length; i += 1) {
+      state.players[i].endPoints = add[i];
+      state.players[i].score += add[i];
+    }
+    renderScores();
+
+    if (state.endIndex >= state.endsTotal) {
+      state.running = false;
+      state.resting = true;
+      state.autoPhase = 'gameover';
+      setTurnDisplay('gameover');
+      updateButtons();
+      return;
+    }
+
+    state.endIndex += 1;
+    state.startPlayer = (state.startPlayer + 1) % state.players.length;
+    resetEnd();
+  }
+
+  function stepPhysics(dt) {
+    const b = state.board;
+    const left = b.x + state.board.gutter + b.puckR;
+    const right = b.x + b.w - state.board.gutter - b.puckR;
+    const railLeft = b.x + b.puckR;
+    const railRight = b.x + b.w - b.puckR;
+    const topRail = b.y + b.puckR;
+    const bottomRail = b.y + b.h - b.puckR;
+
+    for (const puck of state.pucks) {
+      puck.x += puck.vx * dt;
+      puck.y += puck.vy * dt;
+      puck.vx *= Math.pow(state.friction, dt);
+      puck.vy *= Math.pow(state.friction, dt);
+      if (Math.hypot(puck.vx, puck.vy) < 0.01) {
+        puck.vx = 0;
+        puck.vy = 0;
+      }
+
+      if (puck.x < railLeft) {
+        puck.x = railLeft;
+        puck.vx = Math.abs(puck.vx) * state.wallBounce;
+      }
+      if (puck.x > railRight) {
+        puck.x = railRight;
+        puck.vx = -Math.abs(puck.vx) * state.wallBounce;
+      }
+      if (puck.y < topRail) {
+        puck.y = topRail;
+        puck.vy = Math.abs(puck.vy) * state.wallBounce;
+      }
+      if (puck.y > bottomRail) {
+        puck.y = bottomRail;
+        puck.vy = -Math.abs(puck.vy) * state.wallBounce;
+      }
+
+      puck.inGutter = puck.x < left || puck.x > right;
+    }
+
+    for (let i = 0; i < state.pucks.length; i += 1) {
+      const a = state.pucks[i];
+      for (let j = i + 1; j < state.pucks.length; j += 1) {
+        const bPuck = state.pucks[j];
+        const dx = bPuck.x - a.x;
+        const dy = bPuck.y - a.y;
+        const d = Math.hypot(dx, dy);
+        const minD = a.r + bPuck.r;
+        if (d > 0 && d < minD) {
+          const overlap = minD - d;
+          const nx = dx / d;
+          const ny = dy / d;
+          a.x -= nx * overlap * 0.5;
+          a.y -= ny * overlap * 0.5;
+          bPuck.x += nx * overlap * 0.5;
+          bPuck.y += ny * overlap * 0.5;
+
+          const rvx = bPuck.vx - a.vx;
+          const rvy = bPuck.vy - a.vy;
+          const velAlongNormal = rvx * nx + rvy * ny;
+          if (velAlongNormal < 0) {
+            const restitution = 0.92;
+            const impulse = -(1 + restitution) * velAlongNormal / 2;
+            const ix = impulse * nx;
+            const iy = impulse * ny;
+            a.vx -= ix;
+            a.vy -= iy;
+            bPuck.vx += ix;
+            bPuck.vy += iy;
+          }
+        }
+      }
+    }
+
+    state.resting = allPucksResting();
+  }
+
+  function drawBoard() {
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    const b = state.board;
+    ctx.clearRect(0, 0, w, h);
+
+    const railGrad = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
+    railGrad.addColorStop(0, '#5f381f');
+    railGrad.addColorStop(.5, '#7b4b27');
+    railGrad.addColorStop(1, '#5a341d');
+    roundRect(ctx, b.x, b.y, b.w, b.h, 26);
+    ctx.fillStyle = railGrad;
+    ctx.fill();
+
+    const laneGrad = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
+    laneGrad.addColorStop(0, '#e8c99b');
+    laneGrad.addColorStop(.5, '#ddb47c');
+    laneGrad.addColorStop(1, '#c9935f');
+    roundRect(ctx, b.inner.x, b.y + 2, b.inner.w, b.h - 4, 18);
+    ctx.fillStyle = laneGrad;
+    ctx.fill();
+
+    ctx.save();
+    ctx.globalAlpha = .08;
+    for (let i = 0; i < 10; i += 1) {
+      const y = b.y + 18 + i * (b.h / 10);
+      ctx.fillStyle = i % 2 ? '#5d3a1f' : '#fff3d4';
+      ctx.fillRect(b.inner.x, y, b.inner.w, Math.max(10, b.h / 18));
+    }
+    ctx.restore();
+
+    ctx.fillStyle = 'rgba(47,31,18,.42)';
+    ctx.fillRect(b.x, b.y, b.gutter, b.h);
+    ctx.fillRect(b.x + b.w - b.gutter, b.y, b.gutter, b.h);
+
+    for (const zone of b.zones) {
+      ctx.fillStyle = zone.fill;
+      ctx.fillRect(b.inner.x, zone.y, b.inner.w, zone.h);
+      ctx.strokeStyle = 'rgba(76,47,22,.18)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(b.inner.x, zone.y);
+      ctx.lineTo(b.inner.x + b.inner.w, zone.y);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(87,55,27,.72)';
+      ctx.font = '900 18px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(zone.label, b.x + b.w / 2, zone.y + zone.h / 2);
+    }
+
+    ctx.strokeStyle = 'rgba(92,58,27,.28)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(b.inner.x, b.scoringBottom);
+    ctx.lineTo(b.inner.x + b.inner.w, b.scoringBottom);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,248,230,.30)';
+    ctx.setLineDash([6, 10]);
+    ctx.beginPath();
+    ctx.moveTo(b.x + b.w / 2, b.scoringBottom);
+    ctx.lineTo(b.x + b.w / 2, b.y + b.h - 18);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = 'rgba(255,255,255,.15)';
+    ctx.beginPath();
+    ctx.arc(b.spawn.x, b.spawn.y, b.puckR * .7, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (const puck of state.pucks) drawPuck(puck);
+    if (state.aiming) drawAim(state.aiming);
+  }
+
+  function drawPuck(puck) {
+    const player = state.players[puck.owner];
+    const fill = puck.inGutter ? '#927f67' : player.color.fill;
+    const edge = puck.inGutter ? '#5f513f' : player.color.edge;
+    ctx.save();
+    ctx.shadowColor = puck.isCurrent && state.autoPhase === 'ready' ? player.color.glow : 'rgba(0,0,0,.22)';
+    ctx.shadowBlur = puck.isCurrent && state.autoPhase === 'ready' ? 16 : 7;
+    ctx.beginPath();
+    ctx.arc(puck.x, puck.y, puck.r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = edge;
+    ctx.stroke();
+
+    const shine = ctx.createLinearGradient(puck.x - puck.r, puck.y - puck.r, puck.x + puck.r, puck.y + puck.r);
+    shine.addColorStop(0, 'rgba(255,255,255,.42)');
+    shine.addColorStop(.4, 'rgba(255,255,255,.12)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.arc(puck.x - puck.r * .24, puck.y - puck.r * .24, puck.r * .62, 0, Math.PI * 2);
+    ctx.fillStyle = shine;
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(15,18,25,.58)';
+    ctx.font = '900 12px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(puck.owner + 1), puck.x, puck.y + .5);
+    ctx.restore();
+  }
+
+  function drawAim(aim) {
+    const puck = state.pucks.find(p => p.id === aim.puckId);
+    if (!puck) return;
+    const dx = aim.sx - aim.cx;
+    const dy = aim.sy - aim.cy;
+    const pull = clamp(Math.hypot(dx, dy), 0, state.maxPull);
+    const nx = dx / (pull || 1);
+    const ny = dy / (pull || 1);
+    const len = 26 + pull * .82;
+    const lx = puck.x + nx * len;
+    const ly = puck.y + ny * len;
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,.8)';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(puck.x, puck.y);
+    ctx.lineTo(lx, ly);
+    ctx.stroke();
+
+    const ang = Math.atan2(ly - puck.y, lx - puck.x);
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.beginPath();
+    ctx.moveTo(lx, ly);
+    ctx.lineTo(lx - 11 * Math.cos(ang - .58), ly - 11 * Math.sin(ang - .58));
+    ctx.lineTo(lx - 11 * Math.cos(ang + .58), ly - 11 * Math.sin(ang + .58));
+    ctx.closePath();
+    ctx.fill();
+
+    const barW = 120;
+    const barH = 10;
+    const bx = state.board.x + state.board.w / 2 - barW / 2;
+    const by = state.board.y + state.board.h - 20;
+    roundRect(ctx, bx, by, barW, barH, 999);
+    ctx.fillStyle = 'rgba(0,0,0,.26)';
+    ctx.fill();
+    roundRect(ctx, bx, by, barW * (pull / state.maxPull), barH, 999);
+    ctx.fillStyle = state.players[state.currentPlayer].color.fill;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + rr, y);
+    c.arcTo(x + w, y, x + w, y + h, rr);
+    c.arcTo(x + w, y + h, x, y + h, rr);
+    c.arcTo(x, y + h, x, y, rr);
+    c.arcTo(x, y, x + w, y, rr);
+    c.closePath();
+  }
+
+  function pointFromEvent(e) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function canShoot() {
+    return state.running && state.resting && state.autoPhase === 'ready' && state.players[state.currentPlayer].shotsTakenThisEnd < state.pucksPer;
+  }
+
+  function findCurrentPuckHit(x, y) {
+    const current = state.pucks.find(p => p.isCurrent);
+    if (!current) return null;
+    return dist(x, y, current.x, current.y) <= current.r + 10 ? current : null;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!canShoot()) return;
+    const puck = ensureCurrentPuck();
+    if (!puck) return;
+    const pt = pointFromEvent(e);
+    if (!findCurrentPuckHit(pt.x, pt.y)) return;
+    canvas.setPointerCapture(e.pointerId);
+    state.aiming = { puckId: puck.id, sx: puck.x, sy: puck.y, cx: pt.x, cy: pt.y };
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!state.aiming) return;
+    const pt = pointFromEvent(e);
+    state.aiming.cx = pt.x;
+    state.aiming.cy = pt.y;
+  });
+
+  function releaseShot() {
+    if (!state.aiming) return;
+    const aim = state.aiming;
+    state.aiming = null;
+    const puck = state.pucks.find(p => p.id === aim.puckId);
+    if (!puck) return;
+    const dx = aim.sx - aim.cx;
+    const dy = aim.sy - aim.cy;
+    const pull = clamp(Math.hypot(dx, dy), 0, state.maxPull);
+    if (pull < 10) return;
+
+    snapshot();
+
+    const nx = dx / pull;
+    const ny = dy / pull;
+    puck.vx = nx * pull * state.shotPower;
+    puck.vy = ny * pull * state.shotPower;
+    puck.isCurrent = false;
+
+    state.players[state.currentPlayer].shotsTakenThisEnd += 1;
+    state.shotsFiredInEnd += 1;
+    state.puckQueues[state.currentPlayer].shift();
+    state.resting = false;
+    state.autoPhase = 'moving';
+    state.settleTimer = 0;
+    setTurnDisplay('moving');
+    renderScores();
+    updateButtons();
+  }
+
+  canvas.addEventListener('pointerup', releaseShot);
+  canvas.addEventListener('pointercancel', () => { state.aiming = null; });
+
+  btnSettings.addEventListener('click', openModal);
+  btnCloseModal.addEventListener('click', closeModal);
+  modalBack.addEventListener('click', (e) => { if (e.target === modalBack) closeModal(); });
+  playerCountSel.addEventListener('change', buildNameFields);
+
+  btnUndo.addEventListener('click', () => {
+    if (btnUndo.disabled) return;
+    const snap = state.history.pop();
+    if (snap) restoreSnapshot(snap);
+  });
+
+  btnReset.addEventListener('click', () => {
+    if (!confirm('Reset the whole game?')) return;
+    startGame();
+  });
+
+  function startGame() {
+    const count = clamp(parseInt(playerCountSel.value, 10) || 2, 1, 4);
+    const names = [...nameFields.querySelectorAll('input')].slice(0, count).map((inp, i) => {
+      const v = (inp.value || '').trim();
+      return v ? v.slice(0, 18) : `Player ${i + 1}`;
+    });
+
+    state.players = names.map((name, idx) => ({
+      name,
+      score: 0,
+      shotsTakenThisEnd: 0,
+      endPoints: 0,
+      color: PLAYER_COLORS[idx]
+    }));
+
+    state.endsTotal = clamp(parseInt(endsInp.value, 10) || 6, 1, 20);
+    state.pucksPer = clamp(parseInt(pucksPerInp.value, 10) || 4, 1, 8);
+    state.puckSizeLevel = clamp(parseInt(puckSizeSel.value, 10) || 3, 1, 5);
+    state.endIndex = 1;
+    state.startPlayer = 0;
+    state.currentPlayer = 0;
+    state.running = true;
+
+    const diff = difficultySel.value;
+    if (diff === 'easy') {
+      state.friction = 0.982;
+      state.wallBounce = 0.88;
+      state.shotPower = 0.053;
+      state.maxPull = 155;
+    } else if (diff === 'hard') {
+      state.friction = 0.988;
+      state.wallBounce = 0.92;
+      state.shotPower = 0.057;
+      state.maxPull = 165;
+    } else {
+      state.friction = 0.985;
+      state.wallBounce = 0.90;
+      state.shotPower = 0.055;
+      state.maxPull = 160;
+    }
+
+    resize();
+    resetEnd();
+    closeModal();
+  }
+
+  btnApply.addEventListener('click', startGame);
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalBack.classList.contains('show')) closeModal();
+  });
+
+  let last = now();
+  function tick() {
+    const t = now();
+    const dt = clamp((t - last) / 16.6667, 0.35, 2.6);
+    last = t;
+
+    if (state.running && state.autoPhase === 'moving') {
+      stepPhysics(dt);
+      if (state.resting) {
+        state.settleTimer += 16.6667 * dt;
+        if (state.settleTimer > 180) {
+          if (state.shotsFiredInEnd >= state.totalShotsPerEnd) {
+            finishEnd();
+          } else {
+            state.currentPlayer = nextPlayerIndex();
+            state.autoPhase = 'ready';
+            state.settleTimer = 0;
+            ensureCurrentPuck();
+            renderScores();
+            setTurnDisplay();
+            updateButtons();
+          }
+        }
+      } else {
+        state.settleTimer = 0;
+      }
+    }
+
+    drawBoard();
+    requestAnimationFrame(tick);
+  }
+
+  buildNameFields();
+  resize();
+  renderScores();
+  setTurnDisplay();
+  updateButtons();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

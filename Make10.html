@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Make 10</title>
+<style>
+:root {
+  --bg1: #0f172a;
+  --bg2: #1e1b4b;
+  --panel: rgba(15, 23, 42, 0.9);
+  --line: rgba(255,255,255,0.12);
+  --text: #eef2ff;
+  --muted: #c7d2fe;
+  --accent: #7c3aed;
+  --accent2: #22c55e;
+  --gold: #facc15;
+  --shadow: 0 16px 42px rgba(0,0,0,0.32);
+  --radius: 18px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top, #312e81 0%, #1e1b4b 28%, #0f172a 68%, #020617 100%);
+}
+body { display: flex; justify-content: center; }
+button, input { font: inherit; }
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(124,58,237,0.95), rgba(91,33,182,0.95));
+  box-shadow: 0 10px 22px rgba(91,33,182,0.24);
+  cursor: pointer;
+}
+button.secondary {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+button.good {
+  background: linear-gradient(180deg, rgba(34,197,94,0.95), rgba(21,128,61,0.95));
+  box-shadow: 0 10px 22px rgba(21,128,61,0.24);
+}
+button:disabled { opacity: 0.45; cursor: default; }
+input[type="text"] {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+.app {
+  width: 100%;
+  max-width: 980px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+}
+.topbar, .footer, .status, .scorebar, .controls, .sumbar {
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+}
+.titleblock { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.title { font-size: 1.12rem; font-weight: 800; }
+.subtitle { font-size: 0.82rem; color: var(--muted); line-height: 1.2; }
+.turnpill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--line);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.main {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto auto auto minmax(0,1fr);
+  gap: 8px;
+  flex: 1;
+}
+.scorebar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+}
+.scorechip {
+  min-width: 0;
+  border-radius: 14px;
+  padding: 7px 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.scorechip.active { outline: 2px solid rgba(250, 204, 21, 0.75); }
+.scorechip .name {
+  width: 100%;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.scorechip .score { font-size: 1.12rem; font-weight: 800; }
+.controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+}
+.controls button { min-height: 42px; font-weight: 700; }
+.status {
+  min-height: 56px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.status .message { font-size: 1rem; font-weight: 800; }
+.status .small { color: var(--muted); font-size: 0.86rem; line-height: 1.2; }
+.sumbar {
+  padding: 12px;
+}
+.sumfocus {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+.sumcore {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.sumactions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  width: min(152px, 28vw);
+}
+.sumactions button {
+  min-height: 48px;
+  font-weight: 800;
+}
+.sumlabel {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.totalbox {
+  width: clamp(180px, 46vw, 270px);
+  min-height: clamp(88px, 14vh, 118px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  border: 2px solid rgba(255,255,255,0.16);
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 32px rgba(0,0,0,0.24);
+}
+.total {
+  min-width: 3ch;
+  text-align: center;
+  font-size: clamp(3.6rem, 12vw, 5.2rem);
+  line-height: 1;
+  font-weight: 1000;
+  font-variant-numeric: tabular-nums;
+}
+.totalbox.good {
+  border-color: rgba(34,197,94,0.55);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 4px rgba(34,197,94,0.12), 0 14px 32px rgba(0,0,0,0.24);
+}
+.totalbox.bad {
+  border-color: rgba(239,68,68,0.45);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 4px rgba(239,68,68,0.10), 0 14px 32px rgba(0,0,0,0.24);
+}
+.total.good { color: #86efac; }
+.total.bad { color: #fca5a5; }
+.table {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 8px;
+}
+.card {
+  position: relative;
+  min-height: clamp(86px, 14vh, 118px);
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(236,240,255,0.96));
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+  padding: 8px;
+}
+.card.selected {
+  transform: translateY(-1px) scale(0.99);
+  border-color: rgba(250,204,21,0.95);
+  box-shadow: 0 0 0 4px rgba(250,204,21,0.26), 0 16px 34px rgba(0,0,0,0.24);
+}
+.card.hint { animation: hintPulse 0.9s ease-in-out 3; }
+.corner {
+  position: absolute;
+  left: 9px;
+  top: 7px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #4b5563;
+}
+.corner.bottom {
+  left: auto;
+  right: 9px;
+  top: auto;
+  bottom: 7px;
+  transform: rotate(180deg);
+}
+.centerValue {
+  font-size: clamp(2.2rem, 7vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1;
+}
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 20;
+}
+#feedbackOverlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2,6,23,0.82);
+  z-index: 60;
+}
+#feedbackContent {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(2.4rem, 11vw, 5rem);
+  font-weight: 1000;
+  letter-spacing: 0.04em;
+  color: #facc15;
+  text-shadow: 0 0 18px rgba(250,204,21,0.35);
+  text-align: center;
+  padding: 24px;
+}
+#feedbackConfetti {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.panel {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(30,41,59,0.98));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+.panel h1, .panel h2 { margin: 0 0 8px; }
+.panel p { margin: 0 0 12px; color: var(--muted); line-height: 1.35; }
+.optionrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.optionrow button.selected { outline: 2px solid rgba(250,204,21,0.82); }
+.names {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+.rulecard {
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--line);
+}
+.rulecard strong { display: block; margin-bottom: 6px; }
+.settingcard {
+  border-radius: 18px;
+  padding: 14px;
+  margin: 8px 0 18px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--line);
+}
+.settinghead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.settingtitle {
+  font-weight: 800;
+}
+.settingvalue {
+  font-weight: 900;
+  color: var(--gold);
+  min-width: 72px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.rangewrap input[type="range"] {
+  width: 100%;
+}
+.turnpanel {
+  min-width: 150px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(250,204,21,0.25);
+  background: rgba(124,58,237,0.14);
+  box-shadow: inset 0 0 0 1px rgba(250,204,21,0.08);
+  text-align: right;
+}
+.turnpanel .label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.turnpanel .value {
+  font-size: 1.08rem;
+  font-weight: 900;
+  color: #fde68a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.turn-panel {
+  width: min(460px, 94vw);
+  text-align: center;
+}
+.turn-name {
+  font-size: clamp(34px, 6vw, 52px);
+  color: var(--gold);
+  font-weight: 1000;
+  letter-spacing: 1px;
+  margin: 6px 0 4px;
+  text-shadow: 0 0 18px rgba(250,204,21,0.25);
+}
+.turn-sub {
+  color: rgba(255,255,255,0.82);
+  font-size: 15px;
+}
+.endscores {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+.endrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--line);
+  font-weight: 700;
+}
+.hidden { display: none !important; }
+@keyframes hintPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+@media (max-width: 760px) {
+  .app {
+    gap: 6px;
+    padding-inline: 8px;
+  }
+  .topbar {
+    gap: 6px;
+    padding: 7px 8px;
+  }
+  .title { font-size: 0.98rem; }
+  .subtitle {
+    font-size: 0.72rem;
+    line-height: 1.15;
+  }
+  .turnpill {
+    padding: 6px 9px;
+    font-size: 0.78rem;
+  }
+  .main {
+    gap: 6px;
+    grid-template-rows: auto auto auto auto minmax(0,1fr);
+  }
+  .scorebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    padding: 5px;
+  }
+  .scorechip {
+    padding: 6px 7px;
+  }
+  .scorechip .name {
+    font-size: 0.72rem;
+  }
+  .scorechip .score {
+    font-size: 1rem;
+  }
+  .controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    padding: 5px;
+  }
+  .controls button {
+    min-height: 36px;
+    padding: 7px 4px;
+    font-size: 0.76rem;
+    border-radius: 12px;
+  }
+  .status {
+    min-height: 0;
+    padding: 8px 9px;
+    gap: 6px;
+    align-items: center;
+  }
+  .status .message {
+    font-size: 0.88rem;
+    line-height: 1.15;
+  }
+  .status .small {
+    font-size: 0.74rem;
+  }
+  .turnpanel {
+    min-width: 118px;
+    padding: 7px 8px;
+    border-radius: 14px;
+  }
+  .turnpanel .label {
+    font-size: 0.66rem;
+  }
+  .turnpanel .value {
+    font-size: 0.92rem;
+  }
+  .sumbar {
+    padding: 8px;
+  }
+  .sumfocus {
+    gap: 5px;
+  }
+  .sumcore {
+    gap: 8px;
+  }
+  .sumactions {
+    width: 112px;
+    gap: 6px;
+  }
+  .sumactions button {
+    min-height: 36px;
+    padding: 7px 6px;
+    font-size: 0.8rem;
+    border-radius: 12px;
+  }
+  .sumlabel {
+    font-size: 0.74rem;
+  }
+  .totalbox {
+    width: min(100%, 220px);
+    min-height: 66px;
+    border-radius: 18px;
+  }
+  .total {
+    font-size: clamp(2.7rem, 12vw, 4rem);
+  }
+  .comboNote {
+    font-size: 0.75rem;
+  }
+  .table {
+    gap: 6px;
+  }
+  .card {
+    min-height: clamp(68px, 10.2vh, 88px);
+    border-radius: 15px;
+    padding: 6px;
+  }
+  .centerValue {
+    font-size: clamp(2rem, 7.2vw, 2.8rem);
+  }
+  .corner {
+    font-size: 0.7rem;
+    left: 7px;
+    top: 5px;
+  }
+  .corner.bottom {
+    right: 7px;
+    bottom: 5px;
+  }
+  .footer {
+    gap: 6px;
+    padding: 6px 9px;
+    font-size: 0.72rem;
+  }
+  .names, .rules {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 400px) {
+  .sumcore {
+    flex-direction: column;
+  }
+  .sumactions {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="titleblock">
+      <div class="title">Make 10</div>
+      <div class="subtitle">Use 6 cards. Any total that is a multiple of 10 counts: 10, 20, 30, and so on. Cards now run from 1 to 12.</div>
+    </div>
+    <div class="turnpill" id="turnPill">Turn: Solo</div>
+  </div>
+  <div class="main">
+    <div class="scorebar" id="scoreBar"></div>
+    <div class="controls">
+      <button class="secondary" id="hintBtn">Hint</button>
+      <button class="secondary" id="newRowBtn">New Row</button>
+    </div>
+    <div class="status">
+      <div>
+        <div class="message" id="message">Choose cards that make 10, 20, 30, or another multiple of 10.</div>
+        <div class="small" id="subMessage">With 6 cards, there should always be something to grab.</div>
+      </div>
+      <div class="turnpanel">
+        <div class="label">Current turn</div>
+        <div class="value" id="turnPanelName">Solo</div>
+        <div class="small" id="selectedInfo">Selected: 0 cards</div>
+      </div>
+    </div>
+    <div class="sumbar">
+      <div class="sumfocus">
+        <div class="sumlabel">Current sum</div>
+        <div class="sumcore">
+          <div class="totalbox" id="totalBox">
+            <div class="total" id="currentTotal">0</div>
+          </div>
+          <div class="sumactions">
+            <button class="secondary" id="clearBtn">Clear</button>
+            <button id="collectBtn">Collect</button>
+          </div>
+        </div>
+        <div class="small comboNote" id="comboNote">Examples: 6 + 4, 9 + 1, 8 + 7 + 5, or 12 + 11 + 7.</div>
+      </div>
+    </div>
+    <div class="table" id="table"></div>
+  </div>
+  <div class="footer">
+    <div id="footerText">Deck: 0 • Table: 0 • A scoring combo is available.</div>
+    <div id="roundInfo">Round ready</div>
+  </div>
+</div>
+
+<div class="overlay" id="startOverlay">
+  <div class="panel">
+    <h1>Make 10</h1>
+    <p>Great for 1–4 players. Pick one or more cards. If the total is 10, 20, 30, or any other multiple of 10, you collect them all. New Row always costs 1 point, and sums above 40 earn a bonus point.</p>
+    <div class="rules">
+      <div class="rulecard"><strong>Easy to spot</strong>Six cards are on the table at once, so there are more good choices.</div>
+      <div class="rulecard"><strong>Good math</strong>Singles, pairs, or bigger combos all count if the total is a multiple of 10.</div>
+      <div class="rulecard"><strong>Stuck?</strong>Tap New Row for a fresh set of 6 cards, but it always costs 1 point.</div>
+    </div>
+    <h2>Players</h2>
+    <div class="optionrow" id="playerButtons"></div>
+    <div class="names" id="nameInputs"></div>
+    <div class="settingcard">
+      <div class="settinghead">
+        <div class="settingtitle">Game length</div>
+        <div class="settingvalue" id="goalValue">40 cards</div>
+      </div>
+      <p>The game ends once this many cards have been collected in total.</p>
+      <div class="rangewrap">
+        <input type="range" id="goalSlider" min="10" max="40" step="1" value="40">
+      </div>
+    </div>
+    <div class="optionrow">
+      <button class="good" id="startBtn">Start Game</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="turnOverlay">
+  <div class="panel turn-panel">
+    <div class="turn-sub" id="turnOverlaySub">Next turn:</div>
+    <div class="turn-name" id="turnOverlayName">Player 1</div>
+  </div>
+</div>
+
+<div id="feedbackOverlay">
+  <div id="feedbackContent">AWESOME!</div>
+  <canvas id="feedbackConfetti"></canvas>
+</div>
+
+<div class="overlay hidden" id="endOverlay">
+  <div class="panel">
+    <h2 id="endTitle">Game Over</h2>
+    <p id="endText"></p>
+    <div class="endscores" id="endScores"></div>
+    <div class="optionrow">
+      <button class="good" id="playAgainBtn">Play Again</button>
+      <button class="secondary" id="changePlayersBtn">Change Players</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const defaultNames = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+  const state = {
+    playerCount: 1,
+    players: [],
+    currentPlayer: 0,
+    deck: [],
+    table: [],
+    selected: [],
+    over: false,
+    tableSize: 6,
+    goalCards: 40
+  };
+
+  const els = {
+    playerButtons: document.getElementById('playerButtons'),
+    nameInputs: document.getElementById('nameInputs'),
+    startBtn: document.getElementById('startBtn'),
+    startOverlay: document.getElementById('startOverlay'),
+    table: document.getElementById('table'),
+    message: document.getElementById('message'),
+    subMessage: document.getElementById('subMessage'),
+    selectedInfo: document.getElementById('selectedInfo'),
+    turnPanelName: document.getElementById('turnPanelName'),
+    scoreBar: document.getElementById('scoreBar'),
+    turnPill: document.getElementById('turnPill'),
+    footerText: document.getElementById('footerText'),
+    roundInfo: document.getElementById('roundInfo'),
+    currentTotal: document.getElementById('currentTotal'),
+    totalBox: document.getElementById('totalBox'),
+    comboNote: document.getElementById('comboNote'),
+    hintBtn: document.getElementById('hintBtn'),
+    clearBtn: document.getElementById('clearBtn'),
+    newRowBtn: document.getElementById('newRowBtn'),
+    collectBtn: document.getElementById('collectBtn'),
+    endOverlay: document.getElementById('endOverlay'),
+    endTitle: document.getElementById('endTitle'),
+    endText: document.getElementById('endText'),
+    endScores: document.getElementById('endScores'),
+    playAgainBtn: document.getElementById('playAgainBtn'),
+    changePlayersBtn: document.getElementById('changePlayersBtn'),
+    goalSlider: document.getElementById('goalSlider'),
+    goalValue: document.getElementById('goalValue'),
+    turnOverlay: document.getElementById('turnOverlay'),
+    turnOverlaySub: document.getElementById('turnOverlaySub'),
+    turnOverlayName: document.getElementById('turnOverlayName'),
+    feedbackOverlay: document.getElementById('feedbackOverlay'),
+    feedbackContent: document.getElementById('feedbackContent'),
+    feedbackConfetti: document.getElementById('feedbackConfetti')
+  };
+
+
+  let turnSplashTimer = 0;
+  const feedback = {
+    canvas: els.feedbackConfetti,
+    ctx: els.feedbackConfetti.getContext('2d'),
+    particles: [],
+    animId: 0,
+    hideTimer: 0
+  };
+
+  function resizeFeedbackCanvas() {
+    const ratio = window.devicePixelRatio || 1;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    feedback.canvas.width = Math.max(1, Math.floor(w * ratio));
+    feedback.canvas.height = Math.max(1, Math.floor(h * ratio));
+    feedback.canvas.style.width = `${w}px`;
+    feedback.canvas.style.height = `${h}px`;
+    feedback.ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+
+  function stopAwesome() {
+    clearTimeout(feedback.hideTimer);
+    if (feedback.animId) cancelAnimationFrame(feedback.animId);
+    feedback.animId = 0;
+    feedback.particles = [];
+    feedback.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    els.feedbackOverlay.style.display = 'none';
+  }
+
+  function launchConfetti() {
+    resizeFeedbackCanvas();
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    feedback.particles = [];
+    for (let i = 0; i < 140; i += 1) {
+      feedback.particles.push({
+        x: Math.random() * w,
+        y: -20 - Math.random() * h * 0.35,
+        r: 4 + Math.random() * 6,
+        vx: -2 + Math.random() * 4,
+        vy: 2 + Math.random() * 5,
+        g: 0.06 + Math.random() * 0.08,
+        rot: Math.random() * Math.PI * 2,
+        vr: -0.16 + Math.random() * 0.32,
+        color: ['#facc15', '#fb7185', '#60a5fa', '#34d399', '#c084fc', '#f97316'][Math.floor(Math.random() * 6)]
+      });
+    }
+
+    const draw = () => {
+      feedback.ctx.clearRect(0, 0, w, h);
+      for (const p of feedback.particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.g;
+        p.rot += p.vr;
+        feedback.ctx.save();
+        feedback.ctx.translate(p.x, p.y);
+        feedback.ctx.rotate(p.rot);
+        feedback.ctx.fillStyle = p.color;
+        feedback.ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 1.4);
+        feedback.ctx.restore();
+      }
+      feedback.particles = feedback.particles.filter((p) => p.y < h + 30);
+      if (feedback.particles.length) feedback.animId = requestAnimationFrame(draw);
+      else feedback.animId = 0;
+    };
+    draw();
+  }
+
+  function showAwesome(text = 'AWESOME!') {
+    stopAwesome();
+    els.feedbackContent.textContent = text;
+    els.feedbackOverlay.style.display = 'flex';
+    launchConfetti();
+    feedback.hideTimer = setTimeout(stopAwesome, 1200);
+  }
+
+
+  function buildPlayerButtons() {
+    els.playerButtons.innerHTML = '';
+    for (let i = 1; i <= 4; i += 1) {
+      const btn = document.createElement('button');
+      btn.textContent = i === 1 ? '1 Player' : `${i} Players`;
+      btn.className = i === state.playerCount ? 'selected' : 'secondary';
+      btn.addEventListener('click', () => {
+        state.playerCount = i;
+        buildPlayerButtons();
+        buildNameInputs();
+      });
+      els.playerButtons.appendChild(btn);
+    }
+  }
+
+  function buildNameInputs() {
+    els.nameInputs.innerHTML = '';
+    for (let i = 0; i < state.playerCount; i += 1) {
+      const wrap = document.createElement('div');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.maxLength = 16;
+      input.placeholder = defaultNames[i];
+      input.value = state.players[i]?.name || defaultNames[i];
+      wrap.appendChild(input);
+      els.nameInputs.appendChild(wrap);
+    }
+  }
+
+  function createDeck() {
+    const deck = [];
+    let id = 0;
+    for (let suit = 0; suit < 4; suit += 1) {
+      for (let value = 1; value <= 12; value += 1) {
+        deck.push({ id: `m${id++}`, value, suit });
+      }
+    }
+    return shuffle(deck);
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function currentSum() {
+    return state.selected.reduce((sum, id) => sum + (state.table.find((card) => card.id === id)?.value || 0), 0);
+  }
+
+  function totalCollected() {
+    return state.players.reduce((sum, player) => sum + player.collected, 0);
+  }
+
+  function hideTurnSplash() {
+    clearTimeout(turnSplashTimer);
+    els.turnOverlay.classList.add('hidden');
+  }
+
+  function showTurnSplash(label) {
+    if (state.playerCount <= 1 || state.over) return;
+    const currentName = state.players[state.currentPlayer]?.name || `Player ${state.currentPlayer + 1}`;
+    els.turnOverlaySub.textContent = label || 'Next turn:';
+    els.turnOverlayName.textContent = currentName;
+    els.turnOverlay.classList.remove('hidden');
+    clearTimeout(turnSplashTimer);
+    turnSplashTimer = setTimeout(() => {
+      els.turnOverlay.classList.add('hidden');
+    }, 1000);
+  }
+
+  function isScoringSum(sum) {
+    return sum >= 10 && sum % 10 === 0;
+  }
+
+  function findScoringCombo(cards) {
+    const totalMasks = 1 << cards.length;
+    let best = null;
+    for (let mask = 1; mask < totalMasks; mask += 1) {
+      let sum = 0;
+      const ids = [];
+      for (let i = 0; i < cards.length; i += 1) {
+        if (mask & (1 << i)) {
+          sum += cards[i].value;
+          ids.push(cards[i].id);
+        }
+      }
+      if (isScoringSum(sum)) {
+        if (!best || ids.length > best.ids.length || (ids.length === best.ids.length && sum > best.sum)) {
+          best = { ids, sum };
+        }
+      }
+    }
+    return best;
+  }
+
+  function fillTable() {
+    while (state.table.length < state.tableSize && state.deck.length) state.table.push(state.deck.pop());
+  }
+
+  function resetTableWithScoringCombo() {
+    let tries = 0;
+    do {
+      state.deck = shuffle(state.deck.concat(state.table));
+      state.table = [];
+      fillTable();
+      tries += 1;
+    } while (!findScoringCombo(state.table) && state.deck.length + state.table.length >= state.tableSize && tries < 50);
+  }
+
+  function ensurePlayableTable(opening = false) {
+    if (findScoringCombo(state.table)) return;
+    if (state.deck.length) {
+      resetTableWithScoringCombo();
+      if (findScoringCombo(state.table)) return;
+    }
+    if (!findScoringCombo(state.table) && !state.deck.length && !opening) finishGame();
+  }
+
+  function startGame() {
+    const inputs = Array.from(els.nameInputs.querySelectorAll('input'));
+    state.players = [];
+    for (let i = 0; i < state.playerCount; i += 1) {
+      const raw = inputs[i]?.value?.trim();
+      state.players.push({ name: raw || defaultNames[i], score: 0, collected: 0 });
+    }
+    state.currentPlayer = 0;
+    state.goalCards = Math.max(10, Math.min(40, parseInt(els.goalSlider.value, 10) || 40));
+    state.deck = createDeck();
+    state.table = [];
+    state.selected = [];
+    state.over = false;
+    hideTurnSplash();
+    stopAwesome();
+    fillTable();
+    ensurePlayableTable(true);
+    els.startOverlay.classList.add('hidden');
+    els.endOverlay.classList.add('hidden');
+    setMessage('Choose cards that make a multiple of 10.', `Game ends after ${state.goalCards} collected cards.`);
+    renderAll();
+    showTurnSplash('First turn:');
+  }
+
+  function renderAll() {
+    renderScoreBar();
+    renderTable();
+    renderMeta();
+  }
+
+  function renderScoreBar() {
+    els.scoreBar.innerHTML = '';
+    state.players.forEach((player, index) => {
+      const chip = document.createElement('div');
+      chip.className = `scorechip${index === state.currentPlayer && !state.over ? ' active' : ''}`;
+      chip.innerHTML = `<div class="name">${escapeHtml(player.name)}</div><div class="score">${player.score}</div>`;
+      els.scoreBar.appendChild(chip);
+    });
+  }
+
+  function renderTable() {
+    els.table.innerHTML = '';
+    state.table.forEach((card) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `card${state.selected.includes(card.id) ? ' selected' : ''}`;
+      btn.dataset.id = card.id;
+      btn.innerHTML = `<div class="corner">${card.value}</div><div class="centerValue">${card.value}</div><div class="corner bottom">${card.value}</div>`;
+      btn.addEventListener('click', () => toggleCard(card.id));
+      els.table.appendChild(btn);
+    });
+  }
+
+  function renderMeta() {
+    const currentName = state.players[state.currentPlayer]?.name || 'Solo';
+    const sum = currentSum();
+    const scoring = isScoringSum(sum);
+    const combo = findScoringCombo(state.table);
+    const collected = totalCollected();
+    const totalState = scoring ? ' good' : sum > 0 && sum % 10 !== 0 && sum > 10 ? ' bad' : '';
+    els.turnPill.textContent = state.playerCount === 1 ? 'Solo Mode' : `Now playing: ${currentName}`;
+    els.turnPanelName.textContent = currentName;
+    els.currentTotal.textContent = String(sum);
+    els.currentTotal.className = `total${totalState}`;
+    els.totalBox.className = `totalbox${totalState}`;
+    els.selectedInfo.textContent = `Selected: ${state.selected.length}`;
+    els.footerText.textContent = `Deck: ${state.deck.length} • Table: ${state.table.length} • Collected: ${collected}/${state.goalCards}`;
+    els.roundInfo.textContent = state.over ? 'Finished' : `${state.playerCount > 1 ? `${currentName}'s turn` : 'Your turn'} • ${combo ? 'Combo ready' : 'Need a fresh look'}`;
+    els.collectBtn.disabled = !scoring || state.over;
+    els.hintBtn.disabled = state.over;
+    els.clearBtn.disabled = state.selected.length === 0 || state.over;
+    els.newRowBtn.disabled = state.over;
+    if (sum === 0) els.comboNote.textContent = 'Try any cards that make 10, 20, 30, or another multiple of 10.';
+    else if (scoring) els.comboNote.textContent = sum > 40 ? `${sum} works. That earns a bonus point too.` : `${sum} works. Collect those cards.`;
+    else {
+      const next = Math.ceil(sum / 10) * 10;
+      els.comboNote.textContent = `${sum} is not a multiple of 10. Aim for ${next}.`;
+    }
+  }
+
+  function toggleCard(cardId) {
+    if (state.over) return;
+    const idx = state.selected.indexOf(cardId);
+    if (idx >= 0) state.selected.splice(idx, 1);
+    else state.selected.push(cardId);
+    renderTable();
+    renderMeta();
+  }
+
+  function clearSelection() {
+    state.selected = [];
+    renderTable();
+    renderMeta();
+  }
+
+  function advanceTurn() {
+    if (state.over) return;
+    if (state.playerCount > 1) {
+      state.currentPlayer = (state.currentPlayer + 1) % state.playerCount;
+      showTurnSplash('Next turn:');
+    }
+  }
+
+  function collectSelection() {
+    const sum = currentSum();
+    if (state.over || !isScoringSum(sum)) return;
+    const currentName = state.players[state.currentPlayer].name;
+    const captured = state.selected.length;
+    const bonus = sum > 40 ? 1 : 0;
+    state.players[state.currentPlayer].score += captured + bonus;
+    state.players[state.currentPlayer].collected += captured;
+    const selectedIds = new Set(state.selected);
+    state.table = state.table.filter((card) => !selectedIds.has(card.id));
+    fillTable();
+    state.selected = [];
+    if (sum >= 30) showAwesome('AWESOME!');
+    if (totalCollected() >= state.goalCards) {
+      setMessage(`${currentName} scored ${sum}!`, bonus ? `${currentName} pushed the game to ${state.goalCards} collected cards and earned a bonus point.` : `${currentName} pushed the game to ${state.goalCards} collected cards.`);
+      finishGame();
+      return;
+    }
+    ensurePlayableTable();
+    setMessage(`${currentName} scored ${sum}!`, bonus ? `${currentName} collected ${captured} ${captured === 1 ? 'card' : 'cards'} and earned 1 bonus point.` : `${currentName} collected ${captured} ${captured === 1 ? 'card' : 'cards'}.`);
+    if (!state.over) advanceTurn();
+    renderAll();
+  }
+
+  function showHint() {
+    if (state.over) return;
+    const combo = findScoringCombo(state.table);
+    if (!combo) {
+      setMessage('No scoring combo is left.', 'Tap New Row for a fresh set of cards.');
+      return;
+    }
+    const hintId = combo.ids[Math.floor(Math.random() * combo.ids.length)];
+    const node = els.table.querySelector(`[data-id="${hintId}"]`);
+    if (node) {
+      node.classList.add('hint');
+      setTimeout(() => node.classList.remove('hint'), 2400);
+    }
+    setMessage('Hint used.', `One card from a ${combo.sum} combo just flashed.`);
+  }
+
+  function newRow() {
+    if (state.over) return;
+    state.selected = [];
+    state.players[state.currentPlayer].score -= 1;
+    if (state.table.length) state.deck = shuffle(state.deck.concat(state.table));
+    state.table = [];
+    fillTable();
+    ensurePlayableTable();
+    setMessage('Fresh row.', `${state.players[state.currentPlayer].name} took a new row and lost 1 point.`);
+    advanceTurn();
+    renderAll();
+  }
+
+  function finishGame() {
+    state.over = true;
+    hideTurnSplash();
+    renderAll();
+    const high = Math.max(...state.players.map((player) => player.score));
+    const winners = state.players.filter((player) => player.score === high);
+    els.endTitle.textContent = winners.length === 1 ? `${winners[0].name} wins!` : 'Tie game!';
+    els.endText.textContent = winners.length === 1 ? `${winners[0].name} had the highest score by the ${state.goalCards}-card finish line.` : `Multiple players tied for the top score at the ${state.goalCards}-card finish line.`;
+    els.endScores.innerHTML = state.players.map((player) => `<div class="endrow"><span>${escapeHtml(player.name)}</span><span>${player.score}</span></div>`).join('');
+    els.endOverlay.classList.remove('hidden');
+    setMessage('Game over.', winners.length === 1 ? `${winners[0].name} finished with the highest score.` : 'Multiple players tied for the top score.');
+  }
+
+  function setMessage(main, sub) {
+    els.message.textContent = main;
+    els.subMessage.textContent = sub;
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  els.startBtn.addEventListener('click', startGame);
+  els.collectBtn.addEventListener('click', collectSelection);
+  els.hintBtn.addEventListener('click', showHint);
+  els.clearBtn.addEventListener('click', clearSelection);
+  els.newRowBtn.addEventListener('click', newRow);
+  els.playAgainBtn.addEventListener('click', startGame);
+  els.changePlayersBtn.addEventListener('click', () => {
+    hideTurnSplash();
+    els.endOverlay.classList.add('hidden');
+    els.startOverlay.classList.remove('hidden');
+  });
+
+  function syncGoalLabel() {
+    const value = Math.max(10, Math.min(40, parseInt(els.goalSlider.value, 10) || 40));
+    els.goalValue.textContent = `${value} cards`;
+  }
+
+  els.goalSlider.addEventListener('input', syncGoalLabel);
+  syncGoalLabel();
+  window.addEventListener('resize', resizeFeedbackCanvas);
+
+  buildPlayerButtons();
+  buildNameInputs();
+})();
+</script>
+</body>
+</html>
